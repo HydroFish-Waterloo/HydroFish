@@ -231,9 +231,13 @@ fun FishAnimation(modifier: Modifier) {
     val duration = 10000
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp // Convert screenWidth to dp
     val screenWidthPx = with(LocalDensity.current) { screenWidthDp.toPx() } // Convert dp to pixels for animation
-    val fishWidthPx = with(LocalDensity.current){ 330.46f.dp.toPx()}
+    val fishWidthPx = with(LocalDensity.current){ 200.46f.dp.toPx()}
+    //Log.d("YourTag", "screenWidthPx value: $screenWidthPx")
+    //Log.d("YourTag", "fishWidthPx value: $fishWidthPx")
+
     val transitionR = rememberInfiniteTransition()
     val transitionL = rememberInfiniteTransition()
+
     val translationR by transitionR.animateFloat(
         initialValue = -fishWidthPx,
         targetValue = screenWidthPx+fishWidthPx,
@@ -272,7 +276,7 @@ fun FishAnimation(modifier: Modifier) {
     }
 
     val vectorPainterCartoonFish = rememberVectorPainter(
-        defaultWidth = 530.46f.dp,
+        defaultWidth = 200.46f.dp,
         defaultHeight = 563.1f.dp,
         viewportHeight = 563.1f,
         viewportWidth = 530.46f,
@@ -341,14 +345,16 @@ fun FishAnimation(modifier: Modifier) {
     @Composable
     fun Fish(x: Float, isRight: Boolean) {
         val fishPainter = rememberVectorPainter(
-            defaultWidth = 330.46f.dp,
-            defaultHeight = 363.1f.dp,
+            defaultWidth = 200.46f.dp,
+            defaultHeight = 563.1f.dp,
             viewportHeight = 563.1f,
-            viewportWidth = 530.46f,
+            viewportWidth = 200.46f,
             autoMirror = true,
         ) { viewPortWidth, viewPortHeight ->
             Group(
-                name = "fish"//, translationX = x
+                name = "fish",//, translationX = x
+                scaleX = 0.6f, // Scale down the fish horizontally (adjust this value as needed)
+                scaleY = 0.6f,
             ) {
                 Group("fish1") {
                     Path(
