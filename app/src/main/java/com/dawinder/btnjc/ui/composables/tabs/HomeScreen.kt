@@ -239,16 +239,16 @@ fun FishAnimation(modifier: Modifier) {
     val transitionL = rememberInfiniteTransition()
 
     val translationR by transitionR.animateFloat(
-        initialValue = -fishWidthPx,
-        targetValue = screenWidthPx+fishWidthPx,
+        initialValue = -fishWidthPx/2,
+        targetValue = screenWidthPx-fishWidthPx*5/3,
         animationSpec = infiniteRepeatable(
             tween(duration, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         )
     )
     val translationL by transitionL.animateFloat(
-        initialValue = screenWidthPx+fishWidthPx,
-        targetValue = -fishWidthPx,
+        initialValue = screenWidthPx-fishWidthPx*5/3,
+        targetValue = -fishWidthPx/2,
         animationSpec = infiniteRepeatable(
             tween(duration, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
