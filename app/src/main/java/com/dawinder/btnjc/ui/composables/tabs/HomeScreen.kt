@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -47,6 +48,8 @@ import androidx.compose.ui.graphics.vector.Path
 import androidx.compose.ui.graphics.vector.PathParser
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -94,7 +97,7 @@ fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = view
 
 
         // create the fish
-        FishAnimation()
+        FishAnimation(modifier)
 
         AddProgessBar(modifier.align(Alignment.CenterEnd), waterPercent)
 
@@ -222,25 +225,28 @@ object CartoonFishPaths {
 }
 
 @Composable
-fun FishAnimation() {
+fun FishAnimation(modifier: Modifier) {
     // isRightFishActive is used to switch between fishes facing left and fishes facing right
     var isRightFishActive by remember { mutableStateOf(true) }
-    val duration = 3000
+    val duration = 10000
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp // Convert screenWidth to dp
+    val screenWidthPx = with(LocalDensity.current) { screenWidthDp.toPx() } // Convert dp to pixels for animation
+    val fishWidthPx = with(LocalDensity.current){ 330.46f.dp.toPx()}
     val transitionR = rememberInfiniteTransition()
     val transitionL = rememberInfiniteTransition()
     val translationR by transitionR.animateFloat(
-        initialValue = 400f,
-        targetValue = 0f,
+        initialValue = -fishWidthPx,
+        targetValue = screenWidthPx+fishWidthPx,
         animationSpec = infiniteRepeatable(
-            tween(duration, easing = EaseInOut),
+            tween(duration, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         )
     )
     val translationL by transitionL.animateFloat(
-        initialValue = 400f,
-        targetValue = 0f,
+        initialValue = screenWidthPx+fishWidthPx,
+        targetValue = -fishWidthPx,
         animationSpec = infiniteRepeatable(
-            tween(duration, easing = EaseInOut),
+            tween(duration, easing = LinearEasing),
             repeatMode = RepeatMode.Restart
         )
     )
@@ -335,15 +341,14 @@ fun FishAnimation() {
     @Composable
     fun Fish(x: Float, isRight: Boolean) {
         val fishPainter = rememberVectorPainter(
-            defaultWidth = 530.46f.dp,
-            defaultHeight = 563.1f.dp,
+            defaultWidth = 330.46f.dp,
+            defaultHeight = 363.1f.dp,
             viewportHeight = 563.1f,
             viewportWidth = 530.46f,
             autoMirror = true,
         ) { viewPortWidth, viewPortHeight ->
-            val duration = 3000
             Group(
-                name = "fish", translationX = x
+                name = "fish"//, translationX = x
             ) {
                 Group("fish1") {
                     Path(
@@ -426,9 +431,13 @@ fun FishAnimation() {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(
-                        start = 0.dp,
-                        top = 300.dp
-                    )
+                        end =0.dp,
+                        top = 300.dp)
+                    .offset(x.dp)
+                    .graphicsLayer {
+                        // Apply a horizontal flip
+                        scaleX = -1f
+                    }
             )
         } else {
             Image(
@@ -438,12 +447,11 @@ fun FishAnimation() {
                     .fillMaxSize()
                     .padding(
                         start = 0.dp,
-                        top = 300.dp)
-                    .graphicsLayer {
-                        // Apply a horizontal flip
-                        scaleX = -1f
-                    }
+                        top = 300.dp
+                    )
+                    .offset(x.dp)
             )
+
         }
 
     }
@@ -451,10 +459,10 @@ fun FishAnimation() {
 
     LaunchedEffect(isRightFishActive) {
         if (isRightFishActive) {
-            delay(3000) // Wait for the right-facing fish animation to complete
+            delay(10000) // Wait for the right-facing fish animation to complete
             isRightFishActive = false
         } else {
-            delay(3000) // Wait for the left-facing fish animation to complete
+            delay(10000) // Wait for the left-facing fish animation to complete
             isRightFishActive = true
         }
     }
@@ -473,15 +481,15 @@ fun FishAnimation() {
             modifier = Modifier.fillMaxSize(),
             content = {
                 if (isRightFishActive) {
-                    Fish(translationL, isRightFishActive)
-                } else {
                     Fish(translationR, isRightFishActive)
+                } else {
+                    Fish(translationL, isRightFishActive)
                 }
             }
         ) { measurables, constraints ->
             layout(constraints.maxWidth, constraints.maxHeight) {
                 val placeable = measurables[0].measure(constraints)
-                val x = if (isRightFishActive) translationL else translationR
+                val x = if (isRightFishActive) translationR else translationL
                 placeable.place(x.toInt(), 0)
             }
         }
