@@ -8,19 +8,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.dawinder.btnjc.R
-import com.dawinder.btnjc.ui.theme.md_theme_light_inversePrimary
+import com.dawinder.btnjc.ui.theme.md_theme_dark_secondaryContainer
 import com.dawinder.btnjc.ui.theme.typography
 
 /**
- * Composable function that represents the list screen of the application.
+ * Composable function that represents the search screen of the application.
  */
 @Composable
-fun ListScreen() {
+fun HistoryScreen() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(
-            text = stringResource(id = R.string.list),
+            text = stringResource(id = R.string.search),
             style = typography.titleLarge,
-            color = md_theme_light_inversePrimary
+            color = md_theme_dark_secondaryContainer
         )
     }
 }

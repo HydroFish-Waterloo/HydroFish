@@ -6,10 +6,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.dawinder.btnjc.nav.NavItem
+import com.dawinder.btnjc.ui.composables.tabs.AchievementsScreen
+import com.dawinder.btnjc.ui.composables.tabs.HistoryScreen
 import com.dawinder.btnjc.ui.composables.tabs.HomeScreen
-import com.dawinder.btnjc.ui.composables.tabs.ListScreen
-import com.dawinder.btnjc.ui.composables.tabs.ProfileScreen
-import com.dawinder.btnjc.ui.composables.tabs.SearchScreen
+import com.dawinder.btnjc.ui.composables.tabs.SettingsScreen
+import com.dawinder.btnjc.ui.composables.tabs.ReminderScreen
 
 /**
  * Composable function that defines the navigation screens and their corresponding destinations.
@@ -20,8 +21,9 @@ import com.dawinder.btnjc.ui.composables.tabs.SearchScreen
 fun NavigationScreens(modifier: Modifier, navController: NavHostController) {
     NavHost(navController, startDestination = NavItem.Home.path) {
         composable(NavItem.Home.path) { HomeScreen(modifier = modifier) }
-        composable(NavItem.Search.path) { SearchScreen() }
-        composable(NavItem.List.path) { ListScreen() }
-        composable(NavItem.Profile.path) { ProfileScreen() }
+        composable(NavItem.History.path) { HistoryScreen() }
+        composable(NavItem.Reminder.path) { ReminderScreen() }
+        composable(NavItem.Achievements.path) { AchievementsScreen() }
+        composable(NavItem.Settings.path) { SettingsScreen() }
     }
 }

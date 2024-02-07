@@ -1,5 +1,5 @@
 package com.dawinder.btnjc.nav
 
 enum class NavPath {
-    HOME, HISTORY, ACHIEVEMENTS, SETTINGS
+    HOME, HISTORY, REMINDER, ACHIEVEMENTS, SETTINGS
 }
