@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.hydrofish.app.R
 import com.hydrofish.app.ui.composables.MainScreen
-import com.hydrofish.app.ui.theme.BottomTabNavigationJetpackComposeTheme
+import com.hydrofish.app.ui.theme.HydroFishTheme
 
 class MainActivity : ComponentActivity() {
     /**
@@ -56,7 +56,7 @@ class MainActivity : ComponentActivity() {
         createNotificationChannel()
 
         setContent {
-            BottomTabNavigationJetpackComposeTheme {
+            HydroFishTheme {
                 val navController = rememberNavController()
                 Surface(modifier = Modifier.fillMaxSize()) {
                     MainScreen(navController = navController,showPermissionExplanationDialog.value) {
@@ -86,7 +86,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     val navController = rememberNavController()
-    BottomTabNavigationJetpackComposeTheme {
+    HydroFishTheme {
         Surface(modifier = Modifier.fillMaxSize()) {
             MainScreen(navController = navController,false, {} )
         }

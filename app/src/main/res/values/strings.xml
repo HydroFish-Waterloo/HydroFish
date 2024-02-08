@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BottomTabNavigation-JetpackCompose</string>
+    <string name="app_name">HydroFish</string>
     <string name="home">Home</string>
     <string name="search">Search</string>
     <string name="list">List</string>
