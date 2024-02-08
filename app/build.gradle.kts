@@ -6,10 +6,10 @@ plugins {
 }
 
 android {
-    namespace = "com.dawinder.btnjc"
+    namespace = "com.hydrofish.app"
     compileSdk = 33
     defaultConfig {
-        applicationId = "com.dawinder.btnjc"
+        applicationId = "com.hydrofish.app"
         minSdk = 23
         targetSdk = 33
         versionCode = 1
