@@ -382,11 +382,6 @@ fun FishAnimation(modifier: Modifier) {
                         fillAlpha = 0.4f
                     )
                     Path(
-                        pathData = fish_v3,
-                        fill = SolidColor(Color.Black),
-                        fillAlpha = 1f
-                    )
-                    Path(
                         pathData = fish_v4,
                         fill = SolidColor(Color.White),
                         fillAlpha = 1f
