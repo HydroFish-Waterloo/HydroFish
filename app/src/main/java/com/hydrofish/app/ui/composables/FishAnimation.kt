@@ -12,7 +12,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,8 +35,9 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+
 @Composable
-fun Fish(x: Float, isRight: Boolean) {
+fun Fish(x: Float, isRight: Boolean, fishType: FishType, verticalDistance: Float) {
     val fishPainter = rememberVectorPainter(
         defaultWidth = 200.46f.dp,
         defaultHeight = 563.1f.dp,
@@ -45,33 +45,58 @@ fun Fish(x: Float, isRight: Boolean) {
         viewportWidth = 200.46f,
         autoMirror = true,
     ) { viewPortWidth, viewPortHeight ->
-        Group(
-            name = "fish",//, translationX = x
-            scaleX = 0.6f, // Scale down the fish horizontally (adjust this value as needed)
-            scaleY = 0.6f,
-        ) {
-            Group("fish1") {
-                Path(
-                    pathData = FishPaths.fish_v1,
-                    fill = SolidColor(Color.White),
-                    fillAlpha = 0.4f
-                )
-                Path(
-                    pathData = FishPaths.fish_v2,
-                    fill = SolidColor(Color.White),
-                    fillAlpha = 0.4f
-                )
-                Path(
-                    pathData = FishPaths.fish_v4,
-                    fill = SolidColor(Color.White),
-                    fillAlpha = 1f
-                )
-                Path(
-                    pathData = FishPaths.fish_v5,
-                    fill = SolidColor(Color.White),
-                    fillAlpha = 1f
-                )
+        when (fishType) {
+            FishType.FISH_V1 -> {
+                Group(
+                    name = "fish",//
+                    scaleX = 0.3f, // Scale down the fish horizontally
+                    scaleY = 0.3f,
+                ) {
+                    Group("fish1") {
+                        Path(
+                            pathData = FishPaths.fish_v1,
+                            fill = SolidColor(Color.White),
+                            fillAlpha = 0.4f
+                        )
+                        Path(
+                            pathData = FishPaths.fish_v2,
+                            fill = SolidColor(Color.White),
+                            fillAlpha = 0.4f
+                        )
+                        Path(
+                            pathData = FishPaths.fish_v4,
+                            fill = SolidColor(Color.White),
+                            fillAlpha = 1f
+                        )
+                        Path(
+                            pathData = FishPaths.fish_v5,
+                            fill = SolidColor(Color.White),
+                            fillAlpha = 1f
+                        )
+                    }
+
+                }
             }
+            FishType.FISH_V2 -> {
+                Group(name = "shark", scaleX = 0.6f, scaleY = 0.6f) {
+                    Path(
+                        pathData = SharkPaths.shark_v1,
+                        fill = SolidColor(Color.White),
+                        fillAlpha = 0.4f
+                    )
+                    Path(
+                        pathData = SharkPaths.shark_v2,
+                        fill = SolidColor(Color.White),
+                        fillAlpha = 0.4f
+                    )
+                    Path(
+                        pathData = SharkPaths.shark_v3,
+                        fill = SolidColor(Color.White),
+                        fillAlpha = 1f
+                    )
+                }
+            }
+        }
 
             /*Group("shark") {
                 Path(
@@ -94,17 +119,14 @@ fun Fish(x: Float, isRight: Boolean) {
 
         }
 
-    }
+
     if (isRight) {
         Image(
             fishPainter,
             contentDescription = "Fish_right",
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    end =0.dp,
-                    top = 300.dp)
-                .offset(x.dp)
+                .offset(x.dp,y = verticalDistance.dp)
                 .graphicsLayer {
                     // Apply a horizontal flip
                     scaleX = -1f
@@ -116,11 +138,7 @@ fun Fish(x: Float, isRight: Boolean) {
             contentDescription = "Fish_left",
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    start = 0.dp,
-                    top = 300.dp
-                )
-                .offset(x.dp)
+                .offset(x.dp,y = verticalDistance.dp)
         )
 
     }
@@ -128,7 +146,7 @@ fun Fish(x: Float, isRight: Boolean) {
 }
 
 @Composable
-fun FishAnimation(modifier: Modifier) {
+fun FishAnimation(modifier: Modifier, fishType: FishType, verticalDistance: Float) {
     // isRightFishActive is used to switch between fishes facing left and fishes facing right
     var isRightFishActive by remember { mutableStateOf(true) }
     val duration = 10000
@@ -203,9 +221,9 @@ fun FishAnimation(modifier: Modifier) {
             modifier = Modifier.fillMaxSize(),
             content = {
                 if (isRightFishActive) {
-                    Fish(translationR, isRightFishActive)
+                    Fish(translationR, isRightFishActive, fishType, verticalDistance)
                 } else {
-                    Fish(translationL, isRightFishActive)
+                    Fish(translationL, isRightFishActive, fishType, verticalDistance)
                 }
             }
         ) { measurables, constraints ->

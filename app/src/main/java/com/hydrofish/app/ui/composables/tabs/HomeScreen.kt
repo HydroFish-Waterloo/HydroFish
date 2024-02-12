@@ -33,6 +33,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.HydroFishViewModel
 import com.hydrofish.app.R
 import com.hydrofish.app.ui.composables.FishAnimation
+import com.hydrofish.app.ui.composables.FishType
 
 /**
  * Composable function that represents the home screen of the application.
@@ -67,7 +68,7 @@ fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = view
 
 
         // create the fish
-        FishAnimation(modifier)
+        FishAnimation(modifier, FishType.FISH_V1, 300.toFloat())
 
         AddProgessBar(modifier.align(Alignment.CenterEnd), waterPercent)
 
