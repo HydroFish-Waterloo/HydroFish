@@ -53,6 +53,9 @@ val largeRadialGradient = object : ShaderBrush() {
     }
 }
 
+// initialize fishList with one fish
+
+
 @Composable
 fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
     //This approach ensures that whenever there is a change in the uiState value,
@@ -69,6 +72,7 @@ fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = view
 
         // create the fish
         FishAnimation(modifier, FishType.FISH_V1, 300.toFloat())
+        FishAnimation(modifier, FishType.FISH_V1, 500.toFloat())
 
         AddProgessBar(modifier.align(Alignment.CenterEnd), waterPercent)
 

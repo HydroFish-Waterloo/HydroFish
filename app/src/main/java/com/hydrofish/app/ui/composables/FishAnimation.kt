@@ -63,16 +63,7 @@ fun Fish(x: Float, isRight: Boolean, fishType: FishType, verticalDistance: Float
                             fill = SolidColor(Color.White),
                             fillAlpha = 0.4f
                         )
-                        Path(
-                            pathData = FishPaths.fish_v4,
-                            fill = SolidColor(Color.White),
-                            fillAlpha = 1f
-                        )
-                        Path(
-                            pathData = FishPaths.fish_v5,
-                            fill = SolidColor(Color.White),
-                            fillAlpha = 1f
-                        )
+
                     }
 
                 }
