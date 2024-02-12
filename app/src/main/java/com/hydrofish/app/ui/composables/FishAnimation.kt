@@ -89,50 +89,39 @@ fun Fish(x: Float, isRight: Boolean, fishType: FishType, verticalDistance: Float
             }
         }
 
-            /*Group("shark") {
-                Path(
-                    pathData = shark_v1,
-                    fill = SolidColor(Color.White),
-                    fillAlpha = 0.4f
-                )
-                Path(
-                    pathData = shark_v2,
-                    fill = SolidColor(Color.White),
-                    fillAlpha = 0.4f
-                )
-                Path(
-                    pathData = shark_v3,
-                    fill = SolidColor(Color.White),
-                    fillAlpha = 1f
-                )
+        /*Group("shark") {
+            Path(
+                pathData = shark_v1,
+                fill = SolidColor(Color.White),
+                fillAlpha = 0.4f
+            )
+            Path(
+                pathData = shark_v2,
+                fill = SolidColor(Color.White),
+                fillAlpha = 0.4f
+            )
+            Path(
+                pathData = shark_v3,
+                fill = SolidColor(Color.White),
+                fillAlpha = 1f
+            )
 
-            }*/
-
-        }
-
-
-    if (isRight) {
-        Image(
-            fishPainter,
-            contentDescription = "Fish_right",
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(x.dp,y = verticalDistance.dp)
-                .graphicsLayer {
-                    // Apply a horizontal flip
-                    scaleX = -1f
-                }
-        )
-    } else {
-        Image(
-            fishPainter,
-            contentDescription = "Fish_left",
-            modifier = Modifier
-                .fillMaxSize()
-                .offset(x.dp,y = verticalDistance.dp)
-        )
+        }*/
 
     }
+
+    Image(
+        fishPainter,
+        contentDescription = "Fish_right",
+        modifier = Modifier
+            .fillMaxSize()
+            .offset(x.dp,y = verticalDistance.dp)
+            .graphicsLayer {
+                // Apply a horizontal flip
+                scaleX = -1f
+            }
+    )
+
 
 }
 
@@ -211,19 +200,16 @@ fun FishAnimation(modifier: Modifier, fishType: FishType, verticalDistance: Floa
         Layout(
             modifier = Modifier.fillMaxSize(),
             content = {
-                if (isRightFishActive) {
-                    Fish(translationR, isRightFishActive, fishType, verticalDistance)
-                } else {
-                    Fish(translationL, isRightFishActive, fishType, verticalDistance)
-                }
+                Fish(translationR, isRightFishActive, fishType, verticalDistance)
             }
         ) { measurables, constraints ->
             layout(constraints.maxWidth, constraints.maxHeight) {
                 val placeable = measurables[0].measure(constraints)
-                val x = if (isRightFishActive) translationR else translationL
+                val x = translationR
                 placeable.place(x.toInt(), 0)
             }
         }
     }
 
 }
+
