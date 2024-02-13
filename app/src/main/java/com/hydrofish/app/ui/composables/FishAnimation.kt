@@ -2,10 +2,6 @@ package com.hydrofish.app.ui.composables
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,14 +22,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.Group
 import androidx.compose.ui.graphics.vector.Path
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.hydrofish.app.ui.composables.tabs.largeRadialGradient
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 
 @Composable
@@ -88,128 +80,73 @@ fun Fish(x: Float, isRight: Boolean, fishType: FishType, verticalDistance: Float
                 }
             }
         }
-
-        /*Group("shark") {
-            Path(
-                pathData = shark_v1,
-                fill = SolidColor(Color.White),
-                fillAlpha = 0.4f
-            )
-            Path(
-                pathData = shark_v2,
-                fill = SolidColor(Color.White),
-                fillAlpha = 0.4f
-            )
-            Path(
-                pathData = shark_v3,
-                fill = SolidColor(Color.White),
-                fillAlpha = 1f
-            )
-
-        }*/
-
     }
 
-    Image(
-        fishPainter,
-        contentDescription = "Fish_right",
-        modifier = Modifier
-            .fillMaxSize()
-            .offset(x.dp,y = verticalDistance.dp)
-            .graphicsLayer {
-                // Apply a horizontal flip
-                scaleX = -1f
-            }
-    )
-
-
+    if (isRight) {
+        Image(
+            fishPainter,
+            contentDescription = "Fish_right",
+            modifier = Modifier
+                .fillMaxSize()
+                .offset(x.dp, y = verticalDistance.dp)
+                .graphicsLayer {
+                    // Apply a horizontal flip
+                    scaleX = -1f
+                }
+        )
+    } else {
+        Image(
+            fishPainter,
+            contentDescription = "Fish_left",
+            modifier = Modifier
+                .fillMaxSize()
+                .offset(x.dp, y = verticalDistance.dp)
+        )
+    }
 }
 
 @Composable
 fun FishAnimation(modifier: Modifier, fishType: FishType, verticalDistance: Float) {
-    // isRightFishActive is used to switch between fishes facing left and fishes facing right
     var isRightFishActive by remember { mutableStateOf(true) }
-    val duration = 10000
-    val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp // Convert screenWidth to dp
-    val screenWidthPx = with(LocalDensity.current) { screenWidthDp.toPx() } // Convert dp to pixels for animation
-    val fishWidthPx = with(LocalDensity.current){ 200.46f.dp.toPx()}
-    //Log.d("YourTag", "screenWidthPx value: $screenWidthPx")
-    //Log.d("YourTag", "fishWidthPx value: $fishWidthPx")
+    var prepareForNextAnimation by remember { mutableStateOf(false) }
+    val screenWidthPx = with(LocalDensity.current) { LocalConfiguration.current.screenWidthDp.dp.toPx() }
+    val fishWidthPx = with(LocalDensity.current) { 200.46f.dp.toPx() }
+    val animatableX = remember { Animatable(-fishWidthPx) }
+    val durationMillis = 10000
 
-    val transitionR = rememberInfiniteTransition()
-    val transitionL = rememberInfiniteTransition()
-
-    val translationR by transitionR.animateFloat(
-        initialValue = -fishWidthPx/2,
-        targetValue = screenWidthPx-fishWidthPx*5/3,
-        animationSpec = infiniteRepeatable(
-            tween(duration, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        )
-    )
-    val translationL by transitionL.animateFloat(
-        initialValue = screenWidthPx-fishWidthPx*5/3,
-        targetValue = -fishWidthPx/2,
-        animationSpec = infiniteRepeatable(
-            tween(duration, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        )
-    )
-    val blinkAlphaAnimation = remember {
-        Animatable(1f)
-    }
-    val blinkScaleAnimation = remember {
-        Animatable(1f)
-    }
-
-    suspend fun instantBlinkAnimation() {
-        val tweenSpec = tween<Float>(150, easing = LinearEasing)
-        coroutineScope {
-            launch {
-                blinkAlphaAnimation.animateTo(0f, animationSpec = tweenSpec)
-                blinkAlphaAnimation.animateTo(1f, animationSpec = tweenSpec)
-            }
-            launch {
-                blinkScaleAnimation.animateTo(0.3f, animationSpec = tweenSpec)
-                blinkScaleAnimation.animateTo(1f, animationSpec = tweenSpec)
-            }
+    LaunchedEffect(key1 = prepareForNextAnimation) {
+        if (prepareForNextAnimation) {
+            // Change direction
+            isRightFishActive = !isRightFishActive
+            // Prepare the position for the next animation
+            val startPos = if (isRightFishActive) -fishWidthPx*5/3 else screenWidthPx
+            animatableX.snapTo(startPos)
+            prepareForNextAnimation = false
         }
     }
 
-
-    LaunchedEffect(isRightFishActive) {
-        if (isRightFishActive) {
-            delay(10000) // Wait for the right-facing fish animation to complete
-            isRightFishActive = false
-        } else {
-            delay(10000) // Wait for the left-facing fish animation to complete
-            isRightFishActive = true
-        }
+    LaunchedEffect(key1 = isRightFishActive) {
+        val targetValue = if (isRightFishActive) screenWidthPx else -fishWidthPx
+        animatableX.animateTo(
+            targetValue = targetValue,
+            animationSpec = tween(durationMillis = durationMillis, easing = LinearEasing)
+        )
+        // Signal ready to prepare for the next animation
+        prepareForNextAnimation = true
     }
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(largeRadialGradient),
         contentAlignment = Alignment.Center
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(largeRadialGradient)
+        // Assuming Fish is a previously defined composable that takes these parameters
+        Fish(
+            x = animatableX.value / LocalDensity.current.density, // Convert back to dp for positioning
+            isRight = isRightFishActive,
+            fishType = fishType,
+            verticalDistance = verticalDistance
         )
-        // Use Layout to position and translate the fish animations
-        Layout(
-            modifier = Modifier.fillMaxSize(),
-            content = {
-                Fish(translationR, isRightFishActive, fishType, verticalDistance)
-            }
-        ) { measurables, constraints ->
-            layout(constraints.maxWidth, constraints.maxHeight) {
-                val placeable = measurables[0].measure(constraints)
-                val x = translationR
-                placeable.place(x.toInt(), 0)
-            }
-        }
     }
-
 }
-
