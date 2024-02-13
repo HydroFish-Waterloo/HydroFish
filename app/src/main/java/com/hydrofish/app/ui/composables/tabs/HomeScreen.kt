@@ -103,6 +103,7 @@ fun generateSequentialFloatList(size: Int, range: ClosedFloatingPointRange<Float
     return List(size) { index -> range.start + step * index }
 }
 
+@Composable
 fun AddFish (modifier: Modifier, barFull: Boolean){
     if (barFull) {
         fishTypeList.add(FishType.FISH_V1)
