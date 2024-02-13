@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -53,7 +52,10 @@ val largeRadialGradient = object : ShaderBrush() {
     }
 }
 
-// initialize fishList with one fish
+// initialize fishList with two fish and distance list
+val fishTypeList = mutableListOf(FishType.FISH_V1, FishType.FISH_V1)
+var fishDistances = listOf(300f, 500f)
+var barFull = true
 
 
 @Composable
@@ -68,11 +70,8 @@ fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = view
         contentAlignment = Alignment.Center,
 
         ) {
-
-
-        // create the fish
-        FishAnimation(modifier, FishType.FISH_V1, 300.toFloat())
-        FishAnimation(modifier, FishType.FISH_V1, 500.toFloat())
+        AddFish(modifier = Modifier, barFull)
+        DisplayFish(modifier = Modifier, fishes = fishTypeList, distances = fishDistances)
 
         AddProgessBar(modifier.align(Alignment.CenterEnd), waterPercent)
 
@@ -97,15 +96,32 @@ fun AddProgessBar(modifier: Modifier, waterConsumed: Float) {
         )
     }
 }
+
+fun generateSequentialFloatList(size: Int, range: ClosedFloatingPointRange<Float>): List<Float> {
+    val step = (range.endInclusive - range.start) / (size - 1)
+    return List(size) { index -> range.start + step * index }
+}
+
+fun AddFish(modifier: Modifier, barFull: Boolean){
+    if (barFull) {
+        fishTypeList.add(FishType.FISH_V1)
+        fishDistances = generateSequentialFloatList(fishTypeList.size, 100f..200f)
+    }
+}
+
+
+
 @Composable
-fun AddFish(modifier: Modifier) {
-    Image(
-        painter = painterResource(id = R.drawable.fish),
-        contentDescription = "an aquarium fish",
-        modifier = modifier
-            .width(80.dp)
-            .height(80.dp)
-    )
+fun DisplayFish(modifier: Modifier, fishes: List<FishType>, distances: List<Float>) {
+    if (fishes.size == distances.size) {
+        fishes.forEachIndexed { index, fishType ->
+            FishAnimation(
+                modifier = Modifier,
+                fishType = fishType,
+                verticalDistance = distances[index]
+            )
+        }
+    }
 }
 
 @Composable
