@@ -4,8 +4,6 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.runtime.Composable
@@ -14,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -25,7 +22,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import com.hydrofish.app.ui.composables.tabs.largeRadialGradient
 
 
 @Composable
@@ -48,12 +44,12 @@ fun Fish(x: Float, isRight: Boolean, fishType: FishType, verticalDistance: Float
                         Path(
                             pathData = FishPaths.fish_v1,
                             fill = SolidColor(Color.White),
-                            fillAlpha = 0.4f
+                            fillAlpha = 1f
                         )
                         Path(
                             pathData = FishPaths.fish_v2,
                             fill = SolidColor(Color.White),
-                            fillAlpha = 0.4f
+                            fillAlpha = 1f
                         )
 
                     }
@@ -107,10 +103,12 @@ fun Fish(x: Float, isRight: Boolean, fishType: FishType, verticalDistance: Float
 
 @Composable
 fun FishAnimation(modifier: Modifier, fishType: FishType, verticalDistance: Float) {
-    var isRightFishActive by remember { mutableStateOf(true) }
-    var prepareForNextAnimation by remember { mutableStateOf(false) }
+
     val screenWidthPx = with(LocalDensity.current) { LocalConfiguration.current.screenWidthDp.dp.toPx() }
     val fishWidthPx = with(LocalDensity.current) { 200.46f.dp.toPx() }
+
+    var isRightFishActive by remember { mutableStateOf(true) }
+    var prepareForNextAnimation by remember { mutableStateOf(false) }
     val animatableX = remember { Animatable(-fishWidthPx) }
     val durationMillis = 10000
 
@@ -135,18 +133,12 @@ fun FishAnimation(modifier: Modifier, fishType: FishType, verticalDistance: Floa
         prepareForNextAnimation = true
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(largeRadialGradient),
-        contentAlignment = Alignment.Center
-    ) {
-        // Assuming Fish is a previously defined composable that takes these parameters
-        Fish(
-            x = animatableX.value / LocalDensity.current.density, // Convert back to dp for positioning
-            isRight = isRightFishActive,
-            fishType = fishType,
-            verticalDistance = verticalDistance
-        )
-    }
+    // Assuming Fish is a previously defined composable that takes these parameters
+    Fish(
+        x = animatableX.value / LocalDensity.current.density, // Convert back to dp for positioning
+        isRight = isRightFishActive,
+        fishType = fishType,
+        verticalDistance = verticalDistance
+    )
+
 }
