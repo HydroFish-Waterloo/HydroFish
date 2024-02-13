@@ -52,7 +52,7 @@ val largeRadialGradient = object : ShaderBrush() {
 }
 
 @Composable
-fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
+fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
     //This approach ensures that whenever there is a change in the uiState value,
     //recomposition occurs for the composables using the hydroFishUiState value.
     val hydroFishUIState by hydroFishViewModel.uiState.collectAsState()
@@ -63,7 +63,7 @@ fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = view
         contentAlignment = Alignment.Center,
 
     ) {
-        AddProgessBar(modifier.align(Alignment.CenterEnd), waterPercent)
+        AddProgessBar(waterPercent, modifier.align(Alignment.CenterEnd))
 
         // create the fish
         AddFish(Modifier)
@@ -73,7 +73,7 @@ fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = view
 }
 
 @Composable
-fun AddProgessBar(modifier: Modifier, waterConsumed: Float) {
+fun AddProgessBar(waterConsumed: Float, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .width(20.dp)

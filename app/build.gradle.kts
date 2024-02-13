@@ -53,6 +53,10 @@ dependencies {
     // Jetpack Compose Platform
     implementation(platform(libs.compose.bom))
     androidTestImplementation(platform(libs.compose.bom))
+    // Test rules and transitive dependencies:
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.4.3")
+    // Needed for createAndroidComposeRule, but not createComposeRule:
+    debugImplementation("androidx.compose.ui:ui-test-manifest:1.4.3")
 
     // Jetpack Compose Libraries with BOM version
     implementation(libs.bundles.compose)
