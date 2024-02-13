@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.dawinder.btnjc"
+    namespace = "com.hydrofish.app"
     compileSdk = 33
     defaultConfig {
-        applicationId = "com.dawinder.btnjc"
-        minSdk = 26
+        applicationId = "com.hydrofish.app"
+        minSdk = 23
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -81,7 +81,7 @@ dependencies {
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
 
-    // Vico chart.
+    // Vico for chart
     implementation("com.patrykandpatrick.vico:compose:1.9.2")
     implementation("com.patrykandpatrick.vico:compose-m2:1.9.2")
     implementation("com.patrykandpatrick.vico:compose-m3:1.9.2")

@@ -1,7 +1,10 @@
 <resources>
-    <string name="app_name">BottomTabNavigation-JetpackCompose</string>
+    <string name="app_name">HydroFish</string>
     <string name="home">Home</string>
     <string name="search">Search</string>
     <string name="list">List</string>
     <string name="profile">Profile</string>
+
+    <string name="channel_name">Alarm Notifications</string>
+    <string name="channel_description">Notifications for alarms</string>
 </resources>
