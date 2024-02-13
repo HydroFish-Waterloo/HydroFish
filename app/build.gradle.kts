@@ -81,18 +81,10 @@ dependencies {
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
 
-    // For Jetpack Compose.
+    // Vico chart.
     implementation("com.patrykandpatrick.vico:compose:1.9.2")
-
-    // For `compose`. Creates a `ChartStyle` based on an M2 Material Theme.
     implementation("com.patrykandpatrick.vico:compose-m2:1.9.2")
-
-    // For `compose`. Creates a `ChartStyle` based on an M3 Material Theme.
     implementation("com.patrykandpatrick.vico:compose-m3:1.9.2")
-
-    // Houses the core logic for charts and other elements. Included in all other modules.
     implementation("com.patrykandpatrick.vico:core:1.9.2")
-
-    // For the view system.
     implementation("com.patrykandpatrick.vico:views:1.9.2")
 }
