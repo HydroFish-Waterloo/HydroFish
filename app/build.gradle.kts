@@ -80,4 +80,11 @@ dependencies {
     // Debugging Tools
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
+
+    // Vico for chart
+    implementation("com.patrykandpatrick.vico:compose:1.9.2")
+    implementation("com.patrykandpatrick.vico:compose-m2:1.9.2")
+    implementation("com.patrykandpatrick.vico:compose-m3:1.9.2")
+    implementation("com.patrykandpatrick.vico:core:1.9.2")
+    implementation("com.patrykandpatrick.vico:views:1.9.2")
 }
