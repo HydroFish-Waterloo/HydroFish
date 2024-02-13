@@ -33,6 +33,7 @@ import com.hydrofish.app.HydroFishViewModel
 import com.hydrofish.app.R
 import com.hydrofish.app.ui.composables.FishAnimation
 import com.hydrofish.app.ui.composables.FishType
+import kotlin.random.Random
 
 /**
  * Composable function that represents the home screen of the application.
@@ -102,10 +103,10 @@ fun generateSequentialFloatList(size: Int, range: ClosedFloatingPointRange<Float
     return List(size) { index -> range.start + step * index }
 }
 
-fun AddFish(modifier: Modifier, barFull: Boolean){
+fun AddFish (modifier: Modifier, barFull: Boolean){
     if (barFull) {
         fishTypeList.add(FishType.FISH_V1)
-        fishDistances = generateSequentialFloatList(fishTypeList.size, 100f..200f)
+        fishDistances = generateSequentialFloatList(fishTypeList.size, 100f..600f)
     }
 }
 
@@ -113,12 +114,15 @@ fun AddFish(modifier: Modifier, barFull: Boolean){
 
 @Composable
 fun DisplayFish(modifier: Modifier, fishes: List<FishType>, distances: List<Float>) {
+
     if (fishes.size == distances.size) {
         fishes.forEachIndexed { index, fishType ->
+            val direction: Boolean = Random.nextBoolean()
             FishAnimation(
                 modifier = Modifier,
                 fishType = fishType,
-                verticalDistance = distances[index]
+                verticalDistance = distances[index],
+                directionInit = direction
             )
         }
     }

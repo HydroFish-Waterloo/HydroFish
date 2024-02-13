@@ -102,12 +102,12 @@ fun Fish(x: Float, isRight: Boolean, fishType: FishType, verticalDistance: Float
 }
 
 @Composable
-fun FishAnimation(modifier: Modifier, fishType: FishType, verticalDistance: Float) {
+fun FishAnimation(modifier: Modifier, fishType: FishType, verticalDistance: Float, directionInit: Boolean) {
 
     val screenWidthPx = with(LocalDensity.current) { LocalConfiguration.current.screenWidthDp.dp.toPx() }
     val fishWidthPx = with(LocalDensity.current) { 200.46f.dp.toPx() }
 
-    var isRightFishActive by remember { mutableStateOf(true) }
+    var isRightFishActive by remember { mutableStateOf(directionInit) }
     var prepareForNextAnimation by remember { mutableStateOf(false) }
     val animatableX = remember { Animatable(-fishWidthPx) }
     val durationMillis = 10000
