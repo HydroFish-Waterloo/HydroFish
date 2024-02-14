@@ -54,10 +54,8 @@ val largeRadialGradient = object : ShaderBrush() {
 }
 
 // initialize fishList with two fish and distance list
-val fishTypeList = mutableListOf(FishType.FISH_V1, FishType.FISH_V1)
-var fishDistances = listOf(300f, 500f)
-var barFull = true
-
+//val fishTypeList = mutableListOf(FishType.FISH_V1, FishType.FISH_V1)
+//var fishDistances = listOf(300f, 500f)
 
 @Composable
 fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
@@ -71,8 +69,7 @@ fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = view
         contentAlignment = Alignment.Center,
 
         ) {
-        AddFish(modifier = Modifier, barFull)
-        DisplayFish(modifier = Modifier, fishes = fishTypeList, distances = fishDistances)
+        DisplayFish(modifier = Modifier, fishes = hydroFishUIState.fishTypeList, distances = hydroFishUIState.fishDistances)
 
         AddProgessBar(modifier.align(Alignment.CenterEnd), waterPercent)
 
@@ -98,24 +95,8 @@ fun AddProgessBar(modifier: Modifier, waterConsumed: Float) {
     }
 }
 
-fun generateSequentialFloatList(size: Int, range: ClosedFloatingPointRange<Float>): List<Float> {
-    val step = (range.endInclusive - range.start) / (size - 1)
-    return List(size) { index -> range.start + step * index }
-}
-
-@Composable
-fun AddFish (modifier: Modifier, barFull: Boolean){
-    if (barFull) {
-        fishTypeList.add(FishType.FISH_V1)
-        fishDistances = generateSequentialFloatList(fishTypeList.size, 100f..600f)
-    }
-}
-
-
-
 @Composable
 fun DisplayFish(modifier: Modifier, fishes: List<FishType>, distances: List<Float>) {
-
     if (fishes.size == distances.size) {
         fishes.forEachIndexed { index, fishType ->
             val direction: Boolean = Random.nextBoolean()
