@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,6 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.HydroFishViewModel
 import com.hydrofish.app.R
+import com.hydrofish.app.ui.composables.FishAnimation
+import com.hydrofish.app.ui.composables.FishType
+import kotlin.random.Random
 
 /**
  * Composable function that represents the home screen of the application.
@@ -51,6 +53,12 @@ val largeRadialGradient = object : ShaderBrush() {
     }
 }
 
+// initialize fishList with two fish and distance list
+val fishTypeList = mutableListOf(FishType.FISH_V1, FishType.FISH_V1)
+var fishDistances = listOf(300f, 500f)
+var barFull = true
+
+
 @Composable
 fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
     //This approach ensures that whenever there is a change in the uiState value,
@@ -62,11 +70,11 @@ fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = view
         .background(largeRadialGradient),
         contentAlignment = Alignment.Center,
 
-    ) {
-        AddProgessBar(modifier.align(Alignment.CenterEnd), waterPercent)
+        ) {
+        AddFish(modifier = Modifier, barFull)
+        DisplayFish(modifier = Modifier, fishes = fishTypeList, distances = fishDistances)
 
-        // create the fish
-        AddFish(Modifier)
+        AddProgessBar(modifier.align(Alignment.CenterEnd), waterPercent)
 
         AddButtons(Modifier.align(Alignment.BottomStart))
     }
@@ -89,15 +97,36 @@ fun AddProgessBar(modifier: Modifier, waterConsumed: Float) {
         )
     }
 }
+
+fun generateSequentialFloatList(size: Int, range: ClosedFloatingPointRange<Float>): List<Float> {
+    val step = (range.endInclusive - range.start) / (size - 1)
+    return List(size) { index -> range.start + step * index }
+}
+
 @Composable
-fun AddFish(modifier: Modifier) {
-    Image(
-        painter = painterResource(id = R.drawable.fish),
-        contentDescription = "an aquarium fish",
-        modifier = modifier
-            .width(80.dp)
-            .height(80.dp)
-    )
+fun AddFish (modifier: Modifier, barFull: Boolean){
+    if (barFull) {
+        fishTypeList.add(FishType.FISH_V1)
+        fishDistances = generateSequentialFloatList(fishTypeList.size, 100f..600f)
+    }
+}
+
+
+
+@Composable
+fun DisplayFish(modifier: Modifier, fishes: List<FishType>, distances: List<Float>) {
+
+    if (fishes.size == distances.size) {
+        fishes.forEachIndexed { index, fishType ->
+            val direction: Boolean = Random.nextBoolean()
+            FishAnimation(
+                modifier = Modifier,
+                fishType = fishType,
+                verticalDistance = distances[index],
+                directionInit = direction
+            )
+        }
+    }
 }
 
 @Composable
@@ -140,3 +169,6 @@ fun ReusableDrinkButton(waterAmt: Float, hydroFishViewModel: HydroFishViewModel 
         }
     }
 }
+
+
+
