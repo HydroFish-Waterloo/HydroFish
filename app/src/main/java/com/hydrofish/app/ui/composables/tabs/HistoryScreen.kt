@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hydrofish.app.nav.NavItem
@@ -74,16 +75,40 @@ fun HistoryScreen() {
             var chartData by remember { mutableStateOf(hydrationData) }
 
             Row {
-                Button(onClick = { chartData = hydrationData.takeLast(3) }) {
-                    Text("Last 3 Days")
+                Button(
+                    onClick = { chartData = hydrationData.takeLast(3) },
+                    modifier = Modifier
+                        .weight(1.2f)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Last 3 Days",
+                        textAlign = TextAlign.Center
+                    )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = { chartData = hydrationData.takeLast(7) }) {
-                    Text("Last 7 Days")
+                Button(
+                    onClick = { chartData = hydrationData.takeLast(7) },
+                    modifier = Modifier
+                        .weight(1.2f)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Last 7 Days",
+                        textAlign = TextAlign.Center
+                    )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = { chartData = hydrationData.takeLast(30) }) {
-                    Text("Last Month")
+                Button(
+                    onClick = { chartData = hydrationData.takeLast(30) },
+                    modifier = Modifier
+                        .weight(1.2f)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Last Month",
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
 
