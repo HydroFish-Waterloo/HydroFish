@@ -53,10 +53,6 @@ val largeRadialGradient = object : ShaderBrush() {
     }
 }
 
-// initialize fishList with two fish and distance list
-//val fishTypeList = mutableListOf(FishType.FISH_V1, FishType.FISH_V1)
-//var fishDistances = listOf(300f, 500f)
-
 @Composable
 fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
     //This approach ensures that whenever there is a change in the uiState value,
