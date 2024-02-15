@@ -87,6 +87,4 @@ dependencies {
     implementation("com.patrykandpatrick.vico:compose-m3:1.9.2")
     implementation("com.patrykandpatrick.vico:core:1.9.2")
     implementation("com.patrykandpatrick.vico:views:1.9.2")
-
-    implementation ("com.google.code.gson:gson:2.8.8")
 }
