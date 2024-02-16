@@ -8,6 +8,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +35,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.hydrofish.app.nav.NavPath
 import com.hydrofish.app.receiver.AlarmReceiver
 import java.util.Calendar
 import java.util.Locale
@@ -62,6 +66,9 @@ fun ReminderScreen() {
         mContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
     }
 
+    val notificationValue = sharedPreferences.getBoolean(NOTIFICATION_KEY, false)
+    val notificationCheck by remember { mutableStateOf(notificationValue) }
+
     // Retrieve values from SharedPreferences with default values
     val defaultWTimeValue = sharedPreferences.getString(W_TIME_KEY, "") ?: ""
     val wTime = rememberSaveable { mutableStateOf(defaultWTimeValue) }
@@ -71,8 +78,6 @@ fun ReminderScreen() {
 
 
     // Value for storing time as a string
-//    val wTime = rememberSaveable  { mutableStateOf("") }
-
     val wTimePickerDialog = TimePickerDialog(
         mContext,
         {_, mHour : Int, mMinute: Int ->
@@ -194,20 +199,27 @@ fun ReminderScreen() {
     }
 
     val context = LocalContext.current
-    val activity = context as? Activity
-
     Button(onClick = {
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (!(context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()) {
                 // app doesn't have the permission, request for permission.
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                 context.startActivity(intent)
             } else {
-                // app has permission, schedule the alarm.
-                scheduleAlarm(context,selectedIntervalValue)
+                if (!notificationCheck) {
+                    Toast.makeText(context, "Please Enable Notification Settings", Toast.LENGTH_LONG).show()
+                }
+                else {
+                    // app has permission, schedule the alarm.
+                    scheduleAlarm(context,selectedIntervalValue)
+                }
+
+
             }
         }
     }) {
+
         Text("Schedule Notification")
     }
 }

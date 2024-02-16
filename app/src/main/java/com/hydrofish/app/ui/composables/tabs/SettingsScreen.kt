@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,15 +38,17 @@ import androidx.compose.ui.unit.dp
 /**
  * Composable function that represents the profile screen of the application.
  */
+const val NOTIFICATION_KEY = "notification"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen() {
-    var item1EnabledState by remember { mutableStateOf(false) }
-    var item1SubItem1EnabledState by remember { mutableStateOf(false) }
-    var item1SubItem2EnabledState by remember { mutableStateOf(false) }
-    var showPermissionExplanationDialog by remember { mutableStateOf(false) }
-
     val context = LocalContext.current
+    val sharedPreferences = remember {
+        context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+    }
+    val notificationValue = sharedPreferences.getBoolean(NOTIFICATION_KEY, false)
+    var item1EnabledState by rememberSaveable { mutableStateOf(notificationValue) }
+    var showPermissionExplanationDialog by remember { mutableStateOf(false) }
 
     val requestNotificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -56,6 +59,7 @@ fun SettingsScreen() {
         } else {
             // permission is denied, disable the switch
             item1EnabledState = false
+            sharedPreferences.edit().putBoolean(NOTIFICATION_KEY, item1EnabledState).apply()
             showPermissionExplanationDialog = true
         }
     }
@@ -84,18 +88,20 @@ fun SettingsScreen() {
                             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
                             if (!alarmManager.canScheduleExactAlarms()) {
                                 item1EnabledState = false
+                                sharedPreferences.edit().putBoolean(NOTIFICATION_KEY, item1EnabledState).apply()
                                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                                 context.startActivity(intent)
                             } else {
                                 item1EnabledState = true
+                                sharedPreferences.edit().putBoolean(NOTIFICATION_KEY, item1EnabledState).apply()
                             }
                         } else {
                             item1EnabledState = true
+                            sharedPreferences.edit().putBoolean(NOTIFICATION_KEY, item1EnabledState).apply()
                         }
                     } else {
-                        item1SubItem1EnabledState = false
-                        item1SubItem2EnabledState = false
                         item1EnabledState = false
+                        sharedPreferences.edit().putBoolean(NOTIFICATION_KEY, item1EnabledState).apply()
                     }
                 }
             )
