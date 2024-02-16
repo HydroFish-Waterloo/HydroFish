@@ -51,6 +51,7 @@ import java.util.Locale
 
 const val W_TIME_KEY = "w_time"
 const val S_TIME_KEY = "s_time"
+const val INTERVAL_KEY = "interval"
 @Composable
 fun ReminderScreen() {
 // Fetching local context
@@ -76,6 +77,12 @@ fun ReminderScreen() {
     val defaultSTimeValue = sharedPreferences.getString(S_TIME_KEY, "") ?: ""
     val sTime = rememberSaveable { mutableStateOf(defaultSTimeValue) }
 
+    val timeIntervalToSeconds = listOf(900, 1800, 3600, 5400, 7200, 9000)
+    val timeIntervals = listOf("00:15", "00:30", "01:00", "01:30", "02:00", "02:30")
+    // get the time interval from the shared preferences
+    val defaultIntervalIndex = sharedPreferences.getInt(INTERVAL_KEY, 2)
+    var selectedIntervalIndex by remember { mutableStateOf(defaultIntervalIndex) }
+    var selectedIntervalValue by remember {mutableStateOf(timeIntervalToSeconds[selectedIntervalIndex])}    //default 15 seconds
 
     // Value for storing time as a string
     val wTimePickerDialog = TimePickerDialog(
@@ -120,26 +127,43 @@ fun ReminderScreen() {
         ""
     }
 
-    val timeIntervals = listOf("00:15", "00:30", "01:00", "01:30", "02:00", "02:30")
-    var selectedInterval by remember { mutableStateOf(timeIntervals[3]) } //default 01:30
-    var selectedIntervalValue by remember { mutableStateOf(15) }    //default 15 seconds
-
-    val timeIntervalToMinutes = mapOf(
-        "00:15" to 2,
-        "00:30" to 5,
-        "01:00" to 10,
-        "01:30" to 15,
-        "02:00" to 25,
-        "02:30" to 30
-    )
-
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
         Text("Set Your Schedule", style = MaterialTheme.typography.headlineMedium)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    if (!(mContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()) {
+                        // app doesn't have the permission, request for permission.
+                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                        mContext.startActivity(intent)
+                    } else {
+                        if (!notificationCheck) {
+                            Toast.makeText(mContext, "Please Enable Notification Settings", Toast.LENGTH_LONG).show()
+                        }
+                        else {
+                            val currentWTimeValue = sharedPreferences.getString(W_TIME_KEY, "") ?: ""
+                            val currentSTimeValue = sharedPreferences.getString(S_TIME_KEY, "") ?: ""
+                            // app has permission, schedule the alarm.
+                            scheduleAlarm(mContext,selectedIntervalValue,currentWTimeValue,currentSTimeValue)
+                        }
+
+
+                    }
+                }
+            },
+        ) {
+            Text(text = "Schedule Notification", color = Color.White)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 value = wformattedTime,
@@ -177,16 +201,17 @@ fun ReminderScreen() {
         // Time interval section
         Text("Time Interval", style = MaterialTheme.typography.headlineSmall)
 
-        timeIntervals.forEach { interval ->
+        timeIntervals.forEachIndexed { index, interval ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
             ) {
                 RadioButton(
-                    selected = selectedInterval == interval,
+                    selected = selectedIntervalIndex  == index,
                     onClick = {
-                        selectedInterval = interval
-                        selectedIntervalValue = timeIntervalToMinutes[interval] ?: 0
+                        selectedIntervalIndex  = index
+                        selectedIntervalValue = timeIntervalToSeconds[selectedIntervalIndex]
+                        sharedPreferences.edit().putInt(INTERVAL_KEY, selectedIntervalIndex).apply()
                     }
                 )
                 Text(
@@ -197,47 +222,50 @@ fun ReminderScreen() {
             }
         }
     }
-
-    val context = LocalContext.current
-    Button(onClick = {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (!(context.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()) {
-                // app doesn't have the permission, request for permission.
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                context.startActivity(intent)
-            } else {
-                if (!notificationCheck) {
-                    Toast.makeText(context, "Please Enable Notification Settings", Toast.LENGTH_LONG).show()
-                }
-                else {
-                    // app has permission, schedule the alarm.
-                    scheduleAlarm(context,selectedIntervalValue)
-                }
-
-
-            }
-        }
-    }) {
-
-        Text("Schedule Notification")
-    }
 }
 
-fun scheduleAlarm(context: Context, interval: Int) {
-    val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-    val intent = Intent(context, AlarmReceiver::class.java)
-    val pendingIntent = PendingIntent.getBroadcast(
-        context,
-        0,
-        intent,
-        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-    )
+fun timeStringToSeconds(time: String): Int {
+    val (hours, minutes) = time.split(":").map { it.toInt() }
+    return hours * 3600 + minutes * 60
+}
+fun scheduleAlarm(context: Context, interval: Int, wakeUpTime: String, sleepTime: String) {
 
-    val triggerTime = System.currentTimeMillis() + (interval * 1000) //set the time to trigger the alarm
-    alarmManager.setExactAndAllowWhileIdle(
-        AlarmManager.RTC_WAKEUP,
-        triggerTime,
-        pendingIntent
-    )
+    val wakeUpSeconds = timeStringToSeconds(wakeUpTime)
+    val sleepSeconds = timeStringToSeconds(sleepTime)
+
+    val diffSeconds = if (sleepSeconds >= wakeUpSeconds) {
+        sleepSeconds - wakeUpSeconds
+    } else {
+        24 * 3600 - wakeUpSeconds + sleepSeconds
+    }
+
+    if (diffSeconds > interval){
+        val alarmNum = (diffSeconds / interval)
+        for (i in 1..alarmNum){
+            Log.e("Alarm", "Alarm $i")
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val intent = Intent(context, AlarmReceiver::class.java)
+            val pendingIntent = PendingIntent.getBroadcast(
+                context,
+                i,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+
+            val currentTime = System.currentTimeMillis()
+            val todayStartMillis = currentTime - currentTime % (24 * 3600 * 1000)
+            val wakeUpTodayMillis = todayStartMillis + wakeUpSeconds * 1000
+            val triggerTime = wakeUpTodayMillis + (i * interval * 1000L / 300)
+
+//            val triggerTime = System.currentTimeMillis() + i * interval * 1000L/300
+//            val triggerTime = System.currentTimeMillis() + (interval * 1000/300) //set the time to trigger the alarm
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                pendingIntent
+            )
+        }
+    } else{
+        Toast.makeText(context, "Interval exceeds the time difference.", Toast.LENGTH_LONG).show()
+    }
 }
