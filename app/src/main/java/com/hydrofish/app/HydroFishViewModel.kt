@@ -16,7 +16,8 @@ class HydroFishViewModel: ViewModel() {
         val step = (range.endInclusive - range.start) / (size - 1)
         return List(size) { index -> range.start + step * index }
     }
-    fun increaseWaterLevel(amt: Float) {
+
+    fun increaseWaterLevel(amt: Int) {
         val willSurpassLimit = uiState.value.dailyWaterConsumedML + amt >= uiState.value.curDailyMaxWaterConsumedML;
         val hasSurpassedLimit = uiState.value.dailyWaterConsumedML >= uiState.value.curDailyMaxWaterConsumedML;
 
