@@ -1,6 +1,5 @@
 package com.hydrofish.app.ui.composables.tabs
 
-import android.app.Activity
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.app.TimePickerDialog
@@ -35,8 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import com.hydrofish.app.nav.NavPath
 import com.hydrofish.app.receiver.AlarmReceiver
 import java.util.Calendar
 import java.util.Locale
@@ -77,8 +74,8 @@ fun ReminderScreen() {
     val defaultSTimeValue = sharedPreferences.getString(S_TIME_KEY, "") ?: ""
     val sTime = rememberSaveable { mutableStateOf(defaultSTimeValue) }
 
-    val timeIntervalToSeconds = listOf(900, 1800, 3600, 5400, 7200, 9000)
-    val timeIntervals = listOf("00:15", "00:30", "01:00", "01:30", "02:00", "02:30")
+    val timeIntervalToSeconds = listOf(900, 1800, 3600, 5400, 7200)
+    val timeIntervals = listOf("00:15", "00:30", "01:00", "01:30", "02:00")
     // get the time interval from the shared preferences
     val defaultIntervalIndex = sharedPreferences.getInt(INTERVAL_KEY, 2)
     var selectedIntervalIndex by remember { mutableStateOf(defaultIntervalIndex) }
