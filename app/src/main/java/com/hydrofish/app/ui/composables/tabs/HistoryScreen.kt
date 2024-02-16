@@ -191,7 +191,6 @@ fun HydrationListItem(entry: HydrationEntry) {
     }
 }
 
-
 data class HydrationEntry(val date: Date, val hydrationAmount: Int)
 
 @Composable

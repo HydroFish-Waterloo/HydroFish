@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,6 +31,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.HydroFishViewModel
 import com.hydrofish.app.R
+import com.hydrofish.app.ui.composables.FishAnimation
+import com.hydrofish.app.ui.composables.FishType
+import kotlin.random.Random
 
 /**
  * Composable function that represents the home screen of the application.
@@ -62,11 +64,10 @@ fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = view
         .background(largeRadialGradient),
         contentAlignment = Alignment.Center,
 
-    ) {
-        AddProgessBar(modifier.align(Alignment.CenterEnd), waterPercent)
+        ) {
+        DisplayFish(modifier = Modifier, fishes = hydroFishUIState.fishTypeList, distances = hydroFishUIState.fishDistances)
 
-        // create the fish
-        AddFish(Modifier)
+        AddProgessBar(modifier.align(Alignment.CenterEnd), waterPercent)
 
         AddButtons(Modifier.align(Alignment.BottomStart))
     }
@@ -89,15 +90,20 @@ fun AddProgessBar(modifier: Modifier, waterConsumed: Float) {
         )
     }
 }
+
 @Composable
-fun AddFish(modifier: Modifier) {
-    Image(
-        painter = painterResource(id = R.drawable.fish),
-        contentDescription = "an aquarium fish",
-        modifier = modifier
-            .width(80.dp)
-            .height(80.dp)
-    )
+fun DisplayFish(modifier: Modifier, fishes: List<FishType>, distances: List<Float>) {
+    if (fishes.size == distances.size) {
+        fishes.forEachIndexed { index, fishType ->
+            val direction: Boolean = Random.nextBoolean()
+            FishAnimation(
+                modifier = Modifier,
+                fishType = fishType,
+                verticalDistance = distances[index],
+                directionInit = direction
+            )
+        }
+    }
 }
 
 @Composable
@@ -140,3 +146,6 @@ fun ReusableDrinkButton(waterAmt: Float, hydroFishViewModel: HydroFishViewModel 
         }
     }
 }
+
+
+
