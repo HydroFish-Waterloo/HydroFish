@@ -18,6 +18,9 @@ class HydroFishViewModel: ViewModel() {
     }
 
     fun increaseWaterLevel(amt: Int) {
+        // corner case: make sure the amount passed in is a positive integer
+        if (amt <= 0) return;
+
         val willSurpassLimit = uiState.value.dailyWaterConsumedML + amt >= uiState.value.curDailyMaxWaterConsumedML;
         val hasSurpassedLimit = uiState.value.dailyWaterConsumedML >= uiState.value.curDailyMaxWaterConsumedML;
 

@@ -152,6 +152,10 @@ fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = 
             if (waterAmt >= 1000) {
                 buttonText = (waterAmt / (1000 * 1.0)).toString() + "L";
             }
+
+            if (waterAmt < 0) {
+                buttonText = "0ml";
+            }
             Text(text = buttonText,Modifier.padding(start = 10.dp))
         }
     }

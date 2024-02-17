@@ -42,11 +42,22 @@ class HomepageIntegrationTest {
         rule.onNodeWithText("1.3L").assertIsDisplayed().performClick();
         assert(viewModel.uiState.value.dailyWaterConsumedML == (1000 + 1300));
     }
+
+    @Test
+    fun negativeWaterButtonTest() {
+        rule.setContent {
+            ReusableDrinkButton(-10, viewModel);
+        }
+
+        assert(viewModel.uiState.value.dailyWaterConsumedML == 0);
+        rule.onNodeWithText("0ml").assertIsDisplayed().performClick();
+        assert(viewModel.uiState.value.dailyWaterConsumedML == 0);
+    }
     
     @Test
     fun addFishTest() {
         rule.setContent {
-            AddButtons(hydroFishViewModel = viewModel);
+            ReusableDrinkButton(330, viewModel);
         }
 
         val initialFishCount = viewModel.uiState.value.fishTypeList.count();
