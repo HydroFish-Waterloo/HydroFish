@@ -222,9 +222,20 @@ fun ReminderScreen() {
 }
 
 fun timeStringToSeconds(time: String): Int {
-    val (hours, minutes) = time.split(":").map { it.toInt() }
-    return hours * 3600 + minutes * 60
+
+    if (!time.matches(Regex("\\b([01]?[0-9]|2[0-3]):[0-5][0-9]\\b"))) {
+        throw IllegalArgumentException("Invalid time format. Please use HH:mm format.")
+    }
+
+    try {
+        val (hours, minutes) = time.split(":").map { it.toInt() }
+        return hours * 3600 + minutes * 60
+    } catch (e: NumberFormatException) {
+        throw IllegalArgumentException("Time contains non-numeric characters.")
+    }
 }
+
+
 fun scheduleAlarm(context: Context, interval: Int, wakeUpTime: String, sleepTime: String) {
 
     val wakeUpSeconds = timeStringToSeconds(wakeUpTime)
