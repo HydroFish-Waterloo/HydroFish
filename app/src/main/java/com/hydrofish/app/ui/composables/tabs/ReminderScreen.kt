@@ -5,10 +5,10 @@ import android.app.PendingIntent
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,25 +17,33 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.hydrofish.app.permission.PermissionChecker
 import com.hydrofish.app.receiver.AlarmReceiver
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Locale
 
@@ -52,7 +60,7 @@ const val S_TIME_KEY = "s_time"
 const val INTERVAL_KEY = "interval"
 @Composable
 fun ReminderScreen(permissionChecker: PermissionChecker) {
-// Fetching local context
+    // Fetching local context
     val mContext = LocalContext.current
 
     // Declaring and initializing a calendar
@@ -81,6 +89,16 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
     val defaultIntervalIndex = sharedPreferences.getInt(INTERVAL_KEY, 2)
     var selectedIntervalIndex by remember { mutableStateOf(defaultIntervalIndex) }
     var selectedIntervalValue by remember {mutableStateOf(timeIntervalToSeconds[selectedIntervalIndex])}    //default 15 seconds
+
+    // variable for Snackbar
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var showSnackbar by remember { mutableStateOf(false) }
+    fun triggerSnackbar(scope: CoroutineScope, message: String) {
+        scope.launch {
+            snackbarHostState.showSnackbar(message)
+        }
+    }
 
     // Value for storing time as a string
     val wTimePickerDialog = TimePickerDialog(
@@ -142,16 +160,41 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
                         mContext.startActivity(intent)
                 } else {
                     if (!notificationCheck) {
-                        Toast.makeText(mContext, "Please Enable Notification Settings", Toast.LENGTH_LONG).show()
+                        showSnackbar = true
+                        if (showSnackbar) {
+                            triggerSnackbar(coroutineScope, "Please Enable Notification Settings")
+                            showSnackbar = false
+                        }
+                        //Toast.makeText(mContext, "Please Enable Notification Settings", Toast.LENGTH_LONG).show()
                     }
                     else {
                         val currentWTimeValue = sharedPreferences.getString(W_TIME_KEY, "") ?: ""
                         val currentSTimeValue = sharedPreferences.getString(S_TIME_KEY, "") ?: ""
+
                         // app has permission, schedule the alarm.
-                        scheduleAlarm(mContext,selectedIntervalValue,currentWTimeValue,currentSTimeValue)
+                        val wakeUpSeconds = timeStringToSeconds(currentWTimeValue)
+                        val sleepSeconds = timeStringToSeconds(currentSTimeValue)
+
+                        val diffSeconds = if (sleepSeconds >= wakeUpSeconds) {
+                            sleepSeconds - wakeUpSeconds
+                        } else {
+                            24 * 3600 - wakeUpSeconds + sleepSeconds
+                        }
+                        if (diffSeconds > selectedIntervalValue) {
+                            showSnackbar = true
+                            if (showSnackbar) {
+                                triggerSnackbar(coroutineScope, "Notification Scheduled Successfully")
+                                showSnackbar = false
+                            }
+                            scheduleAlarm(mContext,selectedIntervalValue,wakeUpSeconds,diffSeconds)
+                        } else {
+                            showSnackbar = true
+                            if (showSnackbar) {
+                                triggerSnackbar(coroutineScope, "Interval exceeds the time difference")
+                                showSnackbar = false
+                            }
+                        }
                     }
-
-
                 }
             },
         ) {
@@ -197,33 +240,58 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
         // Time interval section
         Text("Time Interval", style = MaterialTheme.typography.headlineSmall)
 
-        timeIntervals.forEachIndexed { index, interval ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-            ) {
-                RadioButton(
-                    selected = selectedIntervalIndex  == index,
-                    onClick = {
-                        selectedIntervalIndex  = index
-                        selectedIntervalValue = timeIntervalToSeconds[selectedIntervalIndex]
-                        sharedPreferences.edit().putInt(INTERVAL_KEY, selectedIntervalIndex).apply()
-                    }
-                )
-                Text(
-                    text = interval,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
+        Column {
+            timeIntervals.forEachIndexed { index, interval ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    RadioButton(
+                        selected = selectedIntervalIndex == index,
+                        onClick = {
+                            selectedIntervalIndex = index
+                            selectedIntervalValue = timeIntervalToSeconds[selectedIntervalIndex]
+                            sharedPreferences.edit().putInt(INTERVAL_KEY, selectedIntervalIndex).apply()
+                        },
+                        modifier = Modifier.testTag(interval)
+                    )
+                    Text(
+                        text = interval,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+                if (index < timeIntervals.lastIndex) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                }
             }
         }
+        Spacer(modifier = Modifier.height(16.dp))
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally),
+            snackbar = { data ->
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(Color(0xFF323232))
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = data.visuals.message,
+                        color = Color.White,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+            }
+        )
     }
 }
 
 fun timeStringToSeconds(time: String): Int {
-
-    if (!time.matches(Regex("\\b([01]?[0-9]|2[0-3]):[0-5][0-9]\\b"))) {
-        throw IllegalArgumentException("Invalid time format. Please use HH:mm format.")
+    if (!time.matches(Regex("\\b([0-9]|1[0-9]|2[0-3]):([0-5]?[0-9])\\b"))) {
+        throw IllegalArgumentException("Invalid time format. Please use HH:mm or H:m format.")
     }
 
     try {
@@ -235,44 +303,33 @@ fun timeStringToSeconds(time: String): Int {
 }
 
 
-fun scheduleAlarm(context: Context, interval: Int, wakeUpTime: String, sleepTime: String) {
 
-    val wakeUpSeconds = timeStringToSeconds(wakeUpTime)
-    val sleepSeconds = timeStringToSeconds(sleepTime)
 
-    val diffSeconds = if (sleepSeconds >= wakeUpSeconds) {
-        sleepSeconds - wakeUpSeconds
-    } else {
-        24 * 3600 - wakeUpSeconds + sleepSeconds
-    }
+fun scheduleAlarm(context: Context, interval: Int, wakeUpSeconds: Int, diffSeconds: Int) {
 
-    if (diffSeconds > interval){
-        val alarmNum = (diffSeconds / interval)
-        for (i in 1..alarmNum){
-            Log.e("Alarm", "Alarm $i")
-            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-            val intent = Intent(context, AlarmReceiver::class.java)
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                i,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-            )
+    val alarmNum = (diffSeconds / interval)
+    for (i in 1..alarmNum){
+        Log.i("Alarm", "Alarm $i")
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AlarmReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            i,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
 
-            val currentTime = System.currentTimeMillis()
-            val todayStartMillis = currentTime - currentTime % (24 * 3600 * 1000)
-            val wakeUpTodayMillis = todayStartMillis + wakeUpSeconds * 1000
-            val triggerTime = wakeUpTodayMillis + (i * interval * 1000L / 300)
+        val currentTime = System.currentTimeMillis()
+        val todayStartMillis = currentTime - currentTime % (24 * 3600 * 1000)
+        val wakeUpTodayMillis = todayStartMillis + wakeUpSeconds * 1000
+        val triggerTime = System.currentTimeMillis() + (i * interval * 1000L / 300)
 
 //            val triggerTime = System.currentTimeMillis() + i * interval * 1000L/300
 //            val triggerTime = System.currentTimeMillis() + (interval * 1000/300) //set the time to trigger the alarm
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                pendingIntent
-            )
-        }
-    } else{
-        Toast.makeText(context, "Interval exceeds the time difference.", Toast.LENGTH_LONG).show()
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerTime,
+            pendingIntent
+        )
     }
 }
