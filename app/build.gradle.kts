@@ -75,6 +75,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.espresso.intents)
     androidTestImplementation(libs.ui.test.junit4)
 
     // Debugging Tools
@@ -87,4 +88,10 @@ dependencies {
     implementation("com.patrykandpatrick.vico:compose-m3:1.9.2")
     implementation("com.patrykandpatrick.vico:core:1.9.2")
     implementation("com.patrykandpatrick.vico:views:1.9.2")
+
+    // Mockito for testing
+    testImplementation("org.mockito:mockito-core:4.5.1")
+    androidTestImplementation("org.mockito:mockito-android:4.5.1")
+    implementation("androidx.compose.runtime:runtime-livedata:1.0.0")
+    androidTestImplementation("com.adevinta.android:barista:4.2.0")
 }

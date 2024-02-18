@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.hydrofish.app.permission.PermissionChecker
 import com.hydrofish.app.receiver.AlarmReceiver
 import java.util.Calendar
 import java.util.Locale
@@ -50,7 +51,7 @@ const val W_TIME_KEY = "w_time"
 const val S_TIME_KEY = "s_time"
 const val INTERVAL_KEY = "interval"
 @Composable
-fun ReminderScreen() {
+fun ReminderScreen(permissionChecker: PermissionChecker) {
 // Fetching local context
     val mContext = LocalContext.current
 
@@ -135,24 +136,22 @@ fun ReminderScreen() {
 
         Button(
             onClick = {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    if (!(mContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()) {
+                if (!permissionChecker.canScheduleExactAlarms(mContext)){
                         // app doesn't have the permission, request for permission.
                         val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                         mContext.startActivity(intent)
-                    } else {
-                        if (!notificationCheck) {
-                            Toast.makeText(mContext, "Please Enable Notification Settings", Toast.LENGTH_LONG).show()
-                        }
-                        else {
-                            val currentWTimeValue = sharedPreferences.getString(W_TIME_KEY, "") ?: ""
-                            val currentSTimeValue = sharedPreferences.getString(S_TIME_KEY, "") ?: ""
-                            // app has permission, schedule the alarm.
-                            scheduleAlarm(mContext,selectedIntervalValue,currentWTimeValue,currentSTimeValue)
-                        }
-
-
+                } else {
+                    if (!notificationCheck) {
+                        Toast.makeText(mContext, "Please Enable Notification Settings", Toast.LENGTH_LONG).show()
                     }
+                    else {
+                        val currentWTimeValue = sharedPreferences.getString(W_TIME_KEY, "") ?: ""
+                        val currentSTimeValue = sharedPreferences.getString(S_TIME_KEY, "") ?: ""
+                        // app has permission, schedule the alarm.
+                        scheduleAlarm(mContext,selectedIntervalValue,currentWTimeValue,currentSTimeValue)
+                    }
+
+
                 }
             },
         ) {
