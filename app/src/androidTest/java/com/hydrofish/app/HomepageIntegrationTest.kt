@@ -18,6 +18,8 @@ import org.junit.Test
 
 class HomepageIntegrationTest {
     private lateinit var viewModel: HydroFishViewModel
+
+    // used for loading compose components
     @get:Rule
     val rule = createComposeRule()
 
