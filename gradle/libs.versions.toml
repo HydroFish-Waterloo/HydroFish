@@ -10,7 +10,6 @@ androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
 plugin-android-app = "8.2.1"
 plugin-kotlin = "1.8.10"
-androidx-core-ktx = "1.5.0"
 gson = "2.8.8"
 
 [libraries]
@@ -31,7 +30,6 @@ espresso-core = { group = "androidx.test.espresso", name = "espresso-core", vers
 ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "androidx-core-ktx" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
 [plugins]
