@@ -18,8 +18,7 @@ class HydroFishViewModel: ViewModel() {
     }
 
     fun increaseWaterLevel(amt: Int) {
-        // corner case: make sure the amount passed in is a positive integer
-        if (amt <= 0) return;
+        if (amt <= 0) throw Exception("Cannot Increase Water By Negative Value");
 
         val willSurpassLimit = uiState.value.dailyWaterConsumedML + amt >= uiState.value.curDailyMaxWaterConsumedML;
         val hasSurpassedLimit = uiState.value.dailyWaterConsumedML >= uiState.value.curDailyMaxWaterConsumedML;

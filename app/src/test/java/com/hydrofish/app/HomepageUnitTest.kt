@@ -1,6 +1,7 @@
 package com.hydrofish.app
 
 import android.util.Log
+import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 
@@ -14,10 +15,9 @@ class HomepageUnitTest {
 
     @Test
     fun testNegativeWaterConsumed() {
-        viewModel.increaseWaterLevel(-100);
-
-        // should not accept negative values
-        assert(viewModel.uiState.value.dailyWaterConsumedML == 0);
+        Assert.assertThrows(Exception::class.java) {
+            viewModel.increaseWaterLevel(-100);
+        }
     }
 
     @Test
@@ -26,6 +26,11 @@ class HomepageUnitTest {
         viewModel.increaseWaterLevel(viewModel.uiState.value.curDailyMaxWaterConsumedML - 1);
         val initialFishCount = viewModel.uiState.value.fishTypeList.count();
         viewModel.increaseWaterLevel(1);
-        assert(viewModel.uiState.value.fishTypeList.count() == initialFishCount + 1);
+        val newFishCount = viewModel.uiState.value.fishTypeList.count();
+        assert(newFishCount == initialFishCount + 1);
+
+        // once we exceed the limit, no additional fish should be added
+        viewModel.increaseWaterLevel(1);
+        assert(newFishCount == viewModel.uiState.value.fishTypeList.count());
     }
 }

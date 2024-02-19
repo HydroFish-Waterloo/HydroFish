@@ -138,6 +138,27 @@ fun AddButtons(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
 
 @Composable
 fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = viewModel()) {
+    val hydroFishUIState by hydroFishViewModel.uiState.collectAsState();
+
+    // upper limit
+    val buttonMaxLimit = hydroFishUIState.curDailyMaxWaterConsumedML * 2;
+    if (waterAmt > buttonMaxLimit) {
+        throw Exception("Button Water Amount Exceeds Max Limit");
+    }
+
+    // lower limit
+    if (waterAmt < 0) {
+        throw Exception ("Button Water Amount Cannot Be Negative");
+    }
+
+    // ml to L conversion
+    var buttonText = waterAmt.toString() + "ml";
+    if (waterAmt >= 1000) {
+        buttonText = (waterAmt / (1000 * 1.0)).toString() + "L";
+    }
+
+
+
     Button(onClick = {
         hydroFishViewModel.increaseWaterLevel(waterAmt);
     }) {
@@ -148,14 +169,6 @@ fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = 
                 contentDescription ="add drink button",
                 modifier = Modifier.size(40.dp))
 
-            var buttonText = waterAmt.toString() + "ml";
-            if (waterAmt >= 1000) {
-                buttonText = (waterAmt / (1000 * 1.0)).toString() + "L";
-            }
-
-            if (waterAmt < 0) {
-                buttonText = "0ml";
-            }
             Text(text = buttonText,Modifier.padding(start = 10.dp))
         }
     }

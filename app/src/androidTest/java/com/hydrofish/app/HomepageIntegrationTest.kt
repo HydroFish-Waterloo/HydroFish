@@ -11,6 +11,7 @@ import com.hydrofish.app.ui.composables.tabs.AddButtons
 import com.hydrofish.app.ui.composables.tabs.AddProgessBar
 import com.hydrofish.app.ui.composables.tabs.HomeScreen
 import com.hydrofish.app.ui.composables.tabs.ReusableDrinkButton
+import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -45,13 +46,21 @@ class HomepageIntegrationTest {
 
     @Test
     fun negativeWaterButtonTest() {
-        rule.setContent {
-            ReusableDrinkButton(-10, viewModel);
+        assertThrows(Exception::class.java) {
+            rule.setContent {
+                ReusableDrinkButton(-10, viewModel);
+            }
         }
+    }
 
-        assert(viewModel.uiState.value.dailyWaterConsumedML == 0);
-        rule.onNodeWithText("0ml").assertIsDisplayed().performClick();
-        assert(viewModel.uiState.value.dailyWaterConsumedML == 0);
+    @Test
+    fun overTwiceDailyLimitButtonTest() {
+        val exceedLimitAmount = viewModel.uiState.value.curDailyMaxWaterConsumedML * 2 + 10;
+        assertThrows(Exception::class.java) {
+            rule.setContent {
+                ReusableDrinkButton(exceedLimitAmount, viewModel);
+            }
+        }
     }
     
     @Test
@@ -66,6 +75,10 @@ class HomepageIntegrationTest {
         }
         val newFishCount = viewModel.uiState.value.fishTypeList.count();
         assert(newFishCount == initialFishCount + 1);
+
+        // add water after we exceed the daily limit: should do nothing
+        rule.onNodeWithText("330ml").performClick()
+        assert(newFishCount == viewModel.uiState.value.fishTypeList.count());
     }
 
     @Test
@@ -74,11 +87,12 @@ class HomepageIntegrationTest {
             AddButtons(hydroFishViewModel = viewModel);
         }
 
+        assert(viewModel.uiState.value.dailyWaterConsumedML == 0);
         rule.onNodeWithText("150ml").assertIsDisplayed().performClick();
+        assert(viewModel.uiState.value.dailyWaterConsumedML == 150);
         rule.onNodeWithText("250ml").assertIsDisplayed().performClick();
+        assert(viewModel.uiState.value.dailyWaterConsumedML == 150 + 250);
         rule.onNodeWithText("330ml").assertIsDisplayed().performClick();
-
-        val waterLevel = viewModel.uiState.value.dailyWaterConsumedML;
-        assert(waterLevel == 150 + 250 + 330);
+        assert(viewModel.uiState.value.dailyWaterConsumedML == 150 + 250 + 330);
     }
 }
