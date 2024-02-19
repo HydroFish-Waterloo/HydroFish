@@ -18,9 +18,24 @@ jobs:
       with:
         java-version: '17'
         distribution: 'adopt'
-        
+
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v2
+
     - name: Build with Gradle
       run: ./gradlew build --console=plain
+
+    - name: Create and start emulator
+      uses: ReactiveCircus/android-emulator-runner@v2
+      with:
+        api-level: 33
+        arch: arm64-v8a  # This should match the ABI of your emulator.
+        profile: Pixel_7_Pro_API_33  # Use the correct profile name; might need to replace spaces with underscores or similar adjustments.
+        disable-animations: true
+        avd-name: testEmulator  # This should be the name of your AVD; ensure it's correctly set.
+        emulator-options: -no-window -no-audio -no-boot-anim
+        script: |
+          ./gradlew connectedCheck
 
     - name: Run Tests
       run: ./gradlew test --console=plain
