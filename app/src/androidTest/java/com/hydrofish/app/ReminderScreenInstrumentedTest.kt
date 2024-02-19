@@ -100,7 +100,7 @@ class ReminderScreenInstrumentedTest {
                     .apply { canScheduleExactAlarmsResult = true })
         }
 
-        composeTestRule.waitUntil(timeoutMillis = 3000) {
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
             composeTestRule.onAllNodesWithText("01:00").fetchSemanticsNodes()
                 .isNotEmpty()
         }
@@ -141,6 +141,11 @@ class ReminderScreenInstrumentedTest {
             ReminderScreen(
                 SettingsScreenInstrumentedTest.MockPermissionChecker()
                     .apply { canScheduleExactAlarmsResult = true })
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("01:00").fetchSemanticsNodes()
+                .isNotEmpty()
         }
 
         composeTestRule

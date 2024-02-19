@@ -94,6 +94,7 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     var showSnackbar by remember { mutableStateOf(false) }
+    var backgroundColor by remember { mutableStateOf(Color(0xFF323232)) }
     fun triggerSnackbar(scope: CoroutineScope, message: String) {
         scope.launch {
             snackbarHostState.showSnackbar(message)
@@ -162,6 +163,7 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
                     if (!notificationCheck) {
                         showSnackbar = true
                         if (showSnackbar) {
+                            backgroundColor = Color(0xFFFFB74D)
                             triggerSnackbar(coroutineScope, "Please Enable Notification Settings")
                             showSnackbar = false
                         }
@@ -183,6 +185,7 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
                         if (diffSeconds > selectedIntervalValue) {
                             showSnackbar = true
                             if (showSnackbar) {
+                                backgroundColor = Color(0xFF81C784)
                                 triggerSnackbar(coroutineScope, "Notification Scheduled Successfully")
                                 showSnackbar = false
                             }
@@ -190,6 +193,7 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
                         } else {
                             showSnackbar = true
                             if (showSnackbar) {
+                                backgroundColor = Color(0xFFE57373)
                                 triggerSnackbar(coroutineScope, "Interval exceeds the time difference")
                                 showSnackbar = false
                             }
@@ -275,7 +279,7 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
-                        .background(Color(0xFF323232))
+                        .background(backgroundColor)
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     Text(
