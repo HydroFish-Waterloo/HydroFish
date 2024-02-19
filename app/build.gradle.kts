@@ -52,6 +52,7 @@ android {
 dependencies {
     // Jetpack Compose Platform
     implementation(platform(libs.compose.bom))
+    implementation(libs.androidx.core.ktx)
     androidTestImplementation(platform(libs.compose.bom))
 
     // Jetpack Compose Libraries with BOM version
@@ -88,5 +89,5 @@ dependencies {
     implementation("com.patrykandpatrick.vico:core:1.9.2")
     implementation("com.patrykandpatrick.vico:views:1.9.2")
 
-    implementation ("com.google.code.gson:gson:2.8.8")
+    implementation (libs.gson)
 }
