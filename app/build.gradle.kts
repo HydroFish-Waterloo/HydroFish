@@ -75,6 +75,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.espresso.intents)
     androidTestImplementation(libs.ui.test.junit4)
 
     // Debugging Tools
@@ -82,11 +83,17 @@ dependencies {
     debugImplementation(libs.ui.test.manifest)
 
     // Vico for chart
-    implementation("com.patrykandpatrick.vico:compose:1.9.2")
-    implementation("com.patrykandpatrick.vico:compose-m2:1.9.2")
-    implementation("com.patrykandpatrick.vico:compose-m3:1.9.2")
-    implementation("com.patrykandpatrick.vico:core:1.9.2")
-    implementation("com.patrykandpatrick.vico:views:1.9.2")
+    implementation(libs.vicoCompose)
+    implementation(libs.vicoComposeM2)
+    implementation(libs.vicoComposeM3)
+    implementation(libs.vicoCore)
+    implementation(libs.vicoViews)
 
-    implementation (libs.gson)
+    // Mockito for testing
+    testImplementation(libs.mockitoCore)
+    androidTestImplementation(libs.mockitoAndroid)
+    implementation(libs.composeLiveData)
+
+    // Barista for Android UI testing
+    androidTestImplementation(libs.barista) // Added Barista dependency
 }

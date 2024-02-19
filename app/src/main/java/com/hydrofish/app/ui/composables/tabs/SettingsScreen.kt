@@ -1,14 +1,12 @@
 package com.hydrofish.app.ui.composables.tabs
 
 import android.Manifest
-import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,39 +22,74 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import com.hydrofish.app.permission.PermissionChecker
+import com.hydrofish.app.permission.PermissionResultHandler
 
 /**
  * Composable function that represents the profile screen of the application.
  */
+const val NOTIFICATION_KEY = "notification"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen() {
-    var item1EnabledState by remember { mutableStateOf(false) }
-    var item1SubItem1EnabledState by remember { mutableStateOf(false) }
-    var item1SubItem2EnabledState by remember { mutableStateOf(false) }
+fun SettingsScreen(permissionChecker: PermissionChecker, permissionResultHandler: PermissionResultHandler) {
+    val context = LocalContext.current
+    val sharedPreferences = remember {
+        context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+    }
+    val notificationValue = sharedPreferences.getBoolean(NOTIFICATION_KEY, false)
+    var item1EnabledState by rememberSaveable { mutableStateOf(notificationValue) }
     var showPermissionExplanationDialog by remember { mutableStateOf(false) }
 
-    val context = LocalContext.current
+    var hasPostNotificationsPermission by remember {
+        mutableStateOf(
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            } else {
+                true
+            }
+        )
+    }
 
-    val requestNotificationPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            // permission is granted, enable the switch(currently off, cuz there is other permission check)
-            //item1EnabledState = true
-        } else {
-            // permission is denied, disable the switch
-            item1EnabledState = false
-            showPermissionExplanationDialog = true
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_START) {
+                hasPostNotificationsPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) == PackageManager.PERMISSION_GRANTED
+                } else {
+                    true
+                }
+                if (!permissionResultHandler.handlePermissionResult(hasPostNotificationsPermission) || !permissionChecker.canScheduleExactAlarms(context)){
+                    item1EnabledState = false
+                    sharedPreferences.edit().putBoolean(NOTIFICATION_KEY, item1EnabledState).apply()
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -76,26 +109,25 @@ fun SettingsScreen() {
                 checked = item1EnabledState,
                 onCheckedChange = {newState ->
                     if (newState) {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                            // check for post_permission
-                            requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        }
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                            if (!alarmManager.canScheduleExactAlarms()) {
+                        if (permissionResultHandler.handlePermissionResult(hasPostNotificationsPermission) && permissionChecker.canScheduleExactAlarms(context)){
+                            item1EnabledState = true
+                            sharedPreferences.edit().putBoolean(NOTIFICATION_KEY, item1EnabledState).apply()
+                        } else {
+                            if (!permissionChecker.canScheduleExactAlarms(context)){
                                 item1EnabledState = false
+                                sharedPreferences.edit().putBoolean(NOTIFICATION_KEY, item1EnabledState).apply()
                                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                                 context.startActivity(intent)
-                            } else {
-                                item1EnabledState = true
                             }
-                        } else {
-                            item1EnabledState = true
+                            if(!permissionResultHandler.handlePermissionResult(hasPostNotificationsPermission)){
+                                item1EnabledState = false
+                                sharedPreferences.edit().putBoolean(NOTIFICATION_KEY, item1EnabledState).apply()
+                                showPermissionExplanationDialog = true
+                            }
                         }
                     } else {
-                        item1SubItem1EnabledState = false
-                        item1SubItem2EnabledState = false
                         item1EnabledState = false
+                        sharedPreferences.edit().putBoolean(NOTIFICATION_KEY, item1EnabledState).apply()
                     }
                 }
             )
