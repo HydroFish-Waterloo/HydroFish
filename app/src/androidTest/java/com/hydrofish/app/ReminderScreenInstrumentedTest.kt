@@ -174,6 +174,49 @@ class ReminderScreenInstrumentedTest {
             .assertIsDisplayed()
     }
 
+    @Test
+    fun testScheduleNotification_FunctionalityOn_Normal() {
+        setSharedPreferencesBoolValue(NOTIFICATION_KEY, true)
+        setSharedPreferencesStringValue(W_TIME_KEY, "7:0")
+        setSharedPreferencesStringValue(S_TIME_KEY, "8:0")
+
+        composeTestRule.setContent {
+            ReminderScreen(
+                SettingsScreenInstrumentedTest.MockPermissionChecker()
+                    .apply { canScheduleExactAlarmsResult = true })
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("01:00").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule
+            .onNodeWithTag("01:00")
+            .assertIsSelected()
+
+        composeTestRule
+            .onNodeWithTag("00:15")
+            .performClick()
+
+        composeTestRule
+            .onNodeWithTag("00:15")
+            .assertIsSelected()
+
+        composeTestRule
+            .onNodeWithText("Schedule Notification")
+            .performClick()
+
+        composeTestRule.waitUntil(timeoutMillis = 3000) {
+            composeTestRule.onAllNodesWithText("Notification Scheduled Successfully").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule
+            .onNodeWithText("Notification Scheduled Successfully")
+            .assertIsDisplayed()
+    }
+
     @After
     fun tearDown() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext

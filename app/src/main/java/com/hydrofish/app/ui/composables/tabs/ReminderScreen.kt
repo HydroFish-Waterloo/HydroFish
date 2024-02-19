@@ -194,7 +194,11 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
                                 triggerSnackbar(coroutineScope, "Notification Scheduled Successfully")
                                 showSnackbar = false
                             }
-                            scheduleAlarm(mContext,selectedIntervalValue,wakeUpSeconds,diffSeconds)
+                            try{
+                                scheduleAlarm(mContext,selectedIntervalValue,wakeUpSeconds,diffSeconds)
+                            }catch (e: Exception){
+                                Log.e("Alarm", "Error: ${e.message}")
+                            }
                         } else {
                             showSnackbar = true
                             if (showSnackbar) {
@@ -310,9 +314,6 @@ fun timeStringToSeconds(time: String): Int {
         throw IllegalArgumentException("Time contains non-numeric characters.")
     }
 }
-
-
-
 
 fun scheduleAlarm(context: Context, interval: Int, wakeUpSeconds: Int, diffSeconds: Int) {
 
