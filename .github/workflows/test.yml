@@ -6,21 +6,51 @@ on:
       - Develop
 
 jobs:
-  test:
+  run-unit-tests:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-      
-    - name: Set up JDK
-      uses: actions/setup-java@v2
-      with:
-        java-version: '17'
-        distribution: 'adopt'
-        
-    - name: Build with Gradle
-      run: ./gradlew build --console=plain
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-    - name: Run Tests
-      run: ./gradlew test --console=plain
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest --tests "*ExampleUnitTest"
+
+  run-instrumented-tests:
+    runs-on: ubuntu-latest
+    needs: run-unit-tests
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug --console=plain
+
+      - name: Create and start emulator
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: 33
+          arch: arm64-v8a
+          profile: Pixel_7_Pro_API_33
+          disable-animations: true
+          avd-name: testEmulator
+          emulator-options: -no-window -no-audio -no-boot-anim
+          script: |
+            ./gradlew connectedDebugAndroidTest --tests "*ExampleInstrumentedTest"
