@@ -96,4 +96,7 @@ dependencies {
 
     // Barista for Android UI testing
     androidTestImplementation(libs.barista) // Added Barista dependency
+
+    implementation(libs.gson)
+
 }
