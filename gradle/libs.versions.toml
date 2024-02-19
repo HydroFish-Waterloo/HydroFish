@@ -11,6 +11,11 @@ espresso-core = "3.5.1"
 espresso-intents = "3.5.1"
 plugin-android-app = "8.2.1"
 plugin-kotlin = "1.8.10"
+vico = "1.9.2"
+mockito = "4.5.1"
+mockitoAndroid = "4.5.1"
+composeLiveData = "1.0.0"
+barista = "4.2.0"
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
@@ -31,6 +36,16 @@ espresso-intents = { module = "androidx.test.espresso:espresso-intents", version
 ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+vicoCompose = { module = "com.patrykandpatrick.vico:compose", version.ref = "vico" }
+vicoComposeM2 = { module = "com.patrykandpatrick.vico:compose-m2", version.ref = "vico" }
+vicoComposeM3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "vico" }
+vicoCore = { module = "com.patrykandpatrick.vico:core", version.ref = "vico" }
+vicoViews = { module = "com.patrykandpatrick.vico:views", version.ref = "vico" }
+mockitoCore = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockitoAndroid = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroid" }
+composeLiveData = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "composeLiveData" }
+barista = { module = "com.adevinta.android:barista", version.ref = "barista" } # Added Barista library
+
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "plugin-android-app" }

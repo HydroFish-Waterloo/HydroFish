@@ -77,10 +77,10 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
     val notificationCheck by remember { mutableStateOf(notificationValue) }
 
     // Retrieve values from SharedPreferences with default values
-    val defaultWTimeValue = sharedPreferences.getString(W_TIME_KEY, "") ?: ""
+    val defaultWTimeValue = sharedPreferences.getString(W_TIME_KEY, "7:0") ?: ""
     val wTime = rememberSaveable { mutableStateOf(defaultWTimeValue) }
 
-    val defaultSTimeValue = sharedPreferences.getString(S_TIME_KEY, "") ?: ""
+    val defaultSTimeValue = sharedPreferences.getString(S_TIME_KEY, "22:0") ?: ""
     val sTime = rememberSaveable { mutableStateOf(defaultSTimeValue) }
 
     val timeIntervalToSeconds = listOf(900, 1800, 3600, 5400, 7200)
@@ -170,12 +170,17 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
                         //Toast.makeText(mContext, "Please Enable Notification Settings", Toast.LENGTH_LONG).show()
                     }
                     else {
-                        val currentWTimeValue = sharedPreferences.getString(W_TIME_KEY, "") ?: ""
-                        val currentSTimeValue = sharedPreferences.getString(S_TIME_KEY, "") ?: ""
+//                        val currentWTimeValue = sharedPreferences.getString(W_TIME_KEY, "7:0") ?: ""
+//                        val currentSTimeValue = sharedPreferences.getString(S_TIME_KEY, "22:0") ?: ""
+//
+//                        Log.e("WTime", currentWTimeValue)
+//                        Log.e("STime", currentSTimeValue)
 
                         // app has permission, schedule the alarm.
-                        val wakeUpSeconds = timeStringToSeconds(currentWTimeValue)
-                        val sleepSeconds = timeStringToSeconds(currentSTimeValue)
+                        Log.e("WTime", wTime.value)
+                        Log.e("STime", sTime.value)
+                        val wakeUpSeconds = timeStringToSeconds(wTime.value)
+                        val sleepSeconds = timeStringToSeconds(sTime.value)
 
                         val diffSeconds = if (sleepSeconds >= wakeUpSeconds) {
                             sleepSeconds - wakeUpSeconds
