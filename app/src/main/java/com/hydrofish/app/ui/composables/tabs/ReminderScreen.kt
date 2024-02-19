@@ -1,5 +1,6 @@
 package com.hydrofish.app.ui.composables.tabs
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.app.TimePickerDialog
@@ -167,46 +168,39 @@ fun ReminderScreen(permissionChecker: PermissionChecker) {
                             triggerSnackbar(coroutineScope, "Please Enable Notification Settings")
                             showSnackbar = false
                         }
-                        //Toast.makeText(mContext, "Please Enable Notification Settings", Toast.LENGTH_LONG).show()
                     }
                     else {
-//                        val currentWTimeValue = sharedPreferences.getString(W_TIME_KEY, "7:0") ?: ""
-//                        val currentSTimeValue = sharedPreferences.getString(S_TIME_KEY, "22:0") ?: ""
-//
-//                        Log.e("WTime", currentWTimeValue)
-//                        Log.e("STime", currentSTimeValue)
-
                         // app has permission, schedule the alarm.
                         Log.e("WTime", wTime.value)
                         Log.e("STime", sTime.value)
-                        val wakeUpSeconds = timeStringToSeconds(wTime.value)
-                        val sleepSeconds = timeStringToSeconds(sTime.value)
+                        try {val wakeUpSeconds = timeStringToSeconds(wTime.value)
+                            val sleepSeconds = timeStringToSeconds(sTime.value)
 
-                        val diffSeconds = if (sleepSeconds >= wakeUpSeconds) {
-                            sleepSeconds - wakeUpSeconds
-                        } else {
-                            24 * 3600 - wakeUpSeconds + sleepSeconds
-                        }
-                        if (diffSeconds > selectedIntervalValue) {
-                            showSnackbar = true
-                            if (showSnackbar) {
-                                backgroundColor = Color(0xFF81C784)
-                                triggerSnackbar(coroutineScope, "Notification Scheduled Successfully")
-                                showSnackbar = false
+                            val diffSeconds = if (sleepSeconds >= wakeUpSeconds) {
+                                sleepSeconds - wakeUpSeconds
+                            } else {
+                                24 * 3600 - wakeUpSeconds + sleepSeconds
                             }
-                            try{
+                            if (diffSeconds > selectedIntervalValue) {
+                                showSnackbar = true
+                                if (showSnackbar) {
+                                    backgroundColor = Color(0xFF81C784)
+                                    triggerSnackbar(coroutineScope, "Notification Scheduled Successfully")
+                                    showSnackbar = false
+                                }
                                 scheduleAlarm(mContext,selectedIntervalValue,wakeUpSeconds,diffSeconds)
-                            }catch (e: Exception){
-                                Log.e("Alarm", "Error: ${e.message}")
-                            }
-                        } else {
-                            showSnackbar = true
-                            if (showSnackbar) {
-                                backgroundColor = Color(0xFFE57373)
-                                triggerSnackbar(coroutineScope, "Interval exceeds the time difference")
-                                showSnackbar = false
-                            }
+                            } else {
+                                showSnackbar = true
+                                if (showSnackbar) {
+                                    backgroundColor = Color(0xFFE57373)
+                                    triggerSnackbar(coroutineScope, "Interval exceeds the time difference")
+                                    showSnackbar = false
+                                }
+                            }}
+                        catch(e: Exception){
+                            Log.e("Alarm", "Error: ${e.message}")
                         }
+
                     }
                 }
             },
@@ -315,6 +309,7 @@ fun timeStringToSeconds(time: String): Int {
     }
 }
 
+@SuppressLint("ScheduleExactAlarm")
 fun scheduleAlarm(context: Context, interval: Int, wakeUpSeconds: Int, diffSeconds: Int) {
 
     val alarmNum = (diffSeconds / interval)
@@ -336,10 +331,16 @@ fun scheduleAlarm(context: Context, interval: Int, wakeUpSeconds: Int, diffSecon
 
 //            val triggerTime = System.currentTimeMillis() + i * interval * 1000L/300
 //            val triggerTime = System.currentTimeMillis() + (interval * 1000/300) //set the time to trigger the alarm
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            triggerTime,
-            pendingIntent
-        )
+        try {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                triggerTime,
+                pendingIntent
+            )
+        }
+        catch (e: SecurityException) {
+            Log.e("Alarm", "SecurityException: ${e.message}")
+        }
+
     }
 }
