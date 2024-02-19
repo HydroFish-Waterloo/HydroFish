@@ -1,5 +1,6 @@
 package com.hydrofish.app.ui.composables.tabs
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,7 @@ import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.HydroFishViewModel
@@ -54,11 +56,11 @@ val largeRadialGradient = object : ShaderBrush() {
 }
 
 @Composable
-fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
+fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
     //This approach ensures that whenever there is a change in the uiState value,
     //recomposition occurs for the composables using the hydroFishUiState value.
     val hydroFishUIState by hydroFishViewModel.uiState.collectAsState()
-    val waterPercent = hydroFishUIState.dailyWaterConsumedML / hydroFishUIState.curDailyMaxWaterConsumedML
+    val waterPercent = (hydroFishUIState.dailyWaterConsumedML * 1f) / (hydroFishUIState.curDailyMaxWaterConsumedML * 1f)
 
     Box(modifier = modifier
         .background(largeRadialGradient),
@@ -67,14 +69,14 @@ fun HomeScreen(modifier: Modifier, hydroFishViewModel: HydroFishViewModel = view
         ) {
         DisplayFish(modifier = Modifier, fishes = hydroFishUIState.fishTypeList, distances = hydroFishUIState.fishDistances)
 
-        AddProgessBar(modifier.align(Alignment.CenterEnd), waterPercent)
+        AddProgessBar(waterPercent, modifier.align(Alignment.CenterEnd))
 
         AddButtons(Modifier.align(Alignment.BottomStart))
     }
 }
 
 @Composable
-fun AddProgessBar(modifier: Modifier, waterConsumed: Float) {
+fun AddProgessBar(waterConsumed: Float, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .width(20.dp)
@@ -107,22 +109,26 @@ fun DisplayFish(modifier: Modifier, fishes: List<FishType>, distances: List<Floa
 }
 
 @Composable
-fun AddButtons(modifier: Modifier) {
+@Preview
+fun AddButtons(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
     Column (
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.Bottom,
         horizontalAlignment = Alignment.CenterHorizontally){
         Row(horizontalArrangement = Arrangement.Center) {
             ReusableDrinkButton(
-                waterAmt=150f
+                waterAmt=150,
+                hydroFishViewModel
             )
             Spacer(modifier = Modifier.size(10.dp))
             ReusableDrinkButton(
-                waterAmt=250f
+                waterAmt=250,
+                hydroFishViewModel
             )
             Spacer(modifier = Modifier.size(10.dp))
             ReusableDrinkButton(
-                waterAmt=330f
+                waterAmt=330,
+                hydroFishViewModel
             )
         }
         Spacer(modifier = Modifier.size(10.dp))
@@ -131,9 +137,30 @@ fun AddButtons(modifier: Modifier) {
 }
 
 @Composable
-fun ReusableDrinkButton(waterAmt: Float, hydroFishViewModel: HydroFishViewModel = viewModel()) {
+fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = viewModel()) {
+    val hydroFishUIState by hydroFishViewModel.uiState.collectAsState();
+
+    // upper limit
+    val buttonMaxLimit = hydroFishUIState.curDailyMaxWaterConsumedML * 2;
+    if (waterAmt > buttonMaxLimit) {
+        throw Exception("Button Water Amount Exceeds Max Limit");
+    }
+
+    // lower limit
+    if (waterAmt < 0) {
+        throw Exception ("Button Water Amount Cannot Be Negative");
+    }
+
+    // ml to L conversion
+    var buttonText = waterAmt.toString() + "ml";
+    if (waterAmt >= 1000) {
+        buttonText = (waterAmt / (1000 * 1.0)).toString() + "L";
+    }
+
+
+
     Button(onClick = {
-        hydroFishViewModel.increaseWaterLevel(waterAmt)
+        hydroFishViewModel.increaseWaterLevel(waterAmt);
     }) {
         Column (
             horizontalAlignment = Alignment.CenterHorizontally,){
@@ -142,7 +169,7 @@ fun ReusableDrinkButton(waterAmt: Float, hydroFishViewModel: HydroFishViewModel 
                 contentDescription ="add drink button",
                 modifier = Modifier.size(40.dp))
 
-            Text(text = waterAmt.toString() + "ml",Modifier.padding(start = 10.dp))
+            Text(text = buttonText,Modifier.padding(start = 10.dp))
         }
     }
 }
