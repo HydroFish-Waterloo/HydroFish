@@ -1,12 +1,18 @@
 package com.hydrofish.app
 
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseInOutElastic
+import androidx.compose.animation.core.tween
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.hydrofish.app.ui.HydroFishUIState
 import com.hydrofish.app.ui.composables.FishType
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class HydroFishViewModel: ViewModel() {
     // backing property to avoid updates from other classes
@@ -16,6 +22,63 @@ class HydroFishViewModel: ViewModel() {
         val step = (range.endInclusive - range.start) / (size - 1)
         return List(size) { index -> range.start + step * index }
     }
+
+//    init {
+//
+//        viewModelScope.launch {
+//            launch {
+//                uiState.value.animatableX.animateTo(
+//                    targetValue = 100f,
+//                    animationSpec = tween(
+//                        durationMillis = 3000,
+//                        easing = EaseInOutElastic
+//                    )
+//                )
+//                animatableX.animateTo(
+//                    targetValue = -100f,
+//                    animationSpec = tween(
+//                        durationMillis = 3000,
+//                        easing = EaseInOutElastic
+//                    )
+//                )
+//            }
+//
+//            launch {
+//                delay(2800)
+//                animatableFlip.animateTo(
+//                    targetValue = 180f,
+//                    animationSpec = tween(durationMillis = 200)
+//                )
+//                delay(2800)
+//                animatableFlip.animateTo(
+//                    targetValue = 0f,
+//                    animationSpec = tween(durationMillis = 200)
+//                )
+//            }
+//
+//            launch {
+//                animatableY.animateTo(
+//                    targetValue = 100f,
+//                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
+//                )
+//                animatableY.animateTo(
+//                    targetValue = -100f,
+//                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
+//                )
+//            }
+//
+//            launch {
+//                animatableRotation.animateTo(
+//                    targetValue = 360f,
+//                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
+//                )
+//                animatableRotation.animateTo(
+//                    targetValue = 2000f,
+//                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
+//                )
+//            }
+//        }
+//    }
 
     fun increaseWaterLevel(amt: Int) {
         if (amt < 0) throw Exception("Cannot Increase Water By Negative Value");
