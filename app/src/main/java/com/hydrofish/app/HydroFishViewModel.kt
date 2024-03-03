@@ -1,18 +1,11 @@
 package com.hydrofish.app
 
-import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.EaseInOutElastic
-import androidx.compose.animation.core.tween
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.hydrofish.app.ui.HydroFishUIState
-import com.hydrofish.app.ui.composables.FishType
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 class HydroFishViewModel: ViewModel() {
     // backing property to avoid updates from other classes

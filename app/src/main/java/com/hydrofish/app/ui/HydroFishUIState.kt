@@ -2,8 +2,6 @@ package com.hydrofish.app.ui
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.runtime.remember
-import com.hydrofish.app.ui.composables.FishType
 
 data class HydroFishUIState(
     val dailyWaterConsumedML: Int = 0,

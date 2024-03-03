@@ -1,8 +1,6 @@
 package com.hydrofish.app.ui.composables.tabs
 
-import android.util.Log
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutElastic
 import androidx.compose.animation.core.tween
@@ -28,26 +26,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.translationMatrix
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.HydroFishViewModel
 import com.hydrofish.app.R
-import com.hydrofish.app.ui.composables.FishAnimation
-import com.hydrofish.app.ui.composables.FishType
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -83,7 +74,7 @@ fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
     Box(modifier = modifier.background(largeRadialGradient),
         contentAlignment = Alignment.Center,
         ) {
-        val fishImageList = FishImageGenerator.getFishList(3);
+        val fishImageList = FishImageGenerator.getFishList(15);
         val animationGroupPosition = listOf(
             AnimationGroupPosition(),
             AnimationGroupPosition()
@@ -233,29 +224,6 @@ class Coordinates(val x: Float, val y: Float) {
         return Random.nextFloat() * (endInclusive - start) + start
     }
 
-    private fun getCentreToCornerLength(x: Float, y: Float): Float {
-        return sqrt((x/2f).pow(2f) + (y/2f).pow(2f))
-    }
-
-    fun getRandOffsetCoordinates(
-        oldImgHeight: Float,
-        newImgHeight: Float,
-        oldImgWidth: Float,
-        newImgWidth: Float
-        ): Coordinates {
-
-        val boundaryVal = getCentreToCornerLength(oldImgHeight, oldImgWidth) *
-                getCentreToCornerLength(newImgHeight, newImgWidth)
-
-        val xOff = randomFloatInRange(-boundaryVal, boundaryVal)
-        val posYOff = sqrt((boundaryVal).pow(2f) - xOff.pow(2f))
-
-        // 50/50 chance of y being negative
-        val yOff = if (Random.nextBoolean()) -posYOff else posYOff
-
-        return Coordinates(x + xOff, y + yOff)
-    }
-
     fun getRandOffsetCoordinates(
         offset: Float
     ): Coordinates {
@@ -287,24 +255,10 @@ class AnimationGroupPosition(private val startingPosition: Coordinates = Coordin
     }
 }
 
-// each group has
-// animation assignments
-// starting location
-// a list of positions
-// a function that returns a position based on
-    // a random position from the list of current positions
-    // using a complicated offset function
-    // also will add this position to the list of current positions
-    // if list of current positions is empty,
-    // use the starting location as the position
-
-// in the future, need a way to target the fish worth the least
-// amount of goals and be able to move it to the middle of the screen to merge
-
 class FishImageGenerator {
     companion object {
         private val FishDict = mapOf(
-            1 to R.drawable.fish,
+            1 to R.drawable.fish1,
             2 to R.drawable.fish2,
             4 to R.drawable.fish3,
             8 to R.drawable.fish4
@@ -331,17 +285,6 @@ class FishImageGenerator {
     }
 }
 
-// takes in list of fish ids and how many should be generated
-// go through each fish and randomly choose an assigment type
-// to obtain the animation assignments and the fish position
-// use this to generate the composable
-//@Composable
-//fun AddFishes(score: Int) {
-//    for (fish in FishListGetter.getFishList(score)) {
-//
-//    }
-//}
-
 @Composable
 fun AddProgessBar(waterConsumed: Float, modifier: Modifier = Modifier) {
     Box(
@@ -357,21 +300,6 @@ fun AddProgessBar(waterConsumed: Float, modifier: Modifier = Modifier) {
                 .background(MaterialTheme.colorScheme.primary)
                 .align(Alignment.BottomStart)
         )
-    }
-}
-
-@Composable
-fun DisplayFish(modifier: Modifier, fishes: List<FishType>, distances: List<Float>) {
-    if (fishes.size == distances.size) {
-        fishes.forEachIndexed { index, fishType ->
-            val direction: Boolean = Random.nextBoolean()
-            FishAnimation(
-                modifier = Modifier,
-                fishType = fishType,
-                verticalDistance = distances[index],
-                directionInit = direction
-            )
-        }
     }
 }
 
