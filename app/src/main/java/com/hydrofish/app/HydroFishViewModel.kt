@@ -1,11 +1,16 @@
 package com.hydrofish.app
 
 import androidx.lifecycle.ViewModel
+import com.hydrofish.app.animations.AnimationGroupPosition
+import com.hydrofish.app.animations.Coordinates
+import com.hydrofish.app.animations.ImageListFromScore
 import com.hydrofish.app.ui.HydroFishUIState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.util.Collections
+import kotlin.random.Random
 
 class HydroFishViewModel: ViewModel() {
     // backing property to avoid updates from other classes
@@ -23,6 +28,27 @@ class HydroFishViewModel: ViewModel() {
                 dailyWaterConsumedML = amt + currentState.dailyWaterConsumedML,
             )
         }
+    }
+
+    fun getFishGroupAnimation():Array<List<Any>> {
+        val fishImageList = ImageListFromScore.getFishList(uiState.value.fishScore);
+        val animationGroupPosition = listOf(
+            AnimationGroupPosition(),
+            AnimationGroupPosition()
+        )
+        val fishPositionList = mutableListOf<Coordinates>()
+        val animationsChosen = mutableListOf<Int>()
+        for (fish in fishImageList) {
+            val animationIdx = Random.nextInt(2)
+            animationsChosen.add(animationIdx)
+            fishPositionList.add(animationGroupPosition[animationIdx].getNewPosition(fish))
+        }
+
+
+        return arrayOf(
+            fishImageList,
+            Collections.unmodifiableList(fishPositionList),
+            Collections.unmodifiableList(animationsChosen))
     }
 }
 

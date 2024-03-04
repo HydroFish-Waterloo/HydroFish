@@ -39,6 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.HydroFishViewModel
 import com.hydrofish.app.R
+import com.hydrofish.app.animations.AnimationGroupPosition
+import com.hydrofish.app.animations.AnimationParams
+import com.hydrofish.app.animations.Coordinates
+import com.hydrofish.app.animations.ImageListFromScore
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -74,20 +78,12 @@ fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
     Box(modifier = modifier.background(largeRadialGradient),
         contentAlignment = Alignment.Center,
         ) {
-        val fishImageList = FishImageGenerator.getFishList(15);
-        val animationGroupPosition = listOf(
-            AnimationGroupPosition(),
-            AnimationGroupPosition()
-        )
-        val fishPositionList = mutableListOf<Coordinates>()
-        val animationsChosen = mutableListOf<Int>()
-        for (fish in fishImageList) {
-            val animationIdx = Random.nextInt(2)
-            animationsChosen.add(animationIdx)
-            fishPositionList.add(animationGroupPosition[animationIdx].getNewPosition(fish))
-        }
 
-        JellyfishAnimation(fishImageList, fishPositionList, animationsChosen)
+        val (fishImageList, fishPositionList, animationsChosen) = hydroFishViewModel.getFishGroupAnimation()
+        JellyfishAnimation(
+            fishImageList.filterIsInstance<Int>(),
+            fishPositionList.filterIsInstance<Coordinates>(),
+            animationsChosen.filterIsInstance<Int>())
 
         AddProgessBar(waterPercent, modifier.align(Alignment.CenterEnd))
 
@@ -104,8 +100,8 @@ fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
 @Composable
 fun JellyfishAnimation(
     fishImageList: List<Int>,
-    fishPositionList: MutableList<Coordinates>,
-    animationsChosen: MutableList<Int>,
+    fishPositionList: List<Coordinates>,
+    animationsChosen: List<Int>,
 ) {
     // animated in coroutine (we do this for everything)
     val animatableX = remember { Animatable(0f) }
@@ -175,7 +171,6 @@ fun JellyfishAnimation(
         }
     }
 
-
     // this causes reloading of animations??
     // when we get the animatable value, this entire composable and its children
     // are just constantly reloading, so we can't choose the fish animation index in here
@@ -194,14 +189,6 @@ fun JellyfishAnimation(
 
 }
 
-
-data class AnimationParams(
-    val xVal: Float = 0f,
-    val yVal: Float = 0f,
-    val rotateVal: Float = 0f,
-    val flipVal: Float = 0f
-)
-
 @Composable
 fun AddFish(imageId: Int, params: AnimationParams, offset: Coordinates) {
     Image(
@@ -216,73 +203,6 @@ fun AddFish(imageId: Int, params: AnimationParams, offset: Coordinates) {
                 rotationY = params.flipVal
             }
     )
-}
-
-class Coordinates(val x: Float, val y: Float) {
-    private fun randomFloatInRange(start: Float, endInclusive: Float): Float {
-        require (start < endInclusive) { "End value must be greater than start value"}
-        return Random.nextFloat() * (endInclusive - start) + start
-    }
-
-    fun getRandOffsetCoordinates(
-        offset: Float
-    ): Coordinates {
-        val xOff = randomFloatInRange(-offset, offset)
-        val posY = sqrt((offset).pow(2f) - xOff.pow(2f))
-
-        // 50/50 chance of y being negative
-        val yOff = if (Random.nextBoolean()) -posY else posY
-
-        return Coordinates(x + xOff, y + yOff)
-    }
-}
-
-data class FishInfo(val coordinates: Coordinates, val fishId: Int)
-class AnimationGroupPosition(private val startingPosition: Coordinates = Coordinates(0f, 0f)) {
-    private val positionList = mutableListOf<FishInfo>()
-
-    public fun getNewPosition(fishId: Int): Coordinates {
-        if (positionList.size == 0) {
-            positionList.add(FishInfo(startingPosition, fishId))
-            return startingPosition
-        }
-
-        // obtain random pair
-        val randomElement = positionList.asSequence().shuffled().find { true }
-        val newCoordinates = randomElement?.coordinates?.getRandOffsetCoordinates(200f) as Coordinates
-        positionList.add(FishInfo(newCoordinates, fishId))
-        return newCoordinates
-    }
-}
-
-class FishImageGenerator {
-    companion object {
-        private val FishDict = mapOf(
-            1 to R.drawable.fish1,
-            2 to R.drawable.fish2,
-            4 to R.drawable.fish3,
-            8 to R.drawable.fish4
-        )
-
-        private fun decomposeValue(value: Int): List<Int> {
-            val composition = mutableListOf<Int>()
-            var remainingValue = value
-            var power = 1
-            while (remainingValue > 0) {
-                if (remainingValue and 1 == 1) {
-                    composition.add(power)
-                }
-                remainingValue = remainingValue ushr 1 // right shift by 1 (equivalent to division by 2)
-                power *= 2
-            }
-            return composition
-        }
-
-        fun getFishList(score: Int): List<Int> {
-            val decomposedScore = decomposeValue(score)
-            return decomposedScore.map { FishDict[it] as Int }
-        }
-    }
 }
 
 @Composable
