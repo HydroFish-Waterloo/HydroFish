@@ -79,11 +79,7 @@ fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
         contentAlignment = Alignment.Center,
         ) {
 
-        val (fishImageList, fishPositionList, animationsChosen) = hydroFishViewModel.getFishGroupAnimation()
-        JellyfishAnimation(
-            fishImageList.filterIsInstance<Int>(),
-            fishPositionList.filterIsInstance<Coordinates>(),
-            animationsChosen.filterIsInstance<Int>())
+        AddFishAnimation(hydroFishUIState.animationGroupPositionHandler.getPositions(hydroFishUIState.fishScore))
 
         AddProgessBar(waterPercent, modifier.align(Alignment.CenterEnd))
 
@@ -91,18 +87,9 @@ fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
     }
 }
 
-//- animation with svg / grouping images
-//- max 4-5 animations (running at once)
-//- on adding new fish, we append relevant animation
-//- group fish with same animation: regenerate randomly
-
 
 @Composable
-fun JellyfishAnimation(
-    fishImageList: List<Int>,
-    fishPositionList: List<Coordinates>,
-    animationsChosen: List<Int>,
-) {
+fun AddFishAnimation(animationGroupPositions: List<AnimationGroupPosition>) {
     // animated in coroutine (we do this for everything)
     val animatableX = remember { Animatable(0f) }
     val animatableFlip = remember { Animatable(0f) }
@@ -179,14 +166,15 @@ fun JellyfishAnimation(
         AnimationParams(yVal = animatableY.value, rotateVal = animatableRotation.value)
     )
 
-    fishImageList.forEachIndexed { index, fish ->
-        AddFish(
-            fish,
-            params = animationList[animationsChosen[index]],
-            offset = fishPositionList[index]
-        )
+    animationList.forEachIndexed {
+        index, animation ->
+            animationGroupPositions[index].getFishList().forEach {
+                fish ->
+                    AddFish(fish.fishId,
+                        params = animation,
+                        fish.coordinates)
+            }
     }
-
 }
 
 @Composable

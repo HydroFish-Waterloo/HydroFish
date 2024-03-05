@@ -29,26 +29,5 @@ class HydroFishViewModel: ViewModel() {
             )
         }
     }
-
-    fun getFishGroupAnimation():Array<List<Any>> {
-        val fishImageList = ImageListFromScore.getFishList(uiState.value.fishScore);
-        val animationGroupPosition = listOf(
-            AnimationGroupPosition(),
-            AnimationGroupPosition()
-        )
-        val fishPositionList = mutableListOf<Coordinates>()
-        val animationsChosen = mutableListOf<Int>()
-        for (fish in fishImageList) {
-            val animationIdx = Random.nextInt(2)
-            animationsChosen.add(animationIdx)
-            fishPositionList.add(animationGroupPosition[animationIdx].getNewPosition(fish))
-        }
-
-
-        return arrayOf(
-            fishImageList,
-            Collections.unmodifiableList(fishPositionList),
-            Collections.unmodifiableList(animationsChosen))
-    }
 }
 
