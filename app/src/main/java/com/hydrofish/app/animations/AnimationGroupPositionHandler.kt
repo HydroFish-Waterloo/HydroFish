@@ -5,6 +5,8 @@ import kotlin.random.Random
 
 /**
  * creates groups of fish with their respective list of animations
+ *
+ * @param animationsPerGroup list of animations for each animation group
  */
 class AnimationGroupPositionHandler(animationsPerGroup: List<HashSet<AnimatableType>>) {
     private var populated = false
@@ -36,6 +38,9 @@ class AnimationGroupPositionHandler(animationsPerGroup: List<HashSet<AnimatableT
 /**
  * singular animation group - contains the animations that the fish perform and
  * the positions to place fish in the group
+ *
+ * @param startingPosition set the point at which the animation should begin
+ * @param animatableTypes hashset of animatables to be used for this animation group
  */
 class AnimationGroup(
     private val startingPosition: Coordinates = Coordinates(0f, 0f),
@@ -44,7 +49,7 @@ class AnimationGroup(
     // save a list of fish in the animation group
     private val fishList = mutableListOf<FishInfo>()
 
-    public fun storeFish(fishId: Int) {
+    fun storeFish(fishId: Int) {
         if (fishList.size == 0) {
             fishList.add(FishInfo(startingPosition, fishId))
             return
