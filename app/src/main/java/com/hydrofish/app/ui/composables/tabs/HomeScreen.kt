@@ -1,6 +1,7 @@
 package com.hydrofish.app.ui.composables.tabs
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutElastic
 import androidx.compose.animation.core.tween
@@ -39,16 +40,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.HydroFishViewModel
 import com.hydrofish.app.R
-import com.hydrofish.app.animations.AnimationGroupPosition
-import com.hydrofish.app.animations.AnimationParams
-import com.hydrofish.app.animations.Coordinates
-import com.hydrofish.app.animations.ImageListFromScore
+import com.hydrofish.app.animations.AnimatableType
+import com.hydrofish.app.animations.FishInfo
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.pow
-import kotlin.math.sqrt
-import kotlin.random.Random
 
 /**
  * Composable function that represents the home screen of the application.
@@ -78,8 +74,7 @@ fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
     Box(modifier = modifier.background(largeRadialGradient),
         contentAlignment = Alignment.Center,
         ) {
-
-        AddFishAnimation(hydroFishUIState.animationGroupPositionHandler.getPositions(hydroFishUIState.fishScore))
+        AddFishAnimation()
 
         AddProgessBar(waterPercent, modifier.align(Alignment.CenterEnd))
 
@@ -87,26 +82,26 @@ fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
     }
 }
 
-
 @Composable
-fun AddFishAnimation(animationGroupPositions: List<AnimationGroupPosition>) {
-    // animated in coroutine (we do this for everything)
-    val animatableX = remember { Animatable(0f) }
-    val animatableFlip = remember { Animatable(0f) }
-    val animatableY = remember { Animatable(0f) }
-    val animatableRotation = remember { Animatable(0f) }
+fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
+    // stores the animatables in a map
+    val animatableMap = mutableMapOf<AnimatableType, Animatable<Float, AnimationVector1D>>()
+    AnimatableType.values().forEach { animatableVal ->
+        animatableMap[animatableVal] = remember { Animatable(0f) }
+    }
 
+    // should contain respective animations for each animatable
     suspend fun animate() {
         coroutineScope {
             launch {
-                animatableX.animateTo(
+                animatableMap[AnimatableType.X]?.animateTo(
                     targetValue = 400f,
                     animationSpec = tween(
                         durationMillis = 3000,
                         easing = EaseInOutElastic
                     )
                 )
-                animatableX.animateTo(
+                animatableMap[AnimatableType.X]?.animateTo(
                     targetValue = -400f,
                     animationSpec = tween(
                         durationMillis = 3000,
@@ -117,34 +112,34 @@ fun AddFishAnimation(animationGroupPositions: List<AnimationGroupPosition>) {
 
             launch {
                 delay(2800)
-                animatableFlip.animateTo(
+                animatableMap[AnimatableType.FLIP]?.animateTo(
                     targetValue = 180f,
                     animationSpec = tween(durationMillis = 200)
                 )
                 delay(2800)
-                animatableFlip.animateTo(
+                animatableMap[AnimatableType.FLIP]?.animateTo(
                     targetValue = 0f,
                     animationSpec = tween(durationMillis = 200)
                 )
             }
 
             launch {
-                animatableY.animateTo(
+                animatableMap[AnimatableType.Y]?.animateTo(
                     targetValue = 400f,
                     animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
                 )
-                animatableY.animateTo(
+                animatableMap[AnimatableType.Y]?.animateTo(
                     targetValue = -400f,
                     animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
                 )
             }
 
             launch {
-                animatableRotation.animateTo(
+                animatableMap[AnimatableType.ROTATE]?.animateTo(
                     targetValue = 360f,
                     animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
                 )
-                animatableRotation.animateTo(
+                animatableMap[AnimatableType.ROTATE]?.animateTo(
                     targetValue = 2000f,
                     animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
                 )
@@ -158,37 +153,36 @@ fun AddFishAnimation(animationGroupPositions: List<AnimationGroupPosition>) {
         }
     }
 
-    // this causes reloading of animations??
-    // when we get the animatable value, this entire composable and its children
-    // are just constantly reloading, so we can't choose the fish animation index in here
-    val animationList = listOf(
-        AnimationParams(xVal = animatableX.value, flipVal = animatableFlip.value),
-        AnimationParams(yVal = animatableY.value, rotateVal = animatableRotation.value)
-    )
-
-    animationList.forEachIndexed {
-        index, animation ->
-            animationGroupPositions[index].getFishList().forEach {
-                fish ->
-                    AddFish(fish.fishId,
-                        params = animation,
-                        fish.coordinates)
-            }
+    for (animationGroup in hydroFishViewModel.getAllFish()) {
+        val fishAnimAndList = animationGroup.getFishListWithAnim()
+        for (fishInfo in fishAnimAndList.fishes) {
+            AddFish(animatableMap, fishAnimAndList.animatableTypes, fishInfo)
+        }
     }
 }
 
+// will be repeatedly recomposed based on the animatables, due to the use of .value
 @Composable
-fun AddFish(imageId: Int, params: AnimationParams, offset: Coordinates) {
+fun AddFish(
+    animatableStorageMap: MutableMap<AnimatableType, Animatable<Float, AnimationVector1D>>,
+    animatableActivatedSet: HashSet<AnimatableType>,
+    fishInfo: FishInfo
+) {
+    fun getAnimatableValIfExists(animatable: AnimatableType): Float {
+        return if (animatableActivatedSet.contains(animatable))
+                (animatableStorageMap[animatable]?.value as Float) else 0f
+    }
+
     Image(
-        painter = painterResource(id = imageId),
+        painter = painterResource(id = fishInfo.fishId),
         contentDescription = "fish",
         modifier = Modifier
             .size(100.dp)
             .graphicsLayer {
-                translationX = params.xVal + offset.x
-                translationY = params.yVal + offset.y
-                rotationZ = params.rotateVal
-                rotationY = params.flipVal
+                translationX = getAnimatableValIfExists(AnimatableType.X) + fishInfo.coordinates.x
+                translationY = getAnimatableValIfExists(AnimatableType.Y) + fishInfo.coordinates.y
+                rotationZ = getAnimatableValIfExists(AnimatableType.ROTATE)
+                rotationY = getAnimatableValIfExists(AnimatableType.FLIP)
             }
     )
 }
