@@ -4,30 +4,25 @@ import com.hydrofish.app.R
 
 class ImageListFromScore {
     companion object {
-        private val FishDict = mapOf(
-            1 to R.drawable.fish1,
-            2 to R.drawable.fish2,
-            4 to R.drawable.fish3,
-            8 to R.drawable.fish4
+        private val FishList = listOf(
+            R.drawable.fish1,
+            R.drawable.fish2,
+            R.drawable.fish3,
+            R.drawable.fish4
         )
 
-        private fun decomposeValue(value: Int): List<Int> {
+        fun getFishList(value: Int): List<Int> {
             val composition = mutableListOf<Int>()
             var remainingValue = value
-            var power = 1
-            while (remainingValue > 0) {
+            var n = 0
+            while (remainingValue > 0 && n < FishList.size) {
                 if (remainingValue and 1 == 1) {
-                    composition.add(power)
+                    composition.add(FishList[n])
                 }
                 remainingValue = remainingValue ushr 1 // right shift by 1 (equivalent to division by 2)
-                power *= 2
+                n++
             }
             return composition
-        }
-
-        fun getFishList(score: Int): List<Int> {
-            val decomposedScore = decomposeValue(score)
-            return decomposedScore.map { FishDict[it] as Int }
         }
     }
 }
