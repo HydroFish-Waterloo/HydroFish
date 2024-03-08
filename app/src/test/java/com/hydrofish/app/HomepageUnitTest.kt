@@ -1,6 +1,5 @@
 package com.hydrofish.app
 
-import android.util.Log
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
@@ -34,4 +33,6 @@ class HomepageUnitTest {
 //        viewModel.increaseWaterLevel(1);
 //        assert(newFishCount == viewModel.uiState.value.fishTypeList.count());
 //    }
+
+
 }
