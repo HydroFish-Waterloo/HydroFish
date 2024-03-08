@@ -4,6 +4,10 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutElastic
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -44,7 +48,10 @@ import com.hydrofish.app.animations.AnimatableType
 import com.hydrofish.app.animations.FishInfo
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * Composable function that represents the home screen of the application.
@@ -144,6 +151,48 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
                     animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
                 )
             }
+
+            // update angles
+            launch {
+                animatableMap[AnimatableType.CYCLE]?.animateTo(
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(
+                        animation = tween(durationMillis = 3000, easing = LinearEasing),
+                        repeatMode = RepeatMode.Restart
+                    )
+                )
+            }
+
+            // update CYCLEX and CYCLEY
+            launch {
+                val cycleAnim = animatableMap[AnimatableType.CYCLE]
+                while (isActive) {
+                    cycleAnim?.value?.let { cycleValue ->
+                        val radians = Math.toRadians(cycleValue.toDouble())
+                        animatableMap[AnimatableType.CYCLEX]?.animateTo(
+                            targetValue = cos(radians).toFloat() * 200f,
+                            animationSpec = snap() // Use snap for immediate update
+                        )
+                    }
+
+                }
+            }
+
+            launch {
+                val cycleAnim = animatableMap[AnimatableType.CYCLE]
+                while (isActive) {
+                    cycleAnim?.value?.let { cycleValue ->
+                        val radians = Math.toRadians(cycleValue.toDouble())
+                        animatableMap[AnimatableType.CYCLEY]?.animateTo(
+                            targetValue = sin(radians).toFloat() * 200f,
+                            animationSpec = snap()
+                        )
+                    }
+
+                }
+            }
+
+
         }
     }
 
@@ -179,8 +228,8 @@ fun AddFish(
         modifier = Modifier
             .size(100.dp)
             .graphicsLayer {
-                translationX = getAnimatableValIfExists(AnimatableType.X) + fishInfo.coordinates.x
-                translationY = getAnimatableValIfExists(AnimatableType.Y) + fishInfo.coordinates.y
+                translationX = getAnimatableValIfExists(AnimatableType.X) + getAnimatableValIfExists(AnimatableType.CYCLEX)+ fishInfo.coordinates.x
+                translationY = getAnimatableValIfExists(AnimatableType.Y) + getAnimatableValIfExists(AnimatableType.CYCLEY)+ fishInfo.coordinates.y
                 rotationZ = getAnimatableValIfExists(AnimatableType.ROTATE)
                 rotationY = getAnimatableValIfExists(AnimatableType.FLIP)
             }

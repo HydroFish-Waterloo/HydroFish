@@ -11,8 +11,10 @@ data class HydroFishUIState(
     val animationGroupPositionHandler: AnimationGroupPositionHandler
         = AnimationGroupPositionHandler(
             listOf(
-                hashSetOf(AnimatableType.X, AnimatableType.FLIP),
-                hashSetOf(AnimatableType.Y, AnimatableType.ROTATE)
+                /*hashSetOf(AnimatableType.X, AnimatableType.FLIP),
+                hashSetOf(AnimatableType.Y, AnimatableType.ROTATE),
+                hashSetOf(AnimatableType.CYCLE, AnimatableType.CYCLEX, AnimatableType.CYCLEY),*/
+                hashSetOf(AnimatableType.CYCLE, AnimatableType.CYCLEX, AnimatableType.CYCLEY)
             ),
         )
 )
