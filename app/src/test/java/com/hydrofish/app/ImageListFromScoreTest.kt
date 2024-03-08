@@ -1,50 +1,39 @@
 package com.hydrofish.app
 
 import com.hydrofish.app.animations.ImageListFromScore
-import junit.framework.TestCase.assertEquals
-import org.junit.Before
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
 
-
-@RunWith(Parameterized::class)
-class ImageListFromScoreTest(private val input: Int, private val expectedImages: List<Int>) {
-    private lateinit var imgListFromScore: ImageListFromScore
-
-    companion object {
-        @JvmStatic
-        @Parameterized.Parameters(name = "getFishList({0}) should return images {1}")
-        fun data(): Collection<Array<Any>> {
-            return listOf(
-                arrayOf(0, emptyList<Int>()),
-                arrayOf(1, listOf(R.drawable.fish1)),
-                arrayOf(2, listOf(R.drawable.fish2)),
-                arrayOf(3, listOf(R.drawable.fish1, R.drawable.fish2)),
-                arrayOf(4, listOf(R.drawable.fish3)),
-                arrayOf(5, listOf(R.drawable.fish1, R.drawable.fish3)),
-                arrayOf(6, listOf(R.drawable.fish2, R.drawable.fish3)),
-                arrayOf(7, listOf(R.drawable.fish1, R.drawable.fish2, R.drawable.fish3)),
-                arrayOf(8, listOf(R.drawable.fish4)),
-                arrayOf(9, listOf(R.drawable.fish1, R.drawable.fish4)),
-                arrayOf(10, listOf(R.drawable.fish2, R.drawable.fish4)),
-                arrayOf(11, listOf(R.drawable.fish1, R.drawable.fish2, R.drawable.fish4)),
-                arrayOf(12, listOf(R.drawable.fish3, R.drawable.fish4)),
-                arrayOf(13, listOf(R.drawable.fish1, R.drawable.fish3, R.drawable.fish4)),
-                arrayOf(14, listOf(R.drawable.fish2, R.drawable.fish3, R.drawable.fish4)),
-                arrayOf(15, listOf(R.drawable.fish1, R.drawable.fish2, R.drawable.fish3, R.drawable.fish4))
-
-            )
-        }
-    }
-
-    @Before
-    fun setUp() {
-        imgListFromScore = ImageListFromScore()
-    }
+class ImageListFromScoreTest {
 
     @Test
-    fun testGetFishList() {
-        assertEquals(expectedImages, imgListFromScore.getFishList(input))
+    fun testGetFishList () {
+        // test cases
+        val testCases = mapOf(
+            -1 to emptyList(),
+            0 to emptyList(),
+            1 to listOf(R.drawable.fish1),
+            2 to listOf(R.drawable.fish2),
+            3 to listOf(R.drawable.fish1, R.drawable.fish2),
+            4 to listOf(R.drawable.fish3),
+            5 to listOf(R.drawable.fish1, R.drawable.fish3),
+            6 to listOf(R.drawable.fish2, R.drawable.fish3),
+            7 to listOf(R.drawable.fish1, R.drawable.fish2, R.drawable.fish3),
+            8 to listOf(R.drawable.fish4),
+            9 to listOf(R.drawable.fish1, R.drawable.fish4),
+            10 to listOf(R.drawable.fish2, R.drawable.fish4),
+            11 to listOf(R.drawable.fish1, R.drawable.fish2, R.drawable.fish4),
+            12 to listOf(R.drawable.fish3, R.drawable.fish4),
+            13 to listOf(R.drawable.fish1, R.drawable.fish3, R.drawable.fish4),
+            14 to listOf(R.drawable.fish2, R.drawable.fish3, R.drawable.fish4),
+            15 to listOf(R.drawable.fish1, R.drawable.fish2, R.drawable.fish3, R.drawable.fish4),
+            16 to emptyList()
+        )
+
+        // test
+        testCases.forEach { (input, expected) ->
+            val result = ImageListFromScore.getFishList(input)
+            assertEquals(expected, result)
+        }
     }
 }
