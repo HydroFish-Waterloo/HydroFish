@@ -21,6 +21,7 @@ class AnimationGroupPositionHandler(animationsPerGroup: List<HashSet<AnimatableT
         animationGroups = Collections.unmodifiableList(animationGroupMutable)
     }
 
+
     fun getAllFish(score: Int): List<AnimationGroup> {
         if (!populated) {
             val fishImageList = ImageListFromScore.getFishList(score);
