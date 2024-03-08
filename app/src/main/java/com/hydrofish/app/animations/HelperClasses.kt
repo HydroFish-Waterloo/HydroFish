@@ -20,5 +20,8 @@ enum class AnimatableType {
     X,
     Y,
     ROTATE,
-    FLIP
+    FLIP,
+    CYCLE,
+    CYCLEX,
+    CYCLEY
 }
