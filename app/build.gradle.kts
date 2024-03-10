@@ -99,4 +99,7 @@ dependencies {
 
     implementation(libs.gson)
 
+    implementation(libs.material.icons.extended)
+    implementation(libs.coil.compose)
+
 }

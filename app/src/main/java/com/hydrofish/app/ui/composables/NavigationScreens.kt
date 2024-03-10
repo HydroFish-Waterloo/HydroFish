@@ -26,7 +26,7 @@ fun NavigationScreens(modifier: Modifier, navController: NavHostController) {
         composable(NavItem.History.path) { HistoryScreen() }
         composable(NavItem.Reminder.path) { ReminderScreen(RealPermissionChecker()) }
         composable(NavItem.Achievements.path) { AchievementsScreen() }
-        composable(NavItem.Settings.path) { SettingsScreen(RealPermissionChecker(), RealPermissionResultHandler()
-        ) }
+        composable(NavItem.Settings.path) { SettingsScreen(RealPermissionChecker(), RealPermissionResultHandler(), navController)}
+        unauthenticatedGraph(navController)
     }
 }

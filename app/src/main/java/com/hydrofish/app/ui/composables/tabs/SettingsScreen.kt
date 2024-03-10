@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -37,8 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.navigation.NavHostController
 import com.hydrofish.app.permission.PermissionChecker
 import com.hydrofish.app.permission.PermissionResultHandler
+import com.hydrofish.app.ui.composables.NavigationRoutes
 
 /**
  * Composable function that represents the profile screen of the application.
@@ -46,7 +49,7 @@ import com.hydrofish.app.permission.PermissionResultHandler
 const val NOTIFICATION_KEY = "notification"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(permissionChecker: PermissionChecker, permissionResultHandler: PermissionResultHandler) {
+fun SettingsScreen(permissionChecker: PermissionChecker, permissionResultHandler: PermissionResultHandler, navController: NavHostController) {
     val context = LocalContext.current
     val sharedPreferences = remember {
         context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
@@ -103,6 +106,17 @@ fun SettingsScreen(permissionChecker: PermissionChecker, permissionResultHandler
                 .fillMaxWidth()
                 .padding(paddingValues)
         ) {
+            Button(
+                onClick = {
+                    navController.navigate(NavigationRoutes.Unauthenticated.Login.route)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text("Login")
+            }
+
             SettingSwitchItem(
                 title = "Notification",
                 description = "Turn on to receive notifications",
