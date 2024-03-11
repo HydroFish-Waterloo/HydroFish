@@ -1,0 +1,14 @@
+name: AndroidBuild
+
+on:
+  pull_request:
+    branches: [ main, Develop ]
+  push:
+    branches: [ main, Develop]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
