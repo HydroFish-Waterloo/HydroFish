@@ -11,4 +11,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4.1.1
+
+      - name: Set Up JDK
+        uses: actions/setup-java@v4.1.0
+
+      - name: Change gradle permissions
+        run: chmod +x ./gradlew
+
+      - name: Run Tests
+        run: ./gradlew test
+
+      - name: Build Project
+        run: ./gradlew assemble
