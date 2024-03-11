@@ -11,7 +11,6 @@ import org.junit.runners.Parameterized
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 
-@RunWith(Parameterized::class)
 class TimeConversionTest(private val input: String, private val expected: Int?) {
 
     class SharedPreferencesTest {
