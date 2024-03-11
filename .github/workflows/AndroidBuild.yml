@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ main, Develop ]
   push:
-    branches: [ main, Develop]
+    branches: [ main, Develop, feature-cicd-implement ]
 
 jobs:
   build:
