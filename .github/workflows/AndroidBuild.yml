@@ -17,6 +17,7 @@ jobs:
         uses: actions/setup-java@v4.1.0
         with:
           java-version: "17"
+          distribution: "adopt"
 
       - name: Change gradle permissions
         run: chmod +x ./gradlew
