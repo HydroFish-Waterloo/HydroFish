@@ -16,6 +16,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.ui.theme.HydroFishTheme
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
@@ -35,6 +37,8 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonElement
 import com.google.gson.JsonParseException
+import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.viewmodelfactories.SettingsViewModelFactory
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
@@ -52,31 +56,34 @@ interface ApiService {
     fun getHydrationData(): Call<List<HydrationEntry>> // Change the return type as per your response model
 }
 
-fun checkUserLoggedIn(context: Context): Boolean {
-    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-    return sharedPreferences.getBoolean("isLoggedIn", false)
-}
-
-
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val isLoggedIn = checkUserLoggedIn(applicationContext) // Implement this function to check the user's login status
-        setContent {
-            HydroFishTheme {
-                HistoryScreen(isLoggedIn)
-            }
-        }
-    }
-}
+//fun checkUserLoggedIn(context: Context): Boolean {
+//    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+//    return sharedPreferences.getBoolean("isLoggedIn", false)
+//}
+//
+//
+//class MainActivity : ComponentActivity() {
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        val isLoggedIn = checkUserLoggedIn(applicationContext) // Implement this function to check the user's login status
+//        setContent {
+//            HydroFishTheme {
+//                HistoryScreen(isLoggedIn)
+//            }
+//        }
+//    }
+//}
 
 @Composable
-fun HistoryScreen(isLoggedIn: Boolean) {
+fun HistoryScreen(userSessionRepository: UserSessionRepository) {
     var hydrationData by remember { mutableStateOf(emptyList<HydrationEntry>()) }
     //var hydrationDataSum by remember { mutableStateOf(emptyList<HydrationEntry>()) }
 
+    val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModelFactory(userSessionRepository))
+    val isUserLoggedIn by settingsViewModel.isLoggedIn.observeAsState(false)
+
     //login lock
-    if (!isLoggedIn) {
+    if (!isUserLoggedIn) {
         // If the user is not logged in, display a login screen or redirect to the login activity
         // You can replace the placeholder composable with your actual login screen
         LoginScreen()

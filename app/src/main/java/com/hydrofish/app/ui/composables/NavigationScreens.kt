@@ -32,7 +32,7 @@ fun NavigationScreens(modifier: Modifier, navController: NavHostController) {
 
     NavHost(navController, startDestination = NavItem.Home.path) {
         composable(NavItem.Home.path) { HomeScreen(modifier = modifier) }
-        composable(NavItem.History.path) { HistoryScreen() }
+        composable(NavItem.History.path) { HistoryScreen(userSessionRepository) }
         composable(NavItem.Reminder.path) { ReminderScreen(RealPermissionChecker()) }
         composable(NavItem.Achievements.path) { AchievementsScreen() }
         composable(NavItem.Settings.path) { SettingsScreen(RealPermissionChecker(), RealPermissionResultHandler(), navController, userSessionRepository)}
