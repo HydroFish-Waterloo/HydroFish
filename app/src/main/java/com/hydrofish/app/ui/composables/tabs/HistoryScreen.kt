@@ -2,6 +2,8 @@ package com.hydrofish.app.ui.composables.tabs
 
 import android.content.Context
 import android.os.Bundle
+import android.preference.PreferenceManager
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -12,18 +14,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import com.hydrofish.app.ui.theme.HydroFishTheme
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
@@ -35,30 +35,91 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonElement
 import com.google.gson.JsonParseException
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.http.GET
+
+
+interface ApiService {
+    //@Headers("Content-Type:application/json")
+    @GET("hydrofish/getwaterhistory/") // Replace "endpoint" with your API endpoint
+    fun getHydrationData(): Call<List<HydrationEntry>> // Change the return type as per your response model
+}
+
+fun checkUserLoggedIn(context: Context): Boolean {
+    val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    return sharedPreferences.getBoolean("isLoggedIn", false)
+}
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val isLoggedIn = checkUserLoggedIn(applicationContext) // Implement this function to check the user's login status
         setContent {
             HydroFishTheme {
-                HistoryScreen()
+                HistoryScreen(isLoggedIn)
             }
         }
     }
 }
 
 @Composable
-fun HistoryScreen() {
+fun HistoryScreen(isLoggedIn: Boolean) {
+    var hydrationData by remember { mutableStateOf(emptyList<HydrationEntry>()) }
+    //var hydrationDataSum by remember { mutableStateOf(emptyList<HydrationEntry>()) }
+
+    //login lock
+    if (!isLoggedIn) {
+        // If the user is not logged in, display a login screen or redirect to the login activity
+        // You can replace the placeholder composable with your actual login screen
+        LoginScreen()
+        return
+    }
+
+    fun fetchHydrationData() {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://10.0.2.2:8000/") // Replace with your API base URL
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+
+        val apiService = retrofit.create(ApiService::class.java)
+        val call = apiService.getHydrationData()
+
+        call.enqueue(object : Callback<List<HydrationEntry>> {
+            override fun onResponse(call: Call<List<HydrationEntry>>, response: Response<List<HydrationEntry>>) {
+                if (response.isSuccessful) {
+                    hydrationData = response.body() ?: emptyList()
+                } else {
+                    Log.e("MainActivity", "Failed to login: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<List<HydrationEntry>>, t: Throwable) {
+                Log.e("MainActivity", "Error occurred while logging in", t)
+            }
+        })
+    }
+
+    LaunchedEffect(Unit) {
+        fetchHydrationData()
+    }
+
+    val hydrationDataSum = aggregateHydrationDataByDay(hydrationData)
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         // Extract hydration data from historyData
-        val hydrationData = readHydrationDataFromJson(LocalContext.current)
+        //val hydrationData = readHydrationDataFromJson(LocalContext.current)
+        //val hydrationDataSum = aggregateHydrationDataByDay(hydrationData)
         // Sample data for the list
 //        val hydrationData = listOf(
 //            HydrationEntry("2022-01-01", 200),
@@ -87,11 +148,13 @@ fun HistoryScreen() {
             Spacer(modifier = Modifier.height(16.dp))
 
             // Button to switch between different data sets
-            var chartData by remember { mutableStateOf(hydrationData) }
+
+            var chartData by remember { mutableStateOf(hydrationDataSum) }
+            var chartDataSingle by remember { mutableStateOf(hydrationData) }
 
             Row {
                 Button(
-                    onClick = { chartData = hydrationData.takeLast(3) },
+                    onClick = { chartData = hydrationDataSum.takeLast(3) },
                     modifier = Modifier
                         .weight(1.2f)
                         .fillMaxWidth()
@@ -103,7 +166,7 @@ fun HistoryScreen() {
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
-                    onClick = { chartData = hydrationData.takeLast(7) },
+                    onClick = { chartData = hydrationDataSum.takeLast(7) },
                     modifier = Modifier
                         .weight(1.2f)
                         .fillMaxWidth()
@@ -115,7 +178,7 @@ fun HistoryScreen() {
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
-                    onClick = { chartData = hydrationData.takeLast(30) },
+                    onClick = { chartData = hydrationDataSum.takeLast(30) },
                     modifier = Modifier
                         .weight(1.2f)
                         .fillMaxWidth()
@@ -151,7 +214,7 @@ fun HistoryScreen() {
                     .fillMaxSize()
                     .background(color = Color.Gray)
             ) {
-                items(chartData) { entry ->
+                items(chartDataSingle) { entry ->
                     HydrationListItem(entry)
                 }
             }
@@ -192,6 +255,7 @@ fun HydrationListItem(entry: HydrationEntry) {
 }
 
 data class HydrationEntry(val date: Date, val hydrationAmount: Int)
+data class HydrationSumEntry(val date: Date, val hydrationAmount: Int)
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
@@ -235,17 +299,38 @@ class HydrationEntryDeserializer : JsonDeserializer<List<HydrationEntry>> {
     }
 }
 
-fun readHydrationDataFromJson(context: Context): List<HydrationEntry> {
-    val gson = GsonBuilder()
-        .registerTypeAdapter(object : TypeToken<List<HydrationEntry>>() {}.type, HydrationEntryDeserializer())
-        .create()
+//fun readHydrationDataFromJson(context: Context): List<HydrationEntry> {
+//    val gson = GsonBuilder()
+//        .registerTypeAdapter(object : TypeToken<List<HydrationEntry>>() {}.type, HydrationEntryDeserializer())
+//        .create()
+//
+//    // Get the InputStream to the JSON file
+//    val inputStream = context.assets.open("arthur_water_intake_realistic.json")
+//
+//    // Read the JSON file into a string
+//    val jsonString = inputStream.bufferedReader().use { it.readText() }
+//
+//    // Deserialize the JSON string into a list of HydrationEntry objects
+//    return gson.fromJson(jsonString, object : TypeToken<List<HydrationEntry>>() {}.type)
+//}
 
-    // Get the InputStream to the JSON file
-    val inputStream = context.assets.open("arthur_water_intake_realistic.json")
+fun aggregateHydrationDataByDay(hydrationData: List<HydrationEntry>): List<HydrationEntry> {
+    val aggregatedData = mutableMapOf<String, Int>()
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
 
-    // Read the JSON file into a string
-    val jsonString = inputStream.bufferedReader().use { it.readText() }
+    for (entry in hydrationData) {
+        val date = dateFormat.format(entry.date)
+        val amount = entry.hydrationAmount
+        aggregatedData[date] = aggregatedData.getOrDefault(date, 0) + amount
+    }
 
-    // Deserialize the JSON string into a list of HydrationEntry objects
-    return gson.fromJson(jsonString, object : TypeToken<List<HydrationEntry>>() {}.type)
+    // Convert aggregated data back to list of HydrationEntry objects
+    return aggregatedData.map { (date, amount) ->
+        HydrationEntry(
+            date = dateFormat.parse(date), // Parse date string back to Date object
+            hydrationAmount = amount
+        )
+    }
 }
+
+
