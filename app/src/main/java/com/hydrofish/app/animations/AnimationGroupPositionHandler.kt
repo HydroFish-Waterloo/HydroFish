@@ -23,14 +23,18 @@ class AnimationGroupPositionHandler(animationsPerGroup: List<HashSet<AnimatableT
 
 
     fun getAllFish(score: Int): List<AnimationGroup> {
-        if (!populated) {
+        //if (!populated) {
+            for (animationGroup in animationGroups) {
+                // Clear the fish list for each AnimationGroup
+                animationGroup.clearFishList()
+            }
             val fishImageList = ImageListFromScore.getFishList(score);
             for (fishId in fishImageList) {
                 val animationIdx = Random.nextInt(animationGroups.size)
                 animationGroups[animationIdx].storeFish(fishId)
             }
-            populated = true
-        }
+            /*populated = true
+        }*/
 
         return animationGroups
     }
@@ -60,6 +64,10 @@ class AnimationGroup(
         val randomElement = fishList.asSequence().shuffled().find { true }
         val newCoordinates = randomElement?.coordinates?.getRandOffsetCoordinates(200f) as Coordinates
         fishList.add(FishInfo(newCoordinates, fishId))
+    }
+
+    fun clearFishList() {
+        fishList.clear()
     }
 
     fun getFishListWithAnim(): FishAnimAndList {

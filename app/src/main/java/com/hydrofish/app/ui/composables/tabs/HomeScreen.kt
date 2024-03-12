@@ -1,5 +1,6 @@
 package com.hydrofish.app.ui.composables.tabs
 
+import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.EaseInOut
@@ -81,7 +82,9 @@ fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
     Box(modifier = modifier.background(largeRadialGradient),
         contentAlignment = Alignment.Center,
         ) {
-        AddFishAnimation()
+        AddFishAnimation(hydroFishViewModel)
+        Log.d("HydroFishViewModel", "HomeScreen fish score: ${hydroFishUIState.fishScore}")
+        Log.d("HydroFishViewModel", "HomeScreen presentedFish size: ${hydroFishUIState.presentedFish.size}")
 
         AddProgessBar(waterPercent, modifier.align(Alignment.CenterEnd))
 
@@ -202,7 +205,8 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
         }
     }
 
-    for (animationGroup in hydroFishViewModel.getAllFish()) {
+    val uiState by hydroFishViewModel.uiState.collectAsState()
+    for (animationGroup in uiState.presentedFish) {
         val fishAnimAndList = animationGroup.getFishListWithAnim()
         for (fishInfo in fishAnimAndList.fishes) {
             AddFish(animatableMap, fishAnimAndList.animatableTypes, fishInfo)
