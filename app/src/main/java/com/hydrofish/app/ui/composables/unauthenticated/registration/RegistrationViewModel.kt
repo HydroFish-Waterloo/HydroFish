@@ -1,18 +1,25 @@
 package com.hydrofish.app.ui.composables.unauthenticated.registration
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.hydrofish.app.api.ApiClient
+import com.hydrofish.app.api.AuthSuccess
+import com.hydrofish.app.api.RegisterRequest
 import com.hydrofish.app.ui.common.state.ErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.RegistrationErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.RegistrationState
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.RegistrationUiEvent
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.confirmPasswordEmptyErrorState
-import com.hydrofish.app.ui.composables.unauthenticated.registration.state.emailEmptyErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.mobileNumberEmptyErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.passwordEmptyErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.passwordMismatchErrorState
+import com.hydrofish.app.ui.composables.unauthenticated.registration.state.userNameEmptyErrorState
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-class RegistrationViewModel : ViewModel() {
+class RegistrationViewModel(private val onTokenReceived: (String) -> Unit) : ViewModel() {
 
     var registrationState = mutableStateOf(RegistrationState())
         private set
@@ -23,14 +30,14 @@ class RegistrationViewModel : ViewModel() {
     fun onUiEvent(registrationUiEvent: RegistrationUiEvent) {
         when (registrationUiEvent) {
 
-            // Email id changed event
-            is RegistrationUiEvent.EmailChanged -> {
+            // UserName changed event
+            is RegistrationUiEvent.UserNameChanged -> {
                 registrationState.value = registrationState.value.copy(
-                    emailId = registrationUiEvent.inputValue,
+                    userName = registrationUiEvent.inputValue,
                     errorState = registrationState.value.errorState.copy(
-                        emailIdErrorState = if (registrationUiEvent.inputValue.trim().isEmpty()) {
-                            // Email id empty state
-                            emailEmptyErrorState
+                        userNameErrorState = if (registrationUiEvent.inputValue.trim().isEmpty()) {
+                            // UserName empty state
+                            userNameEmptyErrorState
                         } else {
                             // Valid state
                             ErrorState()
@@ -105,9 +112,37 @@ class RegistrationViewModel : ViewModel() {
             is RegistrationUiEvent.Submit -> {
                 val inputsValidated = validateInputs()
                 if (inputsValidated) {
-                    // TODO Trigger registration in authentication flow
-                    registrationState.value =
-                        registrationState.value.copy(isRegistrationSuccessful = true)
+
+
+                    val registerRequest = RegisterRequest(username = registrationState.value.userName, password1 = registrationState.value.password, password2 = registrationState.value.confirmPassword)
+                    val call = ApiClient.apiService.registerUser(registerRequest)
+                    call.enqueue(object : Callback<AuthSuccess> {
+                        override fun onResponse(call: Call<AuthSuccess>, response: Response<AuthSuccess>) {
+                            if (response.isSuccessful) {
+                                val token = response.body()
+                                // Handle the retrieved post data
+                                Log.d("MainActivity", "Register here is token: $token")
+
+                                if (token != null) {
+                                    onTokenReceived(token.token)
+                                    registrationState.value =
+                                        registrationState.value.copy(isRegistrationSuccessful = true)
+                                } else{
+
+                                }
+                            } else {
+                                // Handle error
+                                Log.e("MainActivity", "Failed to Register: ${response.code()}")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<AuthSuccess>, t: Throwable) {
+                            // Handle failure
+                            Log.e("MainActivity", "Error occurred while Register", t)
+                        }
+                    })
+
+
                 }
             }
         }
@@ -120,18 +155,18 @@ class RegistrationViewModel : ViewModel() {
      * @return false -> inputs are invalid
      */
     private fun validateInputs(): Boolean {
-        val emailString = registrationState.value.emailId.trim()
+        val userNameString = registrationState.value.userName.trim()
         val mobileNumberString = registrationState.value.mobileNumber.trim()
         val passwordString = registrationState.value.password.trim()
         val confirmPasswordString = registrationState.value.confirmPassword.trim()
 
         return when {
 
-            // Email empty
-            emailString.isEmpty() -> {
+            // UserName empty
+            userNameString.isEmpty() -> {
                 registrationState.value = registrationState.value.copy(
                     errorState = RegistrationErrorState(
-                        emailIdErrorState = emailEmptyErrorState
+                        userNameErrorState = userNameEmptyErrorState
                     )
                 )
                 false

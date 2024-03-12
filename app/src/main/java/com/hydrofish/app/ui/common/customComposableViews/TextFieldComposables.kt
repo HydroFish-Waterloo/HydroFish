@@ -96,11 +96,11 @@ fun PasswordTextField(
 }
 
 /**
- * Email Text Field
+ * UserName Text Field
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EmailTextField(
+fun UserNameTextField(
     modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
@@ -119,7 +119,7 @@ fun EmailTextField(
         },
         maxLines = 1,
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Email,
+            keyboardType = KeyboardType.Text,
             imeAction = imeAction
         ),
         isError = isError,

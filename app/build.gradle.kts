@@ -102,4 +102,10 @@ dependencies {
     implementation(libs.material.icons.extended)
     implementation(libs.coil.compose)
 
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
+    implementation(libs.security.crypto)
+
+
 }

@@ -16,6 +16,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -25,13 +26,23 @@ import com.hydrofish.app.ui.common.customComposableViews.TitleText
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.RegistrationUiEvent
 import com.hydrofish.app.ui.theme.AppTheme
 import com.hydrofish.app.ui.theme.ComposeLoginTheme
+import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.viewmodelfactories.RegisterViewModelFactory
 
 @Composable
 fun RegistrationScreen(
-    registrationViewModel: RegistrationViewModel = viewModel(),
+//    registrationViewModel: RegistrationViewModel = viewModel(),
     onNavigateBack: () -> Unit,
-    onNavigateToAuthenticatedRoute: () -> Unit
+    onNavigateToAuthenticatedRoute: () -> Unit,
+    userSessionRepository: UserSessionRepository
 ) {
+    val context = LocalContext.current
+
+    val onTokenReceived: (String) -> Unit = { token ->
+        userSessionRepository.saveToken(token)
+    }
+
+    val registrationViewModel: RegistrationViewModel = viewModel(factory = RegisterViewModelFactory(onTokenReceived))
 
     val registrationState by remember {
         registrationViewModel.registrationState
@@ -87,9 +98,9 @@ fun RegistrationScreen(
                      */
                     RegistrationInputs(
                         registrationState = registrationState,
-                        onEmailIdChange = { inputString ->
+                        onUserNameChange = { inputString ->
                             registrationViewModel.onUiEvent(
-                                registrationUiEvent = RegistrationUiEvent.EmailChanged(
+                                registrationUiEvent = RegistrationUiEvent.UserNameChanged(
                                     inputValue = inputString
                                 )
                             )
@@ -130,6 +141,6 @@ fun RegistrationScreen(
 @Composable
 fun PreviewRegistrationScreen() {
     ComposeLoginTheme {
-        RegistrationScreen(onNavigateBack = {}, onNavigateToAuthenticatedRoute = {})
+        RegistrationScreen(onNavigateBack = {}, onNavigateToAuthenticatedRoute = {}, userSessionRepository = UserSessionRepository(LocalContext.current))
     }
 }

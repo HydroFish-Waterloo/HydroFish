@@ -13,15 +13,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import com.hydrofish.app.R
-import com.hydrofish.app.ui.common.customComposableViews.EmailTextField
 import com.hydrofish.app.ui.common.customComposableViews.NormalButton
 import com.hydrofish.app.ui.common.customComposableViews.PasswordTextField
+import com.hydrofish.app.ui.common.customComposableViews.UserNameTextField
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.LoginState
 import com.hydrofish.app.ui.theme.AppTheme
 @Composable
 fun LoginInputs(
     loginState: LoginState,
-    onEmailOrMobileChange: (String) -> Unit,
+    onUserNameOrMobileChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onSubmit: () -> Unit,
     onForgotPasswordClick: () -> Unit
@@ -30,16 +30,16 @@ fun LoginInputs(
     // Login Inputs Section
     Column(modifier = Modifier.fillMaxWidth()) {
 
-        // Email or Mobile Number
-        EmailTextField(
+        // UserName
+        UserNameTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = AppTheme.dimens.paddingLarge),
-            value = loginState.emailOrMobile,
-            onValueChange = onEmailOrMobileChange,
-            label = stringResource(id = R.string.login_email_id_or_phone_label),
-            isError = loginState.errorState.emailOrMobileErrorState.hasError,
-            errorText = stringResource(id = loginState.errorState.emailOrMobileErrorState.errorMessageStringResource)
+            value = loginState.userName,
+            onValueChange = onUserNameOrMobileChange,
+            label = stringResource(id = R.string.login_user_name_label),
+            isError = loginState.errorState.userNameErrorState.hasError,
+            errorText = stringResource(id = loginState.errorState.userNameErrorState.errorMessageStringResource)
         )
 
 

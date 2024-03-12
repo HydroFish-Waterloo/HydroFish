@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -25,6 +26,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -38,10 +40,13 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.hydrofish.app.permission.PermissionChecker
 import com.hydrofish.app.permission.PermissionResultHandler
 import com.hydrofish.app.ui.composables.NavigationRoutes
+import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.viewmodelfactories.SettingsViewModelFactory
 
 /**
  * Composable function that represents the profile screen of the application.
@@ -49,8 +54,16 @@ import com.hydrofish.app.ui.composables.NavigationRoutes
 const val NOTIFICATION_KEY = "notification"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(permissionChecker: PermissionChecker, permissionResultHandler: PermissionResultHandler, navController: NavHostController) {
+fun SettingsScreen(permissionChecker: PermissionChecker,
+                   permissionResultHandler: PermissionResultHandler,
+                   navController: NavHostController,
+                   userSessionRepository: UserSessionRepository
+) {
     val context = LocalContext.current
+
+    val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModelFactory(userSessionRepository))
+    val isUserLoggedIn by settingsViewModel.isLoggedIn.observeAsState(false)
+
     val sharedPreferences = remember {
         context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
     }
@@ -108,13 +121,18 @@ fun SettingsScreen(permissionChecker: PermissionChecker, permissionResultHandler
         ) {
             Button(
                 onClick = {
-                    navController.navigate(NavigationRoutes.Unauthenticated.Login.route)
+                    if (isUserLoggedIn) {
+                        settingsViewModel.logout()
+                    } else {
+                        navController.navigate(NavigationRoutes.Unauthenticated.Login.route)
+                    }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isUserLoggedIn) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Text("Login")
+                Text(if (isUserLoggedIn) "Logout" else "Login")
             }
 
             SettingSwitchItem(

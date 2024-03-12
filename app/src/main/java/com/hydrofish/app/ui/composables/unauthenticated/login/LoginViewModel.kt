@@ -1,18 +1,27 @@
 package com.hydrofish.app.ui.composables.unauthenticated.login
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.hydrofish.app.api.ApiClient
+import com.hydrofish.app.api.AuthSuccess
+import com.hydrofish.app.api.LoginRequest
 import com.hydrofish.app.ui.common.state.ErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.LoginErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.LoginState
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.LoginUiEvent
-import com.hydrofish.app.ui.composables.unauthenticated.login.state.emailOrMobileEmptyErrorState
+import com.hydrofish.app.ui.composables.unauthenticated.login.state.UserNameEmptyErrorState
+import com.hydrofish.app.ui.composables.unauthenticated.login.state.UserNameWrongErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.passwordEmptyErrorState
+import com.hydrofish.app.ui.composables.unauthenticated.login.state.passwordWrongErrorState
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 /**
  * ViewModel for Login Screen
  */
-class LoginViewModel : ViewModel() {
+class LoginViewModel(private val onTokenReceived: (String) -> Unit) : ViewModel() {
 
     var loginState = mutableStateOf(LoginState())
         private set
@@ -23,15 +32,15 @@ class LoginViewModel : ViewModel() {
     fun onUiEvent(loginUiEvent: LoginUiEvent) {
         when (loginUiEvent) {
 
-            // Email/Mobile changed
-            is LoginUiEvent.EmailOrMobileChanged -> {
+            // UserName changed
+            is LoginUiEvent.UserNameChanged -> {
                 loginState.value = loginState.value.copy(
-                    emailOrMobile = loginUiEvent.inputValue,
+                    userName = loginUiEvent.inputValue,
                     errorState = loginState.value.errorState.copy(
-                        emailOrMobileErrorState = if (loginUiEvent.inputValue.trim().isNotEmpty())
+                        userNameErrorState = if (loginUiEvent.inputValue.trim().isNotEmpty())
                             ErrorState()
                         else
-                            emailOrMobileEmptyErrorState
+                            UserNameEmptyErrorState
                     )
                 )
             }
@@ -54,7 +63,42 @@ class LoginViewModel : ViewModel() {
                 val inputsValidated = validateInputs()
                 if (inputsValidated) {
                     // TODO Trigger login in authentication flow
-                    loginState.value = loginState.value.copy(isLoginSuccessful = true)
+
+                    val loginRequest = LoginRequest(username = loginState.value.userName, password = loginState.value.password)
+                    val call = ApiClient.apiService.loginUser(loginRequest)
+                    call.enqueue(object : Callback<AuthSuccess> {
+                        override fun onResponse(call: Call<AuthSuccess>, response: Response<AuthSuccess>) {
+                            if (response.isSuccessful) {
+                                val token = response.body()
+                                // Handle the retrieved post data
+                                Log.d("MainActivity", "Login here is token: " + token?.token)
+                                if (token != null) {
+                                    onTokenReceived(token.token)
+                                    loginState.value = loginState.value.copy(isLoginSuccessful = true)
+                                } else{
+
+                                }
+//                                SecureStorage.saveToken(context, "your_token_here")
+
+                            } else {
+                                // Handle error
+                                loginState.value = loginState.value.copy(
+                                    errorState = loginState.value.errorState.copy(
+                                        userNameErrorState = UserNameWrongErrorState,
+                                        passwordErrorState = passwordWrongErrorState
+                                    )
+                                )
+                                Log.e("MainActivity", "Failed to login: ${response.code()}")
+                            }
+                        }
+
+                        override fun onFailure(call: Call<AuthSuccess>, t: Throwable) {
+                            // Handle failure
+                            Log.e("MainActivity", "Error occurred while logging in", t)
+                        }
+                    })
+
+//                    loginState.value = loginState.value.copy(isLoginSuccessful = true)
                 }
             }
         }
@@ -67,15 +111,15 @@ class LoginViewModel : ViewModel() {
      * @return false -> inputs are invalid
      */
     private fun validateInputs(): Boolean {
-        val emailOrMobileString = loginState.value.emailOrMobile.trim()
+        val userNameString = loginState.value.userName.trim()
         val passwordString = loginState.value.password
         return when {
 
-            // Email/Mobile empty
-            emailOrMobileString.isEmpty() -> {
+            // UserName empty
+            userNameString.isEmpty() -> {
                 loginState.value = loginState.value.copy(
                     errorState = LoginErrorState(
-                        emailOrMobileErrorState = emailOrMobileEmptyErrorState
+                        userNameErrorState = UserNameEmptyErrorState
                     )
                 )
                 false

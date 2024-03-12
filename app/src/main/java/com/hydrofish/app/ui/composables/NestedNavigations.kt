@@ -6,12 +6,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.hydrofish.app.ui.composables.unauthenticated.login.LoginScreen
 import com.hydrofish.app.ui.composables.unauthenticated.registration.RegistrationScreen
+import com.hydrofish.app.utils.UserSessionRepository
 
 /**
  * Login, registration, forgot password screens nav graph builder
  * (Unauthenticated user)
  */
-fun NavGraphBuilder.unauthenticatedGraph(navController: NavController) {
+fun NavGraphBuilder.unauthenticatedGraph(navController: NavController, userSessionRepository: UserSessionRepository) {
 
     navigation(
         route = NavigationRoutes.Unauthenticated.NavigationRoute.route,
@@ -36,6 +37,7 @@ fun NavGraphBuilder.unauthenticatedGraph(navController: NavController) {
                 onNavigateBack = {
                     navController.navigateUp()
                 },
+                userSessionRepository = userSessionRepository,
             )
         }
 
@@ -52,7 +54,8 @@ fun NavGraphBuilder.unauthenticatedGraph(navController: NavController) {
 //                        }
 //                    }
                     navController.popBackStack(route = NavigationRoutes.Unauthenticated.Login.route, inclusive = true)
-                }
+                },
+                userSessionRepository = userSessionRepository,
             )
         }
     }

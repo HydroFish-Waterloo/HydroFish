@@ -6,7 +6,7 @@ import com.hydrofish.app.ui.common.state.ErrorState
  * Registration State holding ui input values
  */
 data class RegistrationState(
-    val emailId: String = "",
+    val userName: String = "",
     val mobileNumber: String = "",
     val password: String = "",
     val confirmPassword: String = "",
@@ -19,7 +19,7 @@ data class RegistrationState(
  * text field validation errors
  */
 data class RegistrationErrorState(
-    val emailIdErrorState: ErrorState = ErrorState(),
+    val userNameErrorState: ErrorState = ErrorState(),
     val mobileNumberErrorState: ErrorState = ErrorState(),
     val passwordErrorState: ErrorState = ErrorState(),
     val confirmPasswordErrorState: ErrorState = ErrorState()

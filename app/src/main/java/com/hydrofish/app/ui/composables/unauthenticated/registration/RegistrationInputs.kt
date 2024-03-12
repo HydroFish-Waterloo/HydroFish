@@ -8,17 +8,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import com.hydrofish.app.R
-import com.hydrofish.app.ui.common.customComposableViews.EmailTextField
 import com.hydrofish.app.ui.common.customComposableViews.MobileNumberTextField
 import com.hydrofish.app.ui.common.customComposableViews.NormalButton
 import com.hydrofish.app.ui.common.customComposableViews.PasswordTextField
+import com.hydrofish.app.ui.common.customComposableViews.UserNameTextField
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.RegistrationState
 import com.hydrofish.app.ui.theme.AppTheme
 
 @Composable
 fun RegistrationInputs(
     registrationState: RegistrationState,
-    onEmailIdChange: (String) -> Unit,
+    onUserNameChange: (String) -> Unit,
     onMobileNumberChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onConfirmPasswordChange: (String) -> Unit,
@@ -27,16 +27,16 @@ fun RegistrationInputs(
     // Login Inputs Section
     Column(modifier = Modifier.fillMaxWidth()) {
 
-        // Email ID
-        EmailTextField(
+        // UserName
+        UserNameTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = AppTheme.dimens.paddingLarge),
-            value = registrationState.emailId,
-            onValueChange = onEmailIdChange,
-            label = stringResource(id = R.string.registration_email_label),
-            isError = registrationState.errorState.emailIdErrorState.hasError,
-            errorText = stringResource(id = registrationState.errorState.emailIdErrorState.errorMessageStringResource),
+            value = registrationState.userName,
+            onValueChange = onUserNameChange,
+            label = stringResource(id = R.string.registration_user_name_label),
+            isError = registrationState.errorState.userNameErrorState.hasError,
+            errorText = stringResource(id = registrationState.errorState.userNameErrorState.errorMessageStringResource),
             imeAction = ImeAction.Next
         )
 
