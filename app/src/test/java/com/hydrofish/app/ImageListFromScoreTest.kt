@@ -7,7 +7,7 @@ import org.junit.Test
 class ImageListFromScoreTest {
 
     @Test
-    fun testGetFishList () {
+    fun testGetFishList() {
         // test cases
         val testCases = mapOf(
             -1 to emptyList(),
@@ -33,7 +33,8 @@ class ImageListFromScoreTest {
         // test
         testCases.forEach { (input, expected) ->
             val result = ImageListFromScore.getFishList(input)
-            assertEquals(expected, result)
+            assertEquals("Input: $input", expected, result)
         }
+
     }
 }
