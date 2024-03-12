@@ -11,6 +11,7 @@ import org.junit.runners.Parameterized
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 
+@RunWith(Parameterized::class)
 class TimeConversionTest(private val input: String, private val expected: Int?) {
 
     class SharedPreferencesTest {
@@ -96,7 +97,7 @@ class TimeConversionTest(private val input: String, private val expected: Int?) 
         fun data(): Collection<Array<Any?>> {
             return listOf(
                 arrayOf("12:34", 12 * 3600 + 34 * 60),
-                arrayOf("00:00", 0),
+                arrayOf("0:0", 0),
                 arrayOf("23:59", 23 * 3600 + 59 * 60),
                 arrayOf("24:00", null),
                 arrayOf("00:60", null),
@@ -105,15 +106,14 @@ class TimeConversionTest(private val input: String, private val expected: Int?) 
         }
     }
 
-    // TODO - test does not work
-//    @Test
-//    fun timeStringToSeconds_ValidAndInvalidTimes_CorrectlyConvertedOrThrowsException() {
-//        if (expected != null) {
-//            assertEquals(expected, timeStringToSeconds(input))
-//        } else {
-//            assertThrows(IllegalArgumentException::class.java) {
-//                timeStringToSeconds(input)
-//            }
-//        }
-//    }
+    @Test
+    fun timeStringToSeconds_ValidAndInvalidTimes_CorrectlyConvertedOrThrowsException() {
+        if (expected != null) {
+            assertEquals(expected, timeStringToSeconds(input))
+        } else {
+            assertThrows(IllegalArgumentException::class.java) {
+                timeStringToSeconds(input)
+            }
+        }
+    }
 }
