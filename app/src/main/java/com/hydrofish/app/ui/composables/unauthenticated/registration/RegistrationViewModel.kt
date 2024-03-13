@@ -3,8 +3,10 @@ package com.hydrofish.app.ui.composables.unauthenticated.registration
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.google.gson.Gson
 import com.hydrofish.app.api.ApiClient
 import com.hydrofish.app.api.AuthSuccess
+import com.hydrofish.app.api.RegisterError
 import com.hydrofish.app.api.RegisterRequest
 import com.hydrofish.app.ui.common.state.ErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.RegistrationErrorState
@@ -19,7 +21,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class RegistrationViewModel(private val onTokenReceived: (String) -> Unit) : ViewModel() {
+class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit) : ViewModel() {
 
     var registrationState = mutableStateOf(RegistrationState())
         private set
@@ -119,12 +121,12 @@ class RegistrationViewModel(private val onTokenReceived: (String) -> Unit) : Vie
                     call.enqueue(object : Callback<AuthSuccess> {
                         override fun onResponse(call: Call<AuthSuccess>, response: Response<AuthSuccess>) {
                             if (response.isSuccessful) {
-                                val token = response.body()
+                                val data = response.body()
                                 // Handle the retrieved post data
-                                Log.d("MainActivity", "Register here is token: $token")
+                                Log.d("MainActivity", "Register here is token: $data")
 
-                                if (token != null) {
-                                    onTokenReceived(token.token)
+                                if (data != null) {
+                                    onTokenReceived(data.token,data.username)
                                     registrationState.value =
                                         registrationState.value.copy(isRegistrationSuccessful = true)
                                 } else{
@@ -132,6 +134,51 @@ class RegistrationViewModel(private val onTokenReceived: (String) -> Unit) : Vie
                                 }
                             } else {
                                 // Handle error
+                                val errorBody = response.errorBody()?.string()
+                                val gson = Gson()
+                                val registerError = gson.fromJson(errorBody, RegisterError::class.java)
+                                if (registerError.username != null) {
+                                    // Handle username error
+                                    Log.e("MainActivity", "Username error: ${registerError.username.first()}")
+                                    registrationState.value = registrationState.value.copy(
+                                        errorState = registrationState.value.errorState.copy(
+                                            userNameErrorState = ErrorState(
+                                                hasError = true,
+                                                errorMessageString = registerError.username.first()
+                                            )
+                                        )
+                                    )
+                                } else if (registerError.password1 != null) {
+                                    // Handle password2 error
+                                    Log.e("MainActivity", "Password2 error: ${registerError.password1.first()}")
+                                    registrationState.value = registrationState.value.copy(
+                                        errorState = registrationState.value.errorState.copy(
+                                            passwordErrorState = ErrorState(
+                                                hasError = true,
+                                                errorMessageString = registerError.password1.first()
+                                            ),
+                                            confirmPasswordErrorState = ErrorState(
+                                                    hasError = true,
+                                                    errorMessageString = registerError.password1.first()
+                                            )
+                                        )
+                                    )
+                                } else if (registerError.password2 != null) {
+                                    // Handle password2 error
+                                    Log.e("MainActivity", "Password2 error: ${registerError.password2.first()}")
+                                    registrationState.value = registrationState.value.copy(
+                                        errorState = registrationState.value.errorState.copy(
+                                            confirmPasswordErrorState = ErrorState(
+                                                hasError = true,
+                                                errorMessageString = registerError.password2.first()
+                                            ),
+                                            passwordErrorState = ErrorState(
+                                                hasError = true,
+                                                errorMessageString = registerError.password2.first()
+                                            )
+                                        )
+                                    )
+                                }
                                 Log.e("MainActivity", "Failed to Register: ${response.code()}")
                             }
                         }

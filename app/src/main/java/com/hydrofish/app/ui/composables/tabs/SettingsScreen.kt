@@ -8,11 +8,14 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -33,15 +36,22 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.hydrofish.app.R
 import com.hydrofish.app.permission.PermissionChecker
 import com.hydrofish.app.permission.PermissionResultHandler
 import com.hydrofish.app.ui.composables.NavigationRoutes
@@ -63,6 +73,7 @@ fun SettingsScreen(permissionChecker: PermissionChecker,
 
     val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModelFactory(userSessionRepository))
     val isUserLoggedIn by settingsViewModel.isLoggedIn.observeAsState(false)
+    val userName = remember { userSessionRepository.getUserName() ?: "" }
 
     val sharedPreferences = remember {
         context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
@@ -119,6 +130,49 @@ fun SettingsScreen(permissionChecker: PermissionChecker,
                 .fillMaxWidth()
                 .padding(paddingValues)
         ) {
+
+            if (isUserLoggedIn && userName != null) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+//                    Image(
+//                        painter = rememberAsyncImagePainter(model = R.drawable.user_avatar), // 替换为实际的头像URL或资源ID
+//                        contentDescription = "User Avatar",
+//                        modifier = Modifier
+//                            .size(64.dp)
+//                            .clip(CircleShape)
+//                    )
+                    AsyncImage(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape),
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(data = R.drawable.user_avatar)
+                            .crossfade(enable = true)
+                            .build(),
+                        contentDescription = "User Avatar",
+                        contentScale = ContentScale.Crop
+                    )
+                }
+                Text(
+                    text = userName,
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "Hi there, have you remembered to stay hydrated today?",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+
             Button(
                 onClick = {
                     if (isUserLoggedIn) {

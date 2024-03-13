@@ -8,6 +8,6 @@ class SettingsViewModel(private val userSessionRepository: UserSessionRepository
 
     val isLoggedIn: LiveData<Boolean> = userSessionRepository.isLoggedIn
     fun logout() {
-        userSessionRepository.clearToken()
+        userSessionRepository.clearData()
     }
 }

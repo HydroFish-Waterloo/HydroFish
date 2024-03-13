@@ -21,7 +21,7 @@ import retrofit2.Response
 /**
  * ViewModel for Login Screen
  */
-class LoginViewModel(private val onTokenReceived: (String) -> Unit) : ViewModel() {
+class LoginViewModel(private val onTokenReceived: (String,String) -> Unit) : ViewModel() {
 
     var loginState = mutableStateOf(LoginState())
         private set
@@ -69,11 +69,11 @@ class LoginViewModel(private val onTokenReceived: (String) -> Unit) : ViewModel(
                     call.enqueue(object : Callback<AuthSuccess> {
                         override fun onResponse(call: Call<AuthSuccess>, response: Response<AuthSuccess>) {
                             if (response.isSuccessful) {
-                                val token = response.body()
+                                val data = response.body()
                                 // Handle the retrieved post data
-                                Log.d("MainActivity", "Login here is token: " + token?.token)
-                                if (token != null) {
-                                    onTokenReceived(token.token)
+                                Log.d("MainActivity", "Login here is token: " + data?.token)
+                                if (data != null) {
+                                    onTokenReceived(data.token,data.username)
                                     loginState.value = loginState.value.copy(isLoginSuccessful = true)
                                 } else{
 

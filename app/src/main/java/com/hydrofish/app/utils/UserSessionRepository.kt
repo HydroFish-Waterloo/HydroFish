@@ -11,6 +11,7 @@ class UserSessionRepository(private val context: Context) {
 
     private val fileName = "encrypted_prefs"
     private val keyToken = "key_token"
+    private val userName = "username"
 
     private val _isLoggedIn = MutableLiveData<Boolean>()
     val isLoggedIn: LiveData<Boolean> = _isLoggedIn
@@ -38,10 +39,17 @@ class UserSessionRepository(private val context: Context) {
 
     fun getToken(): String? = encryptedPrefs.getString(keyToken, null)
 
-    fun clearToken() {
+    fun clearData() {
         encryptedPrefs.edit().remove(keyToken).apply()
+        encryptedPrefs.edit().remove(userName).apply()
         _isLoggedIn.value = false
     }
+
+    fun saveUserName(name: String) {
+        encryptedPrefs.edit().putString(userName, name).apply()
+    }
+
+    fun getUserName(): String? = encryptedPrefs.getString(userName, null)
 
 
 //    fun isLoggedIn(): Boolean {
