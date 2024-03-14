@@ -26,6 +26,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.hydrofish.app.ui.theme.HydroFishTheme
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
@@ -48,12 +49,14 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.http.GET
-
+import retrofit2.http.Header
 
 interface ApiService {
     //@Headers("Content-Type:application/json")
+    //@Headers()
     @GET("hydrofish/getwaterhistory/") // Replace "endpoint" with your API endpoint
-    fun getHydrationData(): Call<List<HydrationEntry>> // Change the return type as per your response model
+    // fun getHydrationData(token: String?): Call<List<HydrationEntry>> // Change the return type as per your response model
+    fun getHydrationData(@Header("Authorization") token: String?): Call<List<HydrationEntry>>
 }
 
 //fun checkUserLoggedIn(context: Context): Boolean {
@@ -75,7 +78,7 @@ interface ApiService {
 //}
 
 @Composable
-fun HistoryScreen(userSessionRepository: UserSessionRepository) {
+fun HistoryScreen(userSessionRepository: UserSessionRepository, token: String?, navController: NavHostController) {
     var hydrationData by remember { mutableStateOf(emptyList<HydrationEntry>()) }
     //var hydrationDataSum by remember { mutableStateOf(emptyList<HydrationEntry>()) }
 
@@ -86,7 +89,7 @@ fun HistoryScreen(userSessionRepository: UserSessionRepository) {
     if (!isUserLoggedIn) {
         // If the user is not logged in, display a login screen or redirect to the login activity
         // You can replace the placeholder composable with your actual login screen
-        LoginScreen()
+        LoginScreen(navController)
         return
     }
 
@@ -97,7 +100,7 @@ fun HistoryScreen(userSessionRepository: UserSessionRepository) {
             .build()
 
         val apiService = retrofit.create(ApiService::class.java)
-        val call = apiService.getHydrationData()
+        val call = apiService.getHydrationData(token)
 
         call.enqueue(object : Callback<List<HydrationEntry>> {
             override fun onResponse(call: Call<List<HydrationEntry>>, response: Response<List<HydrationEntry>>) {
