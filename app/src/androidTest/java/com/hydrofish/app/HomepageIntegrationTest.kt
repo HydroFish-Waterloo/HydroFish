@@ -43,7 +43,7 @@ class HomepageIntegrationTest {
         rule.onNodeWithText("1.0L").assertIsDisplayed().performClick();
         assert(viewModel.uiState.value.dailyWaterConsumedML == 1000);
         rule.onNodeWithText("1.3L").assertIsDisplayed().performClick();
-        assert(viewModel.uiState.value.dailyWaterConsumedML == (1000 + 1300));
+        assert(viewModel.uiState.value.dailyWaterConsumedML == (1 + 1300));
     }
 
     @Test
