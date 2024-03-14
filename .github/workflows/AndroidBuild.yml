@@ -55,7 +55,7 @@ jobs:
       - name: Run Integration Tests
         uses: ReactiveCircus/android-emulator-runner@v2.30.1
         with:
-          api-level: 28
+          api-level: 33
           target: default
           script: ./gradlew connectedAndroidTest --stacktrace
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -skin 1920x1080
