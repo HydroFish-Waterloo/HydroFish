@@ -52,6 +52,7 @@ android {
 dependencies {
     // Jetpack Compose Platform
     implementation(platform(libs.compose.bom))
+    implementation(libs.androidx.navigation.testing)
     androidTestImplementation(platform(libs.compose.bom))
 
     // Jetpack Compose Libraries with BOM version

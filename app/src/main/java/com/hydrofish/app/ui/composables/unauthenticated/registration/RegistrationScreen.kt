@@ -26,6 +26,7 @@ import com.hydrofish.app.ui.common.customComposableViews.TitleText
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.RegistrationUiEvent
 import com.hydrofish.app.ui.theme.AppTheme
 import com.hydrofish.app.ui.theme.ComposeLoginTheme
+import com.hydrofish.app.utils.IUserSessionRepository
 import com.hydrofish.app.utils.UserSessionRepository
 import com.hydrofish.app.viewmodelfactories.RegisterViewModelFactory
 
@@ -34,7 +35,7 @@ fun RegistrationScreen(
 //    registrationViewModel: RegistrationViewModel = viewModel(),
     onNavigateBack: () -> Unit,
     onNavigateToAuthenticatedRoute: () -> Unit,
-    userSessionRepository: UserSessionRepository
+    userSessionRepository: IUserSessionRepository
 ) {
     val context = LocalContext.current
 

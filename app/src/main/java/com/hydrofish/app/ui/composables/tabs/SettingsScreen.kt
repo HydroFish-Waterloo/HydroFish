@@ -55,7 +55,7 @@ import com.hydrofish.app.R
 import com.hydrofish.app.permission.PermissionChecker
 import com.hydrofish.app.permission.PermissionResultHandler
 import com.hydrofish.app.ui.composables.NavigationRoutes
-import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.utils.IUserSessionRepository
 import com.hydrofish.app.viewmodelfactories.SettingsViewModelFactory
 
 /**
@@ -67,7 +67,7 @@ const val NOTIFICATION_KEY = "notification"
 fun SettingsScreen(permissionChecker: PermissionChecker,
                    permissionResultHandler: PermissionResultHandler,
                    navController: NavHostController,
-                   userSessionRepository: UserSessionRepository
+                   userSessionRepository: IUserSessionRepository
 ) {
     val context = LocalContext.current
 

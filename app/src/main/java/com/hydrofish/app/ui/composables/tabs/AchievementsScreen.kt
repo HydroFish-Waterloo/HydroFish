@@ -36,7 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.R
 import com.hydrofish.app.ui.theme.md_theme_light_inversePrimary
 import com.hydrofish.app.ui.theme.typography
-import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.utils.IUserSessionRepository
 import com.hydrofish.app.viewmodelfactories.AchievementsViewModelFactory
 
 /**
@@ -52,7 +52,7 @@ data class Achievement(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AchievementsScreen(userSessionRepository: UserSessionRepository) {
+fun AchievementsScreen(userSessionRepository: IUserSessionRepository) {
     val achievementsViewModel: AchievementsViewModel = viewModel(factory = AchievementsViewModelFactory(userSessionRepository))
 
     val score by achievementsViewModel.scoreLiveData.observeAsState(0)

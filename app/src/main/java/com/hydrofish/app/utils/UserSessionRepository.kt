@@ -7,21 +7,34 @@ import androidx.lifecycle.MutableLiveData
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 
-class UserSessionRepository(private val context: Context) {
+
+interface IUserSessionRepository {
+    fun saveToken(token: String)
+    fun getToken(): String?
+    fun saveUserName(name: String)
+    fun getUserName(): String?
+    fun updateScore(newScore: Int)
+    fun clearData()
+
+    val isLoggedIn: LiveData<Boolean>
+    val scoreLiveData: LiveData<Int>
+}
+
+class UserSessionRepository(private val context: Context): IUserSessionRepository {
 
     private val fileName = "encrypted_prefs"
     private val keyToken = "key_token"
     private val userName = "username"
 
     private val _isLoggedIn = MutableLiveData<Boolean>()
-    val isLoggedIn: LiveData<Boolean> = _isLoggedIn
+    override val isLoggedIn: LiveData<Boolean> = _isLoggedIn
 
     private val preferences: SharedPreferences by lazy {
         context.getSharedPreferences("YourSharedPreferencesName", Context.MODE_PRIVATE)
     }
 
     private val _scoreLiveData = MutableLiveData<Int>()
-    val scoreLiveData: LiveData<Int> get() = _scoreLiveData
+    override val scoreLiveData: LiveData<Int> get() = _scoreLiveData
 
     private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
         if (key == "score") {
@@ -38,20 +51,9 @@ class UserSessionRepository(private val context: Context) {
         preferences.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
     }
 
-//    val score: LiveData<Int> = MutableLiveData<Int>().apply {
-//        value = preferences.getInt("score", 0)
-//        preferences.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
-//            if (key == "score") {
-//                postValue(sharedPreferences.getInt(key, 0))
-//            }
-//        }
-//    }
-
-    fun updateScore(newScore: Int) {
+    override fun updateScore(newScore: Int) {
         preferences.edit().putInt("score", newScore).apply()
     }
-
-
 
     private val encryptedPrefs: SharedPreferences by lazy {
         val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
@@ -68,36 +70,24 @@ class UserSessionRepository(private val context: Context) {
         _isLoggedIn.value = getToken() != null
     }
 
-    fun saveToken(token: String) {
+    override fun saveToken(token: String) {
         encryptedPrefs.edit().putString(keyToken, token).apply()
         _isLoggedIn.value = true
     }
 
-    fun getToken(): String? = encryptedPrefs.getString(keyToken, null)
+    override fun getToken(): String? = encryptedPrefs.getString(keyToken, null)
 
-    fun clearData() {
+    override fun clearData() {
         encryptedPrefs.edit().remove(keyToken).apply()
         encryptedPrefs.edit().remove(userName).apply()
         _isLoggedIn.value = false
         preferences.edit().clear().apply()
     }
 
-    fun saveUserName(name: String) {
+    override fun saveUserName(name: String) {
         encryptedPrefs.edit().putString(userName, name).apply()
     }
 
-    fun getUserName(): String? = encryptedPrefs.getString(userName, null)
+    override fun getUserName(): String? = encryptedPrefs.getString(userName, null)
 
-
-//    fun isLoggedIn(): Boolean {
-//        return SecureStorage.getToken(context) != null
-//    }
-//
-//    fun saveToken(token: String) {
-//        SecureStorage.saveToken(context,token)
-//    }
-//
-//    fun clearToken() {
-//        SecureStorage.clearToken(context)
-//    }
 }

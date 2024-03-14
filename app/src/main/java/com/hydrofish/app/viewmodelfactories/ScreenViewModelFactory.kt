@@ -6,7 +6,7 @@ import com.hydrofish.app.ui.composables.tabs.AchievementsViewModel
 import com.hydrofish.app.ui.composables.tabs.SettingsViewModel
 import com.hydrofish.app.ui.composables.unauthenticated.login.LoginViewModel
 import com.hydrofish.app.ui.composables.unauthenticated.registration.RegistrationViewModel
-import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.utils.IUserSessionRepository
 
 class LoginViewModelFactory(private val onTokenReceived: (String,String) -> Unit) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -28,7 +28,7 @@ class RegisterViewModelFactory(private val onTokenReceived: (String,String) -> U
     }
 }
 
-class SettingsViewModelFactory(private val userSessionRepository: UserSessionRepository) : ViewModelProvider.Factory {
+class SettingsViewModelFactory(private val userSessionRepository: IUserSessionRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(SettingsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
@@ -38,7 +38,7 @@ class SettingsViewModelFactory(private val userSessionRepository: UserSessionRep
     }
 }
 
-class AchievementsViewModelFactory(private val userSessionRepository: UserSessionRepository) : ViewModelProvider.Factory {
+class AchievementsViewModelFactory(private val userSessionRepository: IUserSessionRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AchievementsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
