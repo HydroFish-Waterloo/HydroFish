@@ -22,11 +22,18 @@ jobs:
       - name: Change gradle permissions
         run: chmod +x ./gradlew
 
-      - name: Run Tests
-        run: ./gradlew test
+      - name: Run Integration Tests
+        run: ReactiveCircus/android-emulator-runner@v2.30.1
+        with:
+          api-level: 33
+          emulator-build: 7425822
+          script: ./gradlew connectedDevDebugAndroidTest --stacktrace
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -skin 1920x1080
+          disable-animations: true
+          disable-spellchecker: true
 
-      - name: Run Integration Test
-        run: ./gradlew connectedAndroidTest
+      - name: Run Unit Tests
+        run: ./gradlew test
 
       - name: Build Project
         run: ./gradlew assemble
