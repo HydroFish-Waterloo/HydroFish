@@ -14,7 +14,7 @@ import androidx.navigation.NavHostController
 import com.hydrofish.app.ui.composables.NavigationRoutes
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun CoverScreen(navController: NavHostController) {
     // Implement your login UI here
     // This is just a placeholder
     Column(
