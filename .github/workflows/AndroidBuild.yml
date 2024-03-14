@@ -57,6 +57,7 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           target: google_apis
+          arch: x86_64
           force-avd-creation: false
           script: ./gradlew connectedAndroidTest --stacktrace
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -skin 1920x1080
