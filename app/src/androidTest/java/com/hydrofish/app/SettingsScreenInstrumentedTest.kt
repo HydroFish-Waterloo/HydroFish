@@ -10,6 +10,8 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.MutableLiveData
+import androidx.navigation.testing.TestNavHostController
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.Intents.intending
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasAction
@@ -19,11 +21,13 @@ import com.hydrofish.app.permission.PermissionChecker
 import com.hydrofish.app.permission.PermissionResultHandler
 import com.hydrofish.app.ui.composables.tabs.NOTIFICATION_KEY
 import com.hydrofish.app.ui.composables.tabs.SettingsScreen
+import com.hydrofish.app.utils.IUserSessionRepository
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito
 
 @RunWith(AndroidJUnit4::class)
 class SettingsScreenInstrumentedTest {
@@ -39,11 +43,27 @@ class SettingsScreenInstrumentedTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+    private lateinit var navController: TestNavHostController
+    private lateinit var mockUserSessionRepository: IUserSessionRepository
+
 
     @Before
     fun setup() {
+        navController = TestNavHostController(
+            InstrumentationRegistry.getInstrumentation().targetContext
+        ).apply {
+            //set nav graph or navigation resource
+            
+        }
+
+
+        mockUserSessionRepository = Mockito.mock(IUserSessionRepository::class.java)
+
+        Mockito.`when`(mockUserSessionRepository.isLoggedIn).thenReturn(MutableLiveData(false))
+
         Intents.init()
     }
+
 
     class MockPermissionChecker : PermissionChecker {
         var canScheduleExactAlarmsResult = true
@@ -67,7 +87,12 @@ class SettingsScreenInstrumentedTest {
         intending(hasAction(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)).respondWith(Instrumentation.ActivityResult(Activity.RESULT_OK, null))
 
         composeTestRule.setContent {
-            SettingsScreen(MockPermissionChecker().apply { canScheduleExactAlarmsResult = false }, MockPermissionResultHandler(false))
+            SettingsScreen(MockPermissionChecker().apply {
+                canScheduleExactAlarmsResult = false },
+                MockPermissionResultHandler(false),
+                navController,
+                mockUserSessionRepository
+            )
         }
 
         composeTestRule.onNodeWithText("Notification").assertIsOff()
@@ -103,7 +128,12 @@ class SettingsScreenInstrumentedTest {
         intending(hasAction(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)).respondWith(Instrumentation.ActivityResult(Activity.RESULT_OK, null))
 
         composeTestRule.setContent {
-            SettingsScreen(MockPermissionChecker().apply { canScheduleExactAlarmsResult = false }, MockPermissionResultHandler(false))
+            SettingsScreen(MockPermissionChecker().apply {
+                canScheduleExactAlarmsResult = false },
+                MockPermissionResultHandler(false),
+                navController,
+                mockUserSessionRepository
+            )
         }
 
         composeTestRule.onNodeWithText("Notification").assertIsOff()
@@ -139,7 +169,12 @@ class SettingsScreenInstrumentedTest {
         intending(hasAction(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)).respondWith(Instrumentation.ActivityResult(Activity.RESULT_OK, null))
 
         composeTestRule.setContent {
-            SettingsScreen(MockPermissionChecker().apply { canScheduleExactAlarmsResult = false }, MockPermissionResultHandler(true))
+            SettingsScreen(MockPermissionChecker().apply {
+                canScheduleExactAlarmsResult = false },
+                MockPermissionResultHandler(true),
+                navController,
+                mockUserSessionRepository
+            )
         }
 
         composeTestRule.onNodeWithText("Notification").assertIsOff()
@@ -154,7 +189,12 @@ class SettingsScreenInstrumentedTest {
         intending(hasAction(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)).respondWith(Instrumentation.ActivityResult(Activity.RESULT_OK, null))
 
         composeTestRule.setContent {
-            SettingsScreen(MockPermissionChecker().apply { canScheduleExactAlarmsResult = false }, MockPermissionResultHandler(true))
+            SettingsScreen(MockPermissionChecker().apply {
+                canScheduleExactAlarmsResult = false },
+                MockPermissionResultHandler(true),
+                navController,
+                mockUserSessionRepository
+            )
         }
 
         composeTestRule.onNodeWithText("Notification").assertIsOff()
@@ -167,7 +207,12 @@ class SettingsScreenInstrumentedTest {
         setSharedPreferencesValue(NOTIFICATION_KEY, false)
 
         composeTestRule.setContent {
-            SettingsScreen(MockPermissionChecker().apply { canScheduleExactAlarmsResult = true }, MockPermissionResultHandler(false))
+            SettingsScreen(MockPermissionChecker().apply {
+                canScheduleExactAlarmsResult = true },
+                MockPermissionResultHandler(false,),
+                navController,
+                mockUserSessionRepository
+            )
         }
 
         composeTestRule.onNodeWithText("Notification").assertIsOff()
@@ -201,7 +246,13 @@ class SettingsScreenInstrumentedTest {
         setSharedPreferencesValue(NOTIFICATION_KEY, true)
 
         composeTestRule.setContent {
-            SettingsScreen(MockPermissionChecker().apply { canScheduleExactAlarmsResult = true }, MockPermissionResultHandler(false))
+            SettingsScreen(MockPermissionChecker().apply {
+                canScheduleExactAlarmsResult = true },
+                MockPermissionResultHandler(false),
+                navController,
+                mockUserSessionRepository
+            )
+
         }
 
         composeTestRule.onNodeWithText("Notification").assertIsOff()
@@ -235,7 +286,12 @@ class SettingsScreenInstrumentedTest {
         setSharedPreferencesValue(NOTIFICATION_KEY, false)
 
         composeTestRule.setContent {
-            SettingsScreen(MockPermissionChecker().apply { canScheduleExactAlarmsResult = true }, MockPermissionResultHandler(true))
+            SettingsScreen(MockPermissionChecker().apply {
+                canScheduleExactAlarmsResult = true },
+                MockPermissionResultHandler(true),
+                navController,
+                mockUserSessionRepository
+            )
         }
 
         composeTestRule.onNodeWithText("Notification").assertIsOff()
@@ -250,7 +306,12 @@ class SettingsScreenInstrumentedTest {
         setSharedPreferencesValue(NOTIFICATION_KEY, true)
 
         composeTestRule.setContent {
-            SettingsScreen(MockPermissionChecker().apply { canScheduleExactAlarmsResult = true }, MockPermissionResultHandler(true))
+            SettingsScreen(MockPermissionChecker().apply {
+                canScheduleExactAlarmsResult = true },
+                MockPermissionResultHandler(true),
+                navController,
+                mockUserSessionRepository
+            )
         }
 
         composeTestRule.onNodeWithText("Notification").assertIsOn()
