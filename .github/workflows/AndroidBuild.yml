@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        api-level: [30]
 
     steps:
       - uses: actions/checkout@v4.1.1
@@ -24,14 +27,15 @@ jobs:
 
       # cache to reduce testing runtime (especially our integration tests)
 #      - name: Gradle cache
-#        uses: actions/cache@v2
+#        uses: actions/cache@v4.0.1
 #        with:
 #          path: |
 #            ~/.gradle/caches
 #            ~/.gradle/wrapper
 #          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
+#
 #      - name: AVD cache
-#        uses: actions/cache@v2
+#        uses: actions/cache@v4.0.1
 #        id: avd-cache
 #        with:
 #          path: |
@@ -51,7 +55,8 @@ jobs:
       - name: Run Integration Tests
         uses: ReactiveCircus/android-emulator-runner@v2.30.1
         with:
-          api-level: 30
+          api-level: 28
+          target: default
           emulator-build: 7425822
           script: ./gradlew connectedDevDebugAndroidTest --stacktrace
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -skin 1920x1080
