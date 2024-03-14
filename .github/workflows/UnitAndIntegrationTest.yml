@@ -1,4 +1,4 @@
-name: AndroidBuild
+name: Run Unit and Integration Tests
 
 on:
   pull_request:
