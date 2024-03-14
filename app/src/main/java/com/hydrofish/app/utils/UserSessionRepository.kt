@@ -16,6 +16,42 @@ class UserSessionRepository(private val context: Context) {
     private val _isLoggedIn = MutableLiveData<Boolean>()
     val isLoggedIn: LiveData<Boolean> = _isLoggedIn
 
+    private val preferences: SharedPreferences by lazy {
+        context.getSharedPreferences("YourSharedPreferencesName", Context.MODE_PRIVATE)
+    }
+
+    private val _scoreLiveData = MutableLiveData<Int>()
+    val scoreLiveData: LiveData<Int> get() = _scoreLiveData
+
+    private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+        if (key == "score") {
+            _scoreLiveData.postValue(sharedPreferences.getInt(key, 0))
+        }
+    }
+
+    init {
+        _scoreLiveData.value = preferences.getInt("score", 0)
+        preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+    }
+
+    fun onCleared() {
+        preferences.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
+    }
+
+//    val score: LiveData<Int> = MutableLiveData<Int>().apply {
+//        value = preferences.getInt("score", 0)
+//        preferences.registerOnSharedPreferenceChangeListener { sharedPreferences, key ->
+//            if (key == "score") {
+//                postValue(sharedPreferences.getInt(key, 0))
+//            }
+//        }
+//    }
+
+    fun updateScore(newScore: Int) {
+        preferences.edit().putInt("score", newScore).apply()
+    }
+
+
 
     private val encryptedPrefs: SharedPreferences by lazy {
         val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
@@ -43,6 +79,7 @@ class UserSessionRepository(private val context: Context) {
         encryptedPrefs.edit().remove(keyToken).apply()
         encryptedPrefs.edit().remove(userName).apply()
         _isLoggedIn.value = false
+        preferences.edit().clear().apply()
     }
 
     fun saveUserName(name: String) {

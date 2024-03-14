@@ -2,6 +2,7 @@ package com.hydrofish.app.viewmodelfactories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.hydrofish.app.ui.composables.tabs.AchievementsViewModel
 import com.hydrofish.app.ui.composables.tabs.SettingsViewModel
 import com.hydrofish.app.ui.composables.unauthenticated.login.LoginViewModel
 import com.hydrofish.app.ui.composables.unauthenticated.registration.RegistrationViewModel
@@ -32,6 +33,16 @@ class SettingsViewModelFactory(private val userSessionRepository: UserSessionRep
         if (modelClass.isAssignableFrom(SettingsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return SettingsViewModel(userSessionRepository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}
+
+class AchievementsViewModelFactory(private val userSessionRepository: UserSessionRepository) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(AchievementsViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return AchievementsViewModel(userSessionRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
