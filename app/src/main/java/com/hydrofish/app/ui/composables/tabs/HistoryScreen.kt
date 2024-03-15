@@ -1,17 +1,10 @@
 package com.hydrofish.app.ui.composables.tabs
 
-import android.content.Context
-import android.os.Bundle
-import android.preference.PreferenceManager
 import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,10 +31,10 @@ import java.lang.reflect.Type
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import com.hydrofish.app.api.ApiService
 import com.hydrofish.app.utils.UserSessionRepository
 import com.hydrofish.app.viewmodelfactories.SettingsViewModelFactory
 import retrofit2.Retrofit
@@ -52,20 +45,11 @@ import java.util.Locale
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.HeaderMap
-
-interface ApiService {
-    @GET("hydrofish/get_history_monthly/") // Replace "endpoint" with your API endpoint
-    // fun getHydrationData(@HeaderMap headers: Map<String, String?>): Call<List<HydrationEntry>>
-    fun getHydrationData(@HeaderMap headers: Map<String, String?>): Call<DataResponse>
-}
 
 data class DataResponse(val data: List<HydrationEntry>)
 
 @Composable
-fun HistoryScreen(userSessionRepository: UserSessionRepository, token: String?, navController: NavHostController) {
+fun HistoryScreen(userSessionRepository: UserSessionRepository, navController: NavHostController) {
     var hydrationData by remember { mutableStateOf(emptyList<HydrationEntry>()) }
     //var hydrationDataSum by remember { mutableStateOf(emptyList<HydrationEntry>()) }
 
@@ -87,6 +71,7 @@ fun HistoryScreen(userSessionRepository: UserSessionRepository, token: String?, 
             .addConverterFactory(GsonConverterFactory.create(GsonBuilder().registerTypeAdapter(object : TypeToken<List<HydrationEntry>>() {}.type, HydrationEntryDeserializer()).create()))
             .build()
 
+        val token = userSessionRepository.getToken()
         val apiService = retrofit.create(ApiService::class.java)
         val headers = mapOf("Authorization" to ("Token " ?: "") + token)
         val call = apiService.getHydrationData(headers)
@@ -110,9 +95,6 @@ fun HistoryScreen(userSessionRepository: UserSessionRepository, token: String?, 
     LaunchedEffect(Unit) {
         fetchHydrationData()
     }
-
-
-    val hydrationDataSum = aggregateHydrationDataByDay(hydrationData)
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -233,9 +215,6 @@ data class HydrationEntry(
     @SerializedName("day") val date: Date,
     @SerializedName("total_ml") val hydrationAmount: Int
 )
-
-
-data class HydrationSumEntry(val date: Date, val hydrationAmount: Int)
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
