@@ -1,6 +1,5 @@
 package com.hydrofish.app.api
 
-import com.hydrofish.app.ui.composables.tabs.DataResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET

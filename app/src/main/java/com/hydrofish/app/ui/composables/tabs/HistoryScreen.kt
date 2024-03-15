@@ -2,12 +2,23 @@ package com.hydrofish.app.ui.composables.tabs
 
 import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavHostController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -19,77 +30,59 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import com.google.gson.GsonBuilder
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
+import com.hydrofish.app.api.ApiClient.historyApiService
+import com.hydrofish.app.api.DataResponse
+import com.hydrofish.app.api.HydrationEntry
 import com.hydrofish.app.ui.theme.HydroFishTheme
+import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.viewmodelfactories.HistoryViewModelFactory
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.column.columnChart
 import com.patrykandpatrick.vico.core.entry.entryModelOf
-import java.lang.reflect.Type
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonElement
-import com.google.gson.JsonParseException
-import com.google.gson.annotations.SerializedName
-import com.google.gson.reflect.TypeToken
-import com.hydrofish.app.api.ApiService
-import com.hydrofish.app.utils.UserSessionRepository
-import com.hydrofish.app.viewmodelfactories.SettingsViewModelFactory
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-
-data class DataResponse(val data: List<HydrationEntry>)
+import java.lang.reflect.Type
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun HistoryScreen(userSessionRepository: UserSessionRepository, navController: NavHostController) {
     var hydrationData by remember { mutableStateOf(emptyList<HydrationEntry>()) }
-    //var hydrationDataSum by remember { mutableStateOf(emptyList<HydrationEntry>()) }
-
-    val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModelFactory(userSessionRepository))
-    val isUserLoggedIn by settingsViewModel.isLoggedIn.observeAsState(false)
+    val historyViewModel: HistoryViewModel = viewModel(factory = HistoryViewModelFactory(userSessionRepository))
+    val isUserLoggedIn by historyViewModel.isLoggedIn.observeAsState(false)
 
     //login lock
     if (!isUserLoggedIn) {
-        // If the user is not logged in, display a login screen or redirect to the login activity
-        // You can replace the placeholder composable with your actual login screen
         CoverScreen(navController)
         return
     }
 
     fun fetchHydrationData() {
-        val retrofit = Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8000/") // Replace with your API base URL
-            //.addConverterFactory(GsonConverterFactory.create())
-            .addConverterFactory(GsonConverterFactory.create(GsonBuilder().registerTypeAdapter(object : TypeToken<List<HydrationEntry>>() {}.type, HydrationEntryDeserializer()).create()))
-            .build()
-
         val token = userSessionRepository.getToken()
-        val apiService = retrofit.create(ApiService::class.java)
         val headers = mapOf("Authorization" to ("Token " ?: "") + token)
-        val call = apiService.getHydrationData(headers)
+        val call = historyApiService.getHydrationData(headers)
 
         call.enqueue(object : Callback<DataResponse> {
             override fun onResponse(call: Call<DataResponse>, response: Response<DataResponse>) {
                 if (response.isSuccessful) {
                     hydrationData = response.body()?.data ?: emptyList()
                 } else {
-                    Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
+                    Log.e("HistoryViewModel", "Failed to fetch data: ${response.code()}")
                 }
             }
 
             override fun onFailure(call: Call<DataResponse>, t: Throwable) {
-                Log.e("MainActivity", "Error occurred while fetching data", t)
+                Log.e("HistoryViewModel", "Error occurred while fetching data", t)
             }
         })
-
     }
 
     LaunchedEffect(Unit) {
@@ -127,7 +120,7 @@ fun HistoryScreen(userSessionRepository: UserSessionRepository, navController: N
                 Button(
                     onClick = {
                         chartDataSingle = hydrationDataSum.takeLast(3)
-                              chartData = hydrationDataSum.takeLast(3)},
+                        chartData = hydrationDataSum.takeLast(3)},
                     modifier = Modifier
                         .weight(1.2f)
                         .fillMaxWidth()
@@ -210,11 +203,6 @@ fun HistoryScreen(userSessionRepository: UserSessionRepository, navController: N
         }
     }
 }
-
-data class HydrationEntry(
-    @SerializedName("day") val date: Date,
-    @SerializedName("total_ml") val hydrationAmount: Int
-)
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
