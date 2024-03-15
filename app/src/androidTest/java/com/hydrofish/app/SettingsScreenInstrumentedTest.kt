@@ -1,10 +1,7 @@
 package com.hydrofish.app
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import org.junit.runner.RunWith
-
-@RunWith(AndroidJUnit4::class)
-class SettingsScreenInstrumentedTest {
+//@RunWith(AndroidJUnit4::class)
+//class SettingsScreenInstrumentedTest {
 
 //    private fun setSharedPreferencesValue(key: String, value: Boolean) {
 //        val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -245,4 +242,4 @@ class SettingsScreenInstrumentedTest {
 //        sharedPreferences.edit().clear().commit()
 //        Intents.release()
 //    }
-}
+//}
