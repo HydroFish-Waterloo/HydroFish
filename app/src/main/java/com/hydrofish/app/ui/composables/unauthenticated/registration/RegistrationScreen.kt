@@ -31,7 +31,6 @@ import com.hydrofish.app.viewmodelfactories.RegisterViewModelFactory
 
 @Composable
 fun RegistrationScreen(
-//    registrationViewModel: RegistrationViewModel = viewModel(),
     onNavigateBack: () -> Unit,
     onNavigateToAuthenticatedRoute: () -> Unit,
     userSessionRepository: UserSessionRepository

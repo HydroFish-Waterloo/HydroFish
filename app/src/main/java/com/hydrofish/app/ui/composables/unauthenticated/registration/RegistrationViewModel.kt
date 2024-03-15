@@ -123,7 +123,7 @@ class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit
                             if (response.isSuccessful) {
                                 val data = response.body()
                                 // Handle the retrieved post data
-                                Log.d("MainActivity", "Register here is token: $data")
+                                Log.d("Registration", "Register here is token: $data")
 
                                 if (data != null) {
                                     onTokenReceived(data.token,data.username)
@@ -139,7 +139,7 @@ class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit
                                 val registerError = gson.fromJson(errorBody, RegisterError::class.java)
                                 if (registerError.username != null) {
                                     // Handle username error
-                                    Log.e("MainActivity", "Username error: ${registerError.username.first()}")
+                                    Log.e("Registration", "Username error: ${registerError.username.first()}")
                                     registrationState.value = registrationState.value.copy(
                                         errorState = registrationState.value.errorState.copy(
                                             userNameErrorState = ErrorState(
@@ -150,7 +150,7 @@ class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit
                                     )
                                 } else if (registerError.password1 != null) {
                                     // Handle password2 error
-                                    Log.e("MainActivity", "Password2 error: ${registerError.password1.first()}")
+                                    Log.e("Registration", "Password2 error: ${registerError.password1.first()}")
                                     registrationState.value = registrationState.value.copy(
                                         errorState = registrationState.value.errorState.copy(
                                             passwordErrorState = ErrorState(
@@ -165,7 +165,7 @@ class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit
                                     )
                                 } else if (registerError.password2 != null) {
                                     // Handle password2 error
-                                    Log.e("MainActivity", "Password2 error: ${registerError.password2.first()}")
+                                    Log.e("Registration", "Password2 error: ${registerError.password2.first()}")
                                     registrationState.value = registrationState.value.copy(
                                         errorState = registrationState.value.errorState.copy(
                                             confirmPasswordErrorState = ErrorState(
@@ -179,13 +179,13 @@ class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit
                                         )
                                     )
                                 }
-                                Log.e("MainActivity", "Failed to Register: ${response.code()}")
+                                Log.e("Registration", "Failed to Register: ${response.code()}")
                             }
                         }
 
                         override fun onFailure(call: Call<AuthSuccess>, t: Throwable) {
                             // Handle failure
-                            Log.e("MainActivity", "Error occurred while Register", t)
+                            Log.e("Registration", "Error occurred while Register", t)
                         }
                     })
 

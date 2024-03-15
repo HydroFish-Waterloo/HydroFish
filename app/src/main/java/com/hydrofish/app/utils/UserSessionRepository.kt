@@ -50,17 +50,4 @@ class UserSessionRepository(private val context: Context) {
     }
 
     fun getUserName(): String? = encryptedPrefs.getString(userName, null)
-
-
-//    fun isLoggedIn(): Boolean {
-//        return SecureStorage.getToken(context) != null
-//    }
-//
-//    fun saveToken(token: String) {
-//        SecureStorage.saveToken(context,token)
-//    }
-//
-//    fun clearToken() {
-//        SecureStorage.clearToken(context)
-//    }
 }
