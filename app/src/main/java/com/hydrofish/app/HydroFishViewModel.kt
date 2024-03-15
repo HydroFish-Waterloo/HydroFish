@@ -35,6 +35,10 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
     val scoreLiveData: LiveData<Int> = userSessionRepository.scoreLiveData
 
     init {
+        initWaterBar()
+        initScore()
+    }
+    private fun initWaterBar() {
         // Get last saved date and water intake
         val lastSavedDateAndWater = userSessionRepository.getWaterIntake()
         if (lastSavedDateAndWater != null) {
@@ -45,11 +49,22 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
                 )
             }
         }
+    }
+
+    private fun initScore() {
         val currentScore = scoreLiveData.value ?: 0
         if (currentScore != 0) {
             _uiState.update { currentState ->
                 currentState.copy(
                     fishScore = currentScore
+                )
+            }
+        }
+        val responseLevel: Int = userSessionRepository.syncScore()
+        if (responseLevel != -1) {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    fishScore = responseLevel
                 )
             }
         }
@@ -90,15 +105,29 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
         val currentScore = scoreLiveData.value ?: 0
         val newScore = currentScore + 1
         userSessionRepository.updateScore(newScore)
+        _uiState.update { currentState ->
+            currentState.copy(
+                fishScore = newScore
+            )
+        }
         val token = userSessionRepository.getToken()
         if (token != null ) {
-
             val score = FishScore(newScore)
             val call = ApiClient.apiService.levelUp("Token " + token, score)
             call.enqueue(object : Callback<PostSuccess> {
                 override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
                     if (response.isSuccessful) {
-                        response.body()?.message?.let { Log.d("whateverIwant", it) }
+                        val responseSuccess = response.body()
+                        val responseLevel = responseSuccess?.level
+                        if (responseLevel != null && responseLevel != -1) {
+                            _uiState.update { currentState ->
+                                currentState.copy(
+                                    fishScore = responseLevel
+                                )
+                            }
+                            userSessionRepository.updateScore(responseLevel)
+                        }
+
                     } else {
                         Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
                     }

@@ -3,10 +3,18 @@ package com.hydrofish.app.utils
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import com.hydrofish.app.api.ApiClient
+import com.hydrofish.app.api.FishScore
+import com.hydrofish.app.api.PostSuccess
+import kotlinx.coroutines.flow.update
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.time.LocalDate
 import java.time.Period
 import java.util.*
@@ -37,6 +45,11 @@ class UserSessionRepository(private val context: Context) {
     init {
         _scoreLiveData.value = preferences.getInt("score", 0)
         preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+        checkResetWaterIntake()
+        syncScore()
+    }
+
+    private fun checkResetWaterIntake() {
         val currentDate = LocalDate.now()
         val lastSavedDateAndWater = getWaterIntake()
         if (lastSavedDateAndWater != null) {
@@ -84,6 +97,37 @@ class UserSessionRepository(private val context: Context) {
     fun updateScore(newScore: Int) {
         preferences.edit().putInt("score", newScore).apply()
     }
+
+    fun syncScore(): Int {
+        val token = getToken()
+        if (token != null ) {
+            val score = scoreLiveData.value?.let { FishScore(it) }
+            score?.let<FishScore, Call<PostSuccess>> {
+                ApiClient.apiService.levelUp(
+                    "Token $token",
+                    it
+                )
+            }?.enqueue(object : Callback<PostSuccess> {
+                override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
+                    if (response.isSuccessful) {
+                        val responseSuccess = response.body()
+                        val responseLevel = responseSuccess?.level
+                        if (responseLevel != null && responseLevel != -1) {
+                            updateScore(responseLevel)
+                        }
+                    } else {
+                        Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
+                    }
+                }
+
+                override fun onFailure(call: Call<PostSuccess>, t: Throwable) {
+                    Log.e("MainActivity", "Error occurred while fetching data", t)
+                }
+            })
+        }
+        return -1
+    }
+
 
 
 

@@ -261,6 +261,10 @@ fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = 
 
     Button(onClick = {
         hydroFishViewModel.increaseWaterLevel(waterAmt);
+        val updatedWaterConsumption = hydroFishUIState.dailyWaterConsumedML + waterAmt
+        if (updatedWaterConsumption >= hydroFishUIState.curDailyMaxWaterConsumedML) {
+            hydroFishViewModel.levelUp()
+        }
     }) {
         Column (
             horizontalAlignment = Alignment.CenterHorizontally,){
