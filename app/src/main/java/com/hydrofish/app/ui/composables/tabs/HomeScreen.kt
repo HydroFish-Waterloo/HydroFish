@@ -3,8 +3,6 @@ package com.hydrofish.app.ui.composables.tabs
 import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.EaseInOut
-import androidx.compose.animation.core.EaseInOutElastic
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.infiniteRepeatable
@@ -48,7 +46,6 @@ import com.hydrofish.app.R
 import com.hydrofish.app.animations.AnimatableType
 import com.hydrofish.app.animations.FishInfo
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.cos
@@ -104,55 +101,46 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
     suspend fun animate() {
         coroutineScope {
             launch {
-                animatableMap[AnimatableType.X]?.animateTo(
-                    targetValue = 400f,
-                    animationSpec = tween(
-                        durationMillis = 3000,
-                        easing = EaseInOutElastic
+                var targetX = 400f
+                var flipValue = 0f // Assume 0f is the initial state and 180f is the flipped state
+                while (true) {
+                    animatableMap[AnimatableType.X]?.animateTo(
+                        targetValue = targetX,
+                        animationSpec = tween(
+                            durationMillis = 3000,
+                            easing = LinearEasing
+                        )
                     )
-                )
-                animatableMap[AnimatableType.X]?.animateTo(
-                    targetValue = -400f,
-                    animationSpec = tween(
-                        durationMillis = 3000,
-                        easing = EaseInOutElastic
+                    // Flip at the end of each X movement
+                    flipValue = if (flipValue == 0f) 180f else 0f // Toggle flip value
+                    animatableMap[AnimatableType.FLIP]?.animateTo(
+                        targetValue = flipValue,
+                        animationSpec = tween(durationMillis = 200)
                     )
-                )
+                    targetX *= -1 // Switch X direction
+                }
             }
 
             launch {
-                delay(2800)
-                animatableMap[AnimatableType.FLIP]?.animateTo(
-                    targetValue = 180f,
-                    animationSpec = tween(durationMillis = 200)
-                )
-                delay(2800)
-                animatableMap[AnimatableType.FLIP]?.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(durationMillis = 200)
-                )
+                var targetY = 400f
+                while (true) {
+                    animatableMap[AnimatableType.Y]?.animateTo(
+                        targetValue = targetY,
+                        animationSpec = tween(durationMillis = 3000, easing = LinearEasing)
+                    )
+                    targetY *= -1 // Switch direction
+                }
             }
 
             launch {
-                animatableMap[AnimatableType.Y]?.animateTo(
-                    targetValue = 400f,
-                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
-                )
-                animatableMap[AnimatableType.Y]?.animateTo(
-                    targetValue = -400f,
-                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
-                )
-            }
-
-            launch {
-                animatableMap[AnimatableType.ROTATE]?.animateTo(
-                    targetValue = 360f,
-                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
-                )
-                animatableMap[AnimatableType.ROTATE]?.animateTo(
-                    targetValue = 2000f,
-                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
-                )
+                var cumulativeRotation = 0f
+                while (true) {
+                    cumulativeRotation += 360f // Add a full rotation
+                    animatableMap[AnimatableType.ROTATE]?.animateTo(
+                        targetValue = cumulativeRotation,
+                        animationSpec = tween(durationMillis = 3000, easing = LinearEasing)
+                    )
+                }
             }
 
             // update angles

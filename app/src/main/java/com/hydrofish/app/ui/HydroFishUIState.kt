@@ -8,13 +8,12 @@ data class HydroFishUIState(
     val dailyWaterConsumedML: Int = 0,
     val curDailyMaxWaterConsumedML: Int = 1000,
 
-    var fishScore: Int = 1,
+    var fishScore: Int = 2,
     val animationGroupPositionHandler: AnimationGroupPositionHandler
         = AnimationGroupPositionHandler(
             listOf(
-                /*hashSetOf(AnimatableType.X, AnimatableType.FLIP),
+                hashSetOf(AnimatableType.X, AnimatableType.FLIP),
                 hashSetOf(AnimatableType.Y, AnimatableType.ROTATE),
-                hashSetOf(AnimatableType.CYCLE, AnimatableType.CYCLEX, AnimatableType.CYCLEY),*/
                 hashSetOf(AnimatableType.CYCLE, AnimatableType.CYCLEX, AnimatableType.CYCLEY)
             ),
         ),
