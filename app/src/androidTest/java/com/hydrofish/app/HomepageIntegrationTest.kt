@@ -1,15 +1,11 @@
 package com.hydrofish.app
 
-import android.util.Log
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.ui.composables.tabs.AddButtons
-import com.hydrofish.app.ui.composables.tabs.AddProgessBar
-import com.hydrofish.app.ui.composables.tabs.HomeScreen
 import com.hydrofish.app.ui.composables.tabs.ReusableDrinkButton
 import org.junit.Assert.assertThrows
 import org.junit.Before
@@ -66,21 +62,22 @@ class HomepageIntegrationTest {
     }
     
     @Test
-    fun addFishTest() {
+    fun refreshFishTest() {
         rule.setContent {
             ReusableDrinkButton(330, viewModel);
         }
 
-        val initialFishCount = viewModel.uiState.value.fishTypeList.count();
+        val initialFishCount = viewModel.uiState.value.presentedFish.count();
         while (viewModel.uiState.value.dailyWaterConsumedML < viewModel.uiState.value.curDailyMaxWaterConsumedML) {
             rule.onNodeWithText("330ml").performClick();
         }
-        val newFishCount = viewModel.uiState.value.fishTypeList.count();
-        assert(newFishCount == initialFishCount + 1);
+        // The fishScore is initiated as 1, so the number of fish will remain the same
+        val newFishCount = viewModel.uiState.value.presentedFish.count();
+        assert(newFishCount == initialFishCount);
 
         // add water after we exceed the daily limit: should do nothing
         rule.onNodeWithText("330ml").performClick()
-        assert(newFishCount == viewModel.uiState.value.fishTypeList.count());
+        assert(newFishCount == viewModel.uiState.value.presentedFish.count());
     }
 
     @Test
