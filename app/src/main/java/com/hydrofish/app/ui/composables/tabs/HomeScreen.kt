@@ -101,23 +101,32 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
     suspend fun animate() {
         coroutineScope {
             launch {
-                var targetX = 400f
-                var flipValue = 0f // Assume 0f is the initial state and 180f is the flipped state
                 while (true) {
+                    // Move to the right (400f) and then flip
                     animatableMap[AnimatableType.X]?.animateTo(
-                        targetValue = targetX,
+                        targetValue = 400f,
                         animationSpec = tween(
-                            durationMillis = 3000,
+                            durationMillis = 3000, // Duration of moving to one side
                             easing = LinearEasing
                         )
                     )
-                    // Flip at the end of each X movement
-                    flipValue = if (flipValue == 0f) 180f else 0f // Toggle flip value
                     animatableMap[AnimatableType.FLIP]?.animateTo(
-                        targetValue = flipValue,
-                        animationSpec = tween(durationMillis = 200)
+                        targetValue = 180f, // Flip after reaching the target
+                        animationSpec = tween(durationMillis = 200) // Quick flip
                     )
-                    targetX *= -1 // Switch X direction
+
+                    // Move back to the left (-400f) and then flip back
+                    animatableMap[AnimatableType.X]?.animateTo(
+                        targetValue = -400f,
+                        animationSpec = tween(
+                            durationMillis = 3000, // Duration of moving back
+                            easing = LinearEasing
+                        )
+                    )
+                    animatableMap[AnimatableType.FLIP]?.animateTo(
+                        targetValue = 0f, // Flip back after reaching the start
+                        animationSpec = tween(durationMillis = 200) // Quick flip back
+                    )
                 }
             }
 
