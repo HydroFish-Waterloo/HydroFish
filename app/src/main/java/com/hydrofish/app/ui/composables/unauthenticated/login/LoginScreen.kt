@@ -40,7 +40,6 @@ import com.hydrofish.app.ui.common.customComposableViews.TitleText
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.LoginUiEvent
 import com.hydrofish.app.ui.theme.AppTheme
 import com.hydrofish.app.ui.theme.ComposeLoginTheme
-import com.hydrofish.app.utils.IUserSessionRepository
 import com.hydrofish.app.utils.UserSessionRepository
 import com.hydrofish.app.viewmodelfactories.LoginViewModelFactory
 
@@ -51,7 +50,7 @@ fun LoginScreen(
     onNavigateToForgotPassword: () -> Unit,
     onNavigateToAuthenticatedRoute: () -> Unit,
     onNavigateBack: () -> Unit,
-    userSessionRepository: IUserSessionRepository
+    userSessionRepository: UserSessionRepository
 ) {
 
     val context = LocalContext.current

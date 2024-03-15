@@ -7,21 +7,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 
-
-interface IUserSessionRepository {
-    fun saveToken(token: String)
-    fun getToken(): String?
-    fun clearToken()
-    val isLoggedIn: LiveData<Boolean>
-}
-
-class UserSessionRepository(private val context: Context): IUserSessionRepository {
+class UserSessionRepository(private val context: Context) {
 
     private val fileName = "encrypted_prefs"
     private val keyToken = "key_token"
 
     private val _isLoggedIn = MutableLiveData<Boolean>()
-    override val isLoggedIn: LiveData<Boolean> = _isLoggedIn
+    val isLoggedIn: LiveData<Boolean> = _isLoggedIn
 
 
     private val encryptedPrefs: SharedPreferences by lazy {
@@ -39,14 +31,14 @@ class UserSessionRepository(private val context: Context): IUserSessionRepositor
         _isLoggedIn.value = getToken() != null
     }
 
-    override fun saveToken(token: String) {
+    fun saveToken(token: String) {
         encryptedPrefs.edit().putString(keyToken, token).apply()
         _isLoggedIn.value = true
     }
 
-    override fun getToken(): String? = encryptedPrefs.getString(keyToken, null)
+    fun getToken(): String? = encryptedPrefs.getString(keyToken, null)
 
-    override fun clearToken() {
+    fun clearToken() {
         encryptedPrefs.edit().remove(keyToken).apply()
         _isLoggedIn.value = false
     }
