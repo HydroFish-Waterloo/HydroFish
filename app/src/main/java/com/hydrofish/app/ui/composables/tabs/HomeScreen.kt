@@ -1,12 +1,10 @@
 package com.hydrofish.app.ui.composables.tabs
 
-import android.util.Log
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutElastic
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,7 +46,6 @@ import com.hydrofish.app.animations.FishInfo
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.sin
 
 /**
  * Composable function that represents the home screen of the application.
@@ -75,9 +72,10 @@ fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
     val hydroFishUIState by hydroFishViewModel.uiState.collectAsState()
     val waterPercent = (hydroFishUIState.dailyWaterConsumedML * 1f) / (hydroFishUIState.curDailyMaxWaterConsumedML * 1f)
 
-    Box(modifier = modifier.background(largeRadialGradient),
+    Box(
+        modifier = modifier.background(largeRadialGradient),
         contentAlignment = Alignment.Center,
-        ) {
+    ) {
         /*hydroFishViewModel.getAllFish()*/
         AddFishAnimation(hydroFishViewModel)
 
@@ -115,6 +113,23 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
                 )
             }
 
+            /*launch {
+                animatableMap[AnimatableType.SCALE_X]?.animateTo(
+                    targetValue = 400f,
+                    animationSpec = tween(
+                        durationMillis = 3000,
+                        easing = EaseInOutElastic
+                    )
+                )
+                animatableMap[AnimatableType.SCALE_X]?.animateTo(
+                    targetValue = -400f,
+                    animationSpec = tween(
+                        durationMillis = 3000,
+                        easing = EaseInOutElastic
+                    )
+                )
+            }
+*/
             launch {
                 delay(2800)
                 animatableMap[AnimatableType.FLIP]?.animateTo(
@@ -127,6 +142,45 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
                     animationSpec = tween(durationMillis = 200)
                 )
             }
+
+            launch {
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP]?.animateTo(
+                    targetValue = 180f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP]?.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+            }
+
+            launch {
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP_R]?.animateTo(
+                    targetValue = 180f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP_R]?.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+            }
+
+            /*launch {
+                delay(2800)
+                animatableMap[AnimatableType.SCALE_FLIP]?.animateTo(
+                    targetValue = 180f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+                delay(2800)
+                animatableMap[AnimatableType.SCALE_FLIP]?.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+            }*/
 
             launch {
                 animatableMap[AnimatableType.Y]?.animateTo(
@@ -150,45 +204,67 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
                 )
             }
 
-            // update angles
-            launch {
-                animatableMap[AnimatableType.CYCLE]?.animateTo(
-                    targetValue = 360f,
-                    animationSpec = tween(durationMillis = 6000, easing = LinearEasing)
 
+            // Launch block for diagonal movement using DIAGONAL_X and DIAGONAL_Y
+            launch {
+                // Diagonal movement towards a target point
+                animatableMap[AnimatableType.DIAGONAL_X]?.animateTo(
+                    targetValue = 400f, // Target for diagonal X movement
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+                animatableMap[AnimatableType.DIAGONAL_X]?.animateTo(
+                    targetValue = -400f, // Reset or move to a new X position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+
+            }
+            launch {
+                animatableMap[AnimatableType.DIAGONAL_Y]?.animateTo(
+                targetValue = 400f, // Target for diagonal Y movement
+                animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+            )
+
+                // Optionally, animate back to the starting position or another point
+
+                animatableMap[AnimatableType.DIAGONAL_Y]?.animateTo(
+                    targetValue = -400f, // Reset or move to a new Y position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
                 )
             }
 
-            // update CYCLEX and CYCLEY
             launch {
-                val cycleAnim = animatableMap[AnimatableType.CYCLE]
-                /*while (isActive) {*/
-                    cycleAnim?.value?.let { cycleValue ->
-                        val radians = Math.toRadians(cycleValue.toDouble())
-                        Log.d("Test", radians.toString())
-                        Log.d("Test", cycleValue.toString())
-                        /*animatableMap[AnimatableType.CYCLEX]?.animateTo(
-                            targetValue = cos(radians).toFloat() * 200f,
-                            animationSpec = snap() // Use snap for immediate update
-                        )*/
-                   }
+                // Diagonal movement towards a target point
+                animatableMap[AnimatableType.DIAGONAL_X_R]?.animateTo(
+                    targetValue = 400f, // Target for diagonal X movement
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+                animatableMap[AnimatableType.DIAGONAL_X_R]?.animateTo(
+                    targetValue = -400f, // Reset or move to a new X position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
 
-               /* }*/
+            }
+            launch {
+                animatableMap[AnimatableType.DIAGONAL_Y_R]?.animateTo(
+                    targetValue = -400f, // Target for diagonal Y movement
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+
+                // Optionally, animate back to the starting position or another point
+
+                animatableMap[AnimatableType.DIAGONAL_Y_R]?.animateTo(
+                    targetValue = 400f, // Reset or move to a new Y position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
             }
 
-            launch {
-                val cycleAnim = animatableMap[AnimatableType.CYCLE]
-                /*while (isActive) {*/
-                    cycleAnim?.value?.let { cycleValue ->
-                        val radians = Math.toRadians(cycleValue.toDouble())
-                        animatableMap[AnimatableType.CYCLEY]?.animateTo(
-                            targetValue = sin(radians).toFloat() * 200f,
-                            animationSpec = snap()
-                        )
-                    }
 
-              /*  }*/
-            }
+            /*launch{
+                animatableMap[AnimatableType.CAMERASCALE]?.animateTo(
+                    targetValue = 0.5f, // Example of dynamic change
+                    animationSpec = tween(durationMillis = 6000)
+                )
+            }*/
 
         }
     }
@@ -225,10 +301,11 @@ fun AddFish(
         modifier = Modifier
             .size(100.dp)
             .graphicsLayer {
-                translationX = getAnimatableValIfExists(AnimatableType.X) + getAnimatableValIfExists(AnimatableType.CYCLEX) + fishInfo.coordinates.x
-                translationY = getAnimatableValIfExists(AnimatableType.Y) + getAnimatableValIfExists(AnimatableType.CYCLEY) + fishInfo.coordinates.y
+                translationX = getAnimatableValIfExists(AnimatableType.X) + getAnimatableValIfExists(AnimatableType.DIAGONAL_X) + getAnimatableValIfExists(AnimatableType.DIAGONAL_X_R) + fishInfo.coordinates.x
+                translationY = getAnimatableValIfExists(AnimatableType.Y) + getAnimatableValIfExists(AnimatableType.DIAGONAL_Y) + getAnimatableValIfExists(AnimatableType.DIAGONAL_Y_R) + fishInfo.coordinates.y
                 rotationZ = getAnimatableValIfExists(AnimatableType.ROTATE)
-                rotationY = getAnimatableValIfExists(AnimatableType.FLIP)
+                rotationY = getAnimatableValIfExists(AnimatableType.FLIP) + getAnimatableValIfExists(AnimatableType.DIAG_FLIP) + getAnimatableValIfExists(AnimatableType.DIAG_FLIP_R)
+
             }
     )
 }
@@ -305,8 +382,9 @@ fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = 
     Button(onClick = {
         hydroFishViewModel.increaseWaterLevel(waterAmt);
     }) {
-        Column (
-            horizontalAlignment = Alignment.CenterHorizontally,){
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ){
             Image(
                 painterResource(id = R.drawable.ic_launcher_foreground),
                 contentDescription ="add drink button",
