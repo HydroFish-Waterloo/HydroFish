@@ -1,80 +1,98 @@
 package com.hydrofish.app.ui.composables.tabs
 
-import android.content.Context
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavHostController
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonDeserializer
+import com.google.gson.JsonElement
+import com.google.gson.JsonParseException
+import com.hydrofish.app.api.ApiClient.historyApiService
+import com.hydrofish.app.api.DataResponse
+import com.hydrofish.app.api.HydrationEntry
 import com.hydrofish.app.ui.theme.HydroFishTheme
+import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.viewmodelfactories.HistoryViewModelFactory
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.column.columnChart
 import com.patrykandpatrick.vico.core.entry.entryModelOf
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.lang.reflect.Type
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonElement
-import com.google.gson.JsonParseException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            HydroFishTheme {
-                HistoryScreen()
-            }
-        }
-    }
-}
-
 @Composable
-fun HistoryScreen() {
+fun HistoryScreen(userSessionRepository: UserSessionRepository, navController: NavHostController) {
+    var hydrationData by remember { mutableStateOf(emptyList<HydrationEntry>()) }
+    val historyViewModel: HistoryViewModel = viewModel(factory = HistoryViewModelFactory(userSessionRepository))
+    val isUserLoggedIn by historyViewModel.isLoggedIn.observeAsState(false)
+
+    //login lock
+    if (!isUserLoggedIn) {
+        CoverScreen(navController)
+        return
+    }
+
+    fun fetchHydrationData() {
+        val token = userSessionRepository.getToken()
+        val headers = mapOf("Authorization" to ("Token " ?: "") + token)
+        val call = historyApiService.getHydrationData(headers)
+
+        call.enqueue(object : Callback<DataResponse> {
+            override fun onResponse(call: Call<DataResponse>, response: Response<DataResponse>) {
+                if (response.isSuccessful) {
+                    hydrationData = response.body()?.data ?: emptyList()
+                } else {
+                    Log.e("HistoryViewModel", "Failed to fetch data: ${response.code()}")
+                }
+            }
+
+            override fun onFailure(call: Call<DataResponse>, t: Throwable) {
+                Log.e("HistoryViewModel", "Error occurred while fetching data", t)
+            }
+        })
+    }
+
+    LaunchedEffect(Unit) {
+        fetchHydrationData()
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        // Extract hydration data from historyData
-        val hydrationData = readHydrationDataFromJson(LocalContext.current)
-        // Sample data for the list
-//        val hydrationData = listOf(
-//            HydrationEntry("2022-01-01", 200),
-//            HydrationEntry("2022-01-02", 150),
-//            HydrationEntry("2022-01-03", 300),
-//            HydrationEntry("2022-01-04", 100),
-//            HydrationEntry("2022-01-05", 200),
-//            HydrationEntry("2022-01-06", 150),
-//            HydrationEntry("2022-01-07", 300),
-//            HydrationEntry("2022-01-08", 100),
-//            HydrationEntry("2022-01-09", 200),
-//            HydrationEntry("2022-01-10", 150),
-//            HydrationEntry("2022-01-11", 300),
-//            HydrationEntry("2022-01-12", 100)
-//        )
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -82,16 +100,27 @@ fun HistoryScreen() {
         ) {
             // Placeholder text instead of Greeting
             Greeting("History")
-            //Greeting(hydrationData_1.toString())
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Button to switch between different data sets
-            var chartData by remember { mutableStateOf(hydrationData) }
+            val hydrationDataSum = aggregateHydrationDataByDay(hydrationData)
+
+            // Default data for the last three days
+            val defaultData = hydrationDataSum.takeLast(3)
+
+            var chartData by remember { mutableStateOf(defaultData) }
+            var chartDataSingle by remember { mutableStateOf(defaultData) }
+
+            LaunchedEffect(hydrationDataSum) {
+                chartData = defaultData
+                chartDataSingle = defaultData
+            }
 
             Row {
                 Button(
-                    onClick = { chartData = hydrationData.takeLast(3) },
+                    onClick = {
+                        chartDataSingle = hydrationDataSum.takeLast(3)
+                        chartData = hydrationDataSum.takeLast(3)},
                     modifier = Modifier
                         .weight(1.2f)
                         .fillMaxWidth()
@@ -103,7 +132,9 @@ fun HistoryScreen() {
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
-                    onClick = { chartData = hydrationData.takeLast(7) },
+                    onClick = {
+                        chartDataSingle = hydrationDataSum.takeLast(7)
+                        chartData = hydrationDataSum.takeLast(7)},
                     modifier = Modifier
                         .weight(1.2f)
                         .fillMaxWidth()
@@ -115,7 +146,9 @@ fun HistoryScreen() {
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
-                    onClick = { chartData = hydrationData.takeLast(30) },
+                    onClick = {
+                        chartDataSingle = hydrationDataSum.takeLast(30)
+                        chartData = hydrationDataSum.takeLast(30)},
                     modifier = Modifier
                         .weight(1.2f)
                         .fillMaxWidth()
@@ -144,54 +177,32 @@ fun HistoryScreen() {
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            // List (with placeholder data)
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = Color.Gray)
             ) {
-                items(chartData) { entry ->
-                    HydrationListItem(entry)
+                items(chartDataSingle) { entry ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        Text(
+                            text = "Time: ${entry.date}",
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = "Hydration: ${entry.hydrationAmount} ml",
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
                 }
             }
+
         }
     }
 }
-
-@Composable
-fun HydrationListItem(entry: HydrationEntry) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.Star,
-            contentDescription = null,
-            modifier = Modifier
-                .size(24.dp)
-                .padding(end = 8.dp)
-        )
-        Text(text = "Date: ${entry.date}")
-    }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.Star,
-            contentDescription = null,
-            modifier = Modifier
-                .size(24.dp)
-                .padding(end = 8.dp)
-        )
-        Text(text = "Hydration: ${entry.hydrationAmount} ml")
-    }
-}
-
-data class HydrationEntry(val date: Date, val hydrationAmount: Int)
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
@@ -208,17 +219,18 @@ fun GreetingPreview() {
         Greeting("Android")
     }
 }
+
 class HydrationEntryDeserializer : JsonDeserializer<List<HydrationEntry>> {
     override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): List<HydrationEntry> {
         val entries = mutableListOf<HydrationEntry>()
 
-        if (json != null && json.isJsonObject) {
-            val jsonObject = json.asJsonObject
+        if (json != null && json.isJsonArray) {
+            val dataArray = json.asJsonArray
 
-            val historyObject = jsonObject.getAsJsonObject("history")
-
-            historyObject.entrySet().forEach { (dateString, amountElement) ->
-                val amount = amountElement.asInt
+            dataArray.forEach { entryElement ->
+                val entryObject = entryElement.asJsonObject
+                val dateString = entryObject.get("day").asString
+                val amount = entryObject.get("total_ml").asInt
                 val date = parseDateString(dateString)
                 entries.add(HydrationEntry(date, amount))
             }
@@ -229,23 +241,41 @@ class HydrationEntryDeserializer : JsonDeserializer<List<HydrationEntry>> {
         return entries
     }
 
-    private fun parseDateString(dateString: String): Date {
-        val dateFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy Z", Locale.ENGLISH)
+    fun parseDateString(dateString: String): Date {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
         return dateFormat.parse(dateString)
     }
 }
 
-fun readHydrationDataFromJson(context: Context): List<HydrationEntry> {
-    val gson = GsonBuilder()
-        .registerTypeAdapter(object : TypeToken<List<HydrationEntry>>() {}.type, HydrationEntryDeserializer())
-        .create()
+//fun readHydrationDataFromJson(context: Context): List<HydrationEntry> {
+//    val gson = GsonBuilder()
+//        .registerTypeAdapter(object : TypeToken<List<HydrationEntry>>() {}.type, HydrationEntryDeserializer())
+//        .create()
+//
+//    // Get the InputStream to the JSON file
+//    val inputStream = context.assets.open("arthur_water_intake_realistic.json")
+//
+//    // Read the JSON file into a string
+//    val jsonString = inputStream.bufferedReader().use { it.readText() }
+//
+//    // Deserialize the JSON string into a list of HydrationEntry objects
+//    return gson.fromJson(jsonString, object : TypeToken<List<HydrationEntry>>() {}.type)
+//}
 
-    // Get the InputStream to the JSON file
-    val inputStream = context.assets.open("arthur_water_intake_realistic.json")
+fun aggregateHydrationDataByDay(hydrationData: List<HydrationEntry>): List<HydrationEntry> {
+    val aggregatedData = mutableMapOf<String, Int>()
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
 
-    // Read the JSON file into a string
-    val jsonString = inputStream.bufferedReader().use { it.readText() }
+    for (entry in hydrationData) {
+        val date = dateFormat.format(entry.date)
+        val amount = entry.hydrationAmount
+        aggregatedData[date] = aggregatedData.getOrDefault(date, 0) + amount
+    }
 
-    // Deserialize the JSON string into a list of HydrationEntry objects
-    return gson.fromJson(jsonString, object : TypeToken<List<HydrationEntry>>() {}.type)
+    return aggregatedData.map { (date, amount) ->
+        HydrationEntry(
+            date = dateFormat.parse(date)!!,
+            hydrationAmount = amount
+        )
+    }
 }

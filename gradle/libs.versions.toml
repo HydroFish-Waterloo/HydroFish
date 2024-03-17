@@ -21,6 +21,7 @@ material-icons-extended = "1.4.0"
 coil-compose = "2.4.0"
 retrofit = "2.9.0"
 security-crypto = "1.0.0"
+byte-buddy = "1.11.18"
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
@@ -56,6 +57,7 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 security-crypto = { module = "androidx.security:security-crypto", version.ref = "security-crypto" }
+byte-buddy = {module = "net.bytebuddy:byte-buddy", version.ref = "byte-buddy"}
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "plugin-android-app" }

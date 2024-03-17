@@ -8,7 +8,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import com.hydrofish.app.ui.composables.tabs.HistoryScreen
-import com.hydrofish.app.ui.composables.tabs.HydrationEntry
+import com.hydrofish.app.api.HydrationEntry
 import com.hydrofish.app.ui.theme.HydroFishTheme
 import org.junit.Rule
 import org.junit.Test
@@ -17,9 +17,15 @@ import java.util.*
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.lazy.items
+import androidx.navigation.NavHostController
+import com.hydrofish.app.ui.composables.NavigationScreens
+import com.hydrofish.app.utils.UserSessionRepository
+import org.mockito.Mockito
 
 class HistoryScreenIntegrationTest {
 
+    val mockUserSessionRepository = Mockito.mock(UserSessionRepository::class.java)
+    val navController = Mockito.mock(NavHostController::class.java)
     @get:Rule
     val composeTestRule = createComposeRule()
 
@@ -36,7 +42,7 @@ class HistoryScreenIntegrationTest {
         // Set content of the HistoryScreen with the test data
         composeTestRule.setContent {
             HydroFishTheme {
-                HistoryScreen()
+                HistoryScreen(userSessionRepository = mockUserSessionRepository, navController = navController)
             }
         }
 

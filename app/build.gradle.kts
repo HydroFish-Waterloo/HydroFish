@@ -93,6 +93,7 @@ dependencies {
     testImplementation(libs.mockitoCore)
     androidTestImplementation(libs.mockitoAndroid)
     implementation(libs.composeLiveData)
+    testImplementation(libs.byte.buddy)
 
     // Barista for Android UI testing
     androidTestImplementation(libs.barista) // Added Barista dependency
