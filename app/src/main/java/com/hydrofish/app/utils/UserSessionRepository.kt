@@ -2,10 +2,13 @@ package com.hydrofish.app.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
 
 
 interface IUserSessionRepository {
@@ -20,7 +23,11 @@ interface IUserSessionRepository {
     val scoreLiveData: LiveData<Int>
 }
 
-class UserSessionRepository(private val context: Context): IUserSessionRepository {
+class UserSessionRepository @Inject constructor(
+    @ApplicationContext private val context: Context
+) : IUserSessionRepository {
+    // Implementation...
+
 
     private val fileName = "encrypted_prefs"
     private val keyToken = "key_token"
@@ -71,6 +78,7 @@ class UserSessionRepository(private val context: Context): IUserSessionRepositor
     }
 
     override fun saveToken(token: String) {
+        Log.e("UserSessionRepository", "saveToken: $token")
         encryptedPrefs.edit().putString(keyToken, token).apply()
         _isLoggedIn.value = true
     }

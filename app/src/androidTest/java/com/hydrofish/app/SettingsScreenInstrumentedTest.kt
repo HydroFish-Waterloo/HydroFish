@@ -321,6 +321,54 @@ class SettingsScreenInstrumentedTest {
         composeTestRule.onNodeWithText("Notification").assertIsOff()
     }
 
+    @Test()
+    fun userNotLoggedIn() {
+        setSharedPreferencesValue(NOTIFICATION_KEY, true)
+        Mockito.`when`(mockUserSessionRepository.isLoggedIn).thenReturn(MutableLiveData(false))
+
+        composeTestRule.setContent {
+            SettingsScreen(MockPermissionChecker().apply {
+                canScheduleExactAlarmsResult = true },
+                MockPermissionResultHandler(true),
+                navController,
+                mockUserSessionRepository
+            )
+        }
+
+        composeTestRule.onNodeWithText("Login").assertExists()
+
+        composeTestRule.onNodeWithText("Notification").assertIsOn()
+
+        composeTestRule.onNodeWithText("Notification").performClick()
+
+        composeTestRule.onNodeWithText("Notification").assertIsOff()
+    }
+
+    @Test()
+    fun userLoggedIn() {
+        setSharedPreferencesValue(NOTIFICATION_KEY, true)
+        Mockito.`when`(mockUserSessionRepository.isLoggedIn).thenReturn(MutableLiveData(true))
+
+        composeTestRule.setContent {
+            SettingsScreen(MockPermissionChecker().apply {
+                canScheduleExactAlarmsResult = true },
+                MockPermissionResultHandler(true),
+                navController,
+                mockUserSessionRepository
+            )
+        }
+
+        composeTestRule.onNodeWithText("Logout").assertExists()
+
+        composeTestRule.onNodeWithText("Hi there, have you remembered to stay hydrated today?").assertExists()
+
+        composeTestRule.onNodeWithText("Notification").assertIsOn()
+
+        composeTestRule.onNodeWithText("Notification").performClick()
+
+        composeTestRule.onNodeWithText("Notification").assertIsOff()
+    }
+
     @After
     fun tearDown() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext

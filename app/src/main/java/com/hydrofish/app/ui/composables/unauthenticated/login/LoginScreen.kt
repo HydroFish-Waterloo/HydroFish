@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -40,9 +41,6 @@ import com.hydrofish.app.ui.common.customComposableViews.TitleText
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.LoginUiEvent
 import com.hydrofish.app.ui.theme.AppTheme
 import com.hydrofish.app.ui.theme.ComposeLoginTheme
-import com.hydrofish.app.utils.IUserSessionRepository
-import com.hydrofish.app.utils.UserSessionRepository
-import com.hydrofish.app.viewmodelfactories.LoginViewModelFactory
 
 @Composable
 fun LoginScreen(
@@ -51,17 +49,18 @@ fun LoginScreen(
     onNavigateToForgotPassword: () -> Unit,
     onNavigateToAuthenticatedRoute: () -> Unit,
     onNavigateBack: () -> Unit,
-    userSessionRepository: IUserSessionRepository
+//    userSessionRepository: IUserSessionRepository,
+    loginViewModel: LoginViewModel = hiltViewModel()
 ) {
 
     val context = LocalContext.current
 
-    val onTokenReceived: (String,String) -> Unit = { token,userName ->
-        userSessionRepository.saveToken(token)
-        userSessionRepository.saveUserName(userName)
-    }
+//    val onTokenReceived: (String,String) -> Unit = { token,userName ->
+//        userSessionRepository.saveToken(token)
+//        userSessionRepository.saveUserName(userName)
+//    }
 
-    val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(onTokenReceived))
+//    val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(userSessionRepository))
 
     val loginState by remember {
         loginViewModel.loginState
@@ -205,7 +204,8 @@ fun PreviewLoginScreen() {
             onNavigateToRegistration = {},
             onNavigateToAuthenticatedRoute = {},
             onNavigateBack={},
-            userSessionRepository = UserSessionRepository(LocalContext.current)
+//            userSessionRepository = UserSessionRepository(LocalContext.current),
+            loginViewModel = viewModel(),
         )
     }
 }

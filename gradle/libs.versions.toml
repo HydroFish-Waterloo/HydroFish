@@ -13,7 +13,6 @@ plugin-android-app = "8.2.1"
 plugin-kotlin = "1.8.10"
 vico = "1.9.2"
 mockito = "4.5.1"
-mockitoAndroid = "4.5.1"
 composeLiveData = "1.0.0"
 barista = "4.2.0"
 gson = "2.8.8"
@@ -22,6 +21,10 @@ coil-compose = "2.4.0"
 retrofit = "2.9.0"
 security-crypto = "1.0.0"
 navigationTesting = "2.6.0"
+hilt-navigation-compose = "1.0.0"
+mockk = "1.12.4"
+kotlinx-coroutines = "1.6.0"
+
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
@@ -47,8 +50,8 @@ vicoComposeM2 = { module = "com.patrykandpatrick.vico:compose-m2", version.ref =
 vicoComposeM3 = { module = "com.patrykandpatrick.vico:compose-m3", version.ref = "vico" }
 vicoCore = { module = "com.patrykandpatrick.vico:core", version.ref = "vico" }
 vicoViews = { module = "com.patrykandpatrick.vico:views", version.ref = "vico" }
-mockitoCore = { module = "org.mockito:mockito-core", version.ref = "mockito" }
-mockitoAndroid = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroid" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockito" }
 composeLiveData = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "composeLiveData" }
 barista = { module = "com.adevinta.android:barista", version.ref = "barista" } # Added Barista library
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
@@ -58,6 +61,9 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
 security-crypto = { module = "androidx.security:security-crypto", version.ref = "security-crypto" }
 androidx-navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "navigationTesting" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "plugin-android-app" }

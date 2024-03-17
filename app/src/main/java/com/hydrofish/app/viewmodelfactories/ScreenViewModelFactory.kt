@@ -8,21 +8,21 @@ import com.hydrofish.app.ui.composables.unauthenticated.login.LoginViewModel
 import com.hydrofish.app.ui.composables.unauthenticated.registration.RegistrationViewModel
 import com.hydrofish.app.utils.IUserSessionRepository
 
-class LoginViewModelFactory(private val onTokenReceived: (String,String) -> Unit) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return LoginViewModel(onTokenReceived) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
+//class LoginViewModelFactory(private val userSessionRepository: IUserSessionRepository) : ViewModelProvider.Factory {
+//    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+//        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
+//            @Suppress("UNCHECKED_CAST")
+//            return LoginViewModel(userSessionRepository) as T
+//        }
+//        throw IllegalArgumentException("Unknown ViewModel class")
+//    }
+//}
 
-class RegisterViewModelFactory(private val onTokenReceived: (String,String) -> Unit) : ViewModelProvider.Factory {
+class RegisterViewModelFactory(private val userSessionRepository: IUserSessionRepository) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(RegistrationViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return RegistrationViewModel(onTokenReceived) as T
+            return RegistrationViewModel(userSessionRepository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

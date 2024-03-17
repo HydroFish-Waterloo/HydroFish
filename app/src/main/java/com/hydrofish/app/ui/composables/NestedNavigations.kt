@@ -1,5 +1,6 @@
 package com.hydrofish.app.ui.composables
 
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
@@ -7,6 +8,7 @@ import androidx.navigation.navigation
 import com.hydrofish.app.ui.composables.unauthenticated.login.LoginScreen
 import com.hydrofish.app.ui.composables.unauthenticated.registration.RegistrationScreen
 import com.hydrofish.app.utils.IUserSessionRepository
+import com.hydrofish.app.viewmodelfactories.RegisterViewModelFactory
 
 /**
  * Login, registration, forgot password screens nav graph builder
@@ -37,7 +39,8 @@ fun NavGraphBuilder.unauthenticatedGraph(navController: NavController, userSessi
                 onNavigateBack = {
                     navController.navigateUp()
                 },
-                userSessionRepository = userSessionRepository,
+//                userSessionRepository = userSessionRepository,
+//                loginViewModel = viewModel(factory = LoginViewModelFactory(userSessionRepository)),
             )
         }
 
@@ -56,6 +59,7 @@ fun NavGraphBuilder.unauthenticatedGraph(navController: NavController, userSessi
                     navController.popBackStack(route = NavigationRoutes.Unauthenticated.Login.route, inclusive = true)
                 },
                 userSessionRepository = userSessionRepository,
+                registrationViewModel = viewModel(factory = RegisterViewModelFactory(userSessionRepository)),
             )
         }
     }

@@ -28,23 +28,23 @@ import com.hydrofish.app.ui.theme.AppTheme
 import com.hydrofish.app.ui.theme.ComposeLoginTheme
 import com.hydrofish.app.utils.IUserSessionRepository
 import com.hydrofish.app.utils.UserSessionRepository
-import com.hydrofish.app.viewmodelfactories.RegisterViewModelFactory
 
 @Composable
 fun RegistrationScreen(
 //    registrationViewModel: RegistrationViewModel = viewModel(),
     onNavigateBack: () -> Unit,
     onNavigateToAuthenticatedRoute: () -> Unit,
-    userSessionRepository: IUserSessionRepository
+    userSessionRepository: IUserSessionRepository,
+    registrationViewModel: RegistrationViewModel
 ) {
     val context = LocalContext.current
 
-    val onTokenReceived: (String,String) -> Unit = { token,userName ->
-        userSessionRepository.saveToken(token)
-        userSessionRepository.saveUserName(userName)
-    }
-
-    val registrationViewModel: RegistrationViewModel = viewModel(factory = RegisterViewModelFactory(onTokenReceived))
+//    val onTokenReceived: (String,String) -> Unit = { token,userName ->
+//        userSessionRepository.saveToken(token)
+//        userSessionRepository.saveUserName(userName)
+//    }
+//
+//    val registrationViewModel: RegistrationViewModel = viewModel(factory = RegisterViewModelFactory(onTokenReceived))
 
     val registrationState by remember {
         registrationViewModel.registrationState
@@ -143,6 +143,11 @@ fun RegistrationScreen(
 @Composable
 fun PreviewRegistrationScreen() {
     ComposeLoginTheme {
-        RegistrationScreen(onNavigateBack = {}, onNavigateToAuthenticatedRoute = {}, userSessionRepository = UserSessionRepository(LocalContext.current))
+        RegistrationScreen(
+            onNavigateBack = {},
+            onNavigateToAuthenticatedRoute = {},
+            userSessionRepository = UserSessionRepository(LocalContext.current),
+            registrationViewModel = viewModel(),
+        )
     }
 }

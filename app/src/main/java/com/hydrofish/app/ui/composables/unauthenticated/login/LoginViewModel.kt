@@ -2,8 +2,8 @@ package com.hydrofish.app.ui.composables.unauthenticated.login
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.hydrofish.app.api.ApiClient
-import com.hydrofish.app.api.AuthSuccess
+import androidx.lifecycle.viewModelScope
+import com.hydrofish.app.api.ApiService
 import com.hydrofish.app.api.LoginRequest
 import com.hydrofish.app.ui.common.state.ErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.LoginErrorState
@@ -13,14 +13,19 @@ import com.hydrofish.app.ui.composables.unauthenticated.login.state.UserNameEmpt
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.UserNameWrongErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.passwordEmptyErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.passwordWrongErrorState
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.hydrofish.app.utils.IUserSessionRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * ViewModel for Login Screen
  */
-class LoginViewModel(private val onTokenReceived: (String,String) -> Unit) : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val apiService: ApiService,
+    private val userSessionRepository: IUserSessionRepository
+) : ViewModel() {
 
     var loginState = mutableStateOf(LoginState())
         private set
@@ -62,24 +67,17 @@ class LoginViewModel(private val onTokenReceived: (String,String) -> Unit) : Vie
                 val inputsValidated = validateInputs()
                 if (inputsValidated) {
                     // TODO Trigger login in authentication flow
-
-                    val loginRequest = LoginRequest(username = loginState.value.userName, password = loginState.value.password)
-                    val call = ApiClient.apiService.loginUser(loginRequest)
-                    call.enqueue(object : Callback<AuthSuccess> {
-                        override fun onResponse(call: Call<AuthSuccess>, response: Response<AuthSuccess>) {
-                            if (response.isSuccessful) {
-                                val data = response.body()
-                                // Handle the retrieved post data
-                                if (data != null) {
-                                    onTokenReceived(data.token,data.username)
-                                    loginState.value = loginState.value.copy(isLoginSuccessful = true)
-                                } else{
-
-                                }
-//                                SecureStorage.saveToken(context, "your_token_here")
-
+                    viewModelScope.launch {
+                        try {
+                            val response = apiService.loginUser(
+                                LoginRequest(username = loginState.value.userName, password = loginState.value.password)
+                            )
+                            if (response.isSuccessful && response.body() != null) {
+                                val data = response.body()!!
+                                userSessionRepository.saveToken(data.token)
+                                userSessionRepository.saveUserName(data.username)
+                                loginState.value = loginState.value.copy(isLoginSuccessful = true)
                             } else {
-                                // Handle error
                                 loginState.value = loginState.value.copy(
                                     errorState = loginState.value.errorState.copy(
                                         userNameErrorState = UserNameWrongErrorState,
@@ -87,16 +85,14 @@ class LoginViewModel(private val onTokenReceived: (String,String) -> Unit) : Vie
                                     )
                                 )
                             }
-                        }
+                        } catch (e: Exception) {
 
-                        override fun onFailure(call: Call<AuthSuccess>, t: Throwable) {
-                            // Handle failure
                         }
-                    })
-
-//                    loginState.value = loginState.value.copy(isLoginSuccessful = true)
+                    }
                 }
             }
+
+            else -> {}
         }
     }
 

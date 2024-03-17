@@ -20,7 +20,9 @@ import androidx.navigation.compose.rememberNavController
 import com.hydrofish.app.R
 import com.hydrofish.app.ui.composables.MainScreen
 import com.hydrofish.app.ui.theme.HydroFishTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     /**
      * Called when the activity is starting. This is where most initialization should go:

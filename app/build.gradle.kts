@@ -71,6 +71,8 @@ dependencies {
     // Dagger Hilt for Dependency Injection
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
+    implementation(libs.hilt.navigation.compose)
+
 
     // Testing Libraries
     testImplementation(libs.junit)
@@ -78,6 +80,9 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.espresso.intents)
     androidTestImplementation(libs.ui.test.junit4)
+    testImplementation(libs.kotlinx.coroutines.test)
+
+
 
     // Debugging Tools
     debugImplementation(libs.ui.tooling)
@@ -91,9 +96,11 @@ dependencies {
     implementation(libs.vicoViews)
 
     // Mockito for testing
-    testImplementation(libs.mockitoCore)
-    androidTestImplementation(libs.mockitoAndroid)
+    testImplementation(libs.mockito.core)
+    androidTestImplementation(libs.mockito.android)
     implementation(libs.composeLiveData)
+    testImplementation(libs.mockk)
+
 
     // Barista for Android UI testing
     androidTestImplementation(libs.barista) // Added Barista dependency
@@ -109,4 +116,8 @@ dependencies {
     implementation(libs.security.crypto)
 
 
+}
+
+kapt {
+    correctErrorTypes = true
 }

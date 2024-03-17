@@ -1,11 +1,10 @@
 package com.hydrofish.app.ui.composables.unauthenticated.registration
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.google.gson.Gson
-import com.hydrofish.app.api.ApiClient
-import com.hydrofish.app.api.AuthSuccess
+import com.hydrofish.app.api.ApiClient.apiService
 import com.hydrofish.app.api.RegisterError
 import com.hydrofish.app.api.RegisterRequest
 import com.hydrofish.app.ui.common.state.ErrorState
@@ -17,11 +16,10 @@ import com.hydrofish.app.ui.composables.unauthenticated.registration.state.mobil
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.passwordEmptyErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.passwordMismatchErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.userNameEmptyErrorState
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.hydrofish.app.utils.IUserSessionRepository
+import kotlinx.coroutines.launch
 
-class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit) : ViewModel() {
+class RegistrationViewModel(private val userSessionRepository: IUserSessionRepository) : ViewModel() {
 
     var registrationState = mutableStateOf(RegistrationState())
         private set
@@ -115,25 +113,18 @@ class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit
                 val inputsValidated = validateInputs()
                 if (inputsValidated) {
 
-
-                    val registerRequest = RegisterRequest(username = registrationState.value.userName, password1 = registrationState.value.password, password2 = registrationState.value.confirmPassword)
-                    val call = ApiClient.apiService.registerUser(registerRequest)
-                    call.enqueue(object : Callback<AuthSuccess> {
-                        override fun onResponse(call: Call<AuthSuccess>, response: Response<AuthSuccess>) {
-                            if (response.isSuccessful) {
-                                val data = response.body()
-                                // Handle the retrieved post data
-                                Log.d("MainActivity", "Register here is token: $data")
-
-                                if (data != null) {
-                                    onTokenReceived(data.token,data.username)
-                                    registrationState.value =
-                                        registrationState.value.copy(isRegistrationSuccessful = true)
-                                } else{
-
-                                }
+                    viewModelScope.launch {
+                        try {
+                            val response = apiService.registerUser(
+                                RegisterRequest(username = registrationState.value.userName, password1 = registrationState.value.password, password2 = registrationState.value.confirmPassword)
+                            )
+                            if (response.isSuccessful && response.body() != null) {
+                                val data = response.body()!!
+                                userSessionRepository.saveToken(data.token)
+                                userSessionRepository.saveUserName(data.username)
+                                registrationState.value =
+                                    registrationState.value.copy(isRegistrationSuccessful = true)
                             } else {
-                                // Handle error
                                 val errorBody = response.errorBody()?.string()
                                 val gson = Gson()
                                 val registerError = gson.fromJson(errorBody, RegisterError::class.java)
@@ -156,8 +147,8 @@ class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit
                                                 errorMessageString = registerError.password1.first()
                                             ),
                                             confirmPasswordErrorState = ErrorState(
-                                                    hasError = true,
-                                                    errorMessageString = registerError.password1.first()
+                                                hasError = true,
+                                                errorMessageString = registerError.password1.first()
                                             )
                                         )
                                     )
@@ -177,12 +168,80 @@ class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit
                                     )
                                 }
                             }
-                        }
+                        } catch (e: Exception) {
 
-                        override fun onFailure(call: Call<AuthSuccess>, t: Throwable) {
-                            // Handle failure
                         }
-                    })
+                    }
+
+
+//                    val registerRequest = RegisterRequest(username = registrationState.value.userName, password1 = registrationState.value.password, password2 = registrationState.value.confirmPassword)
+//                    val call = ApiClient.apiService.registerUser(registerRequest)
+//                    call.enqueue(object : Callback<AuthSuccess> {
+//                        override fun onResponse(call: Call<AuthSuccess>, response: Response<AuthSuccess>) {
+//                            if (response.isSuccessful) {
+//                                val data = response.body()
+//                                // Handle the retrieved post data
+//                                Log.d("MainActivity", "Register here is token: $data")
+//
+//                                if (data != null) {
+//                                    userSessionRepository.saveToken(data.token)
+//                                    userSessionRepository.saveUserName(data.username)
+//                                    registrationState.value =
+//                                        registrationState.value.copy(isRegistrationSuccessful = true)
+//                                } else{
+//
+//                                }
+//                            } else {
+//                                // Handle error
+//                                val errorBody = response.errorBody()?.string()
+//                                val gson = Gson()
+//                                val registerError = gson.fromJson(errorBody, RegisterError::class.java)
+//                                if (registerError.username != null) {
+//                                    // Handle username error
+//                                    registrationState.value = registrationState.value.copy(
+//                                        errorState = registrationState.value.errorState.copy(
+//                                            userNameErrorState = ErrorState(
+//                                                hasError = true,
+//                                                errorMessageString = registerError.username.first()
+//                                            )
+//                                        )
+//                                    )
+//                                } else if (registerError.password1 != null) {
+//                                    // Handle password2 error
+//                                    registrationState.value = registrationState.value.copy(
+//                                        errorState = registrationState.value.errorState.copy(
+//                                            passwordErrorState = ErrorState(
+//                                                hasError = true,
+//                                                errorMessageString = registerError.password1.first()
+//                                            ),
+//                                            confirmPasswordErrorState = ErrorState(
+//                                                    hasError = true,
+//                                                    errorMessageString = registerError.password1.first()
+//                                            )
+//                                        )
+//                                    )
+//                                } else if (registerError.password2 != null) {
+//                                    // Handle password2 error
+//                                    registrationState.value = registrationState.value.copy(
+//                                        errorState = registrationState.value.errorState.copy(
+//                                            confirmPasswordErrorState = ErrorState(
+//                                                hasError = true,
+//                                                errorMessageString = registerError.password2.first()
+//                                            ),
+//                                            passwordErrorState = ErrorState(
+//                                                hasError = true,
+//                                                errorMessageString = registerError.password2.first()
+//                                            )
+//                                        )
+//                                    )
+//                                }
+//                            }
+//                        }
+//
+//                        override fun onFailure(call: Call<AuthSuccess>, t: Throwable) {
+//                            // Handle failure
+//                        }
+//                    })
 
 
                 }
