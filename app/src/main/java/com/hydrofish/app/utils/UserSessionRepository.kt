@@ -9,9 +9,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
 import com.hydrofish.app.api.ApiClient
-import com.hydrofish.app.api.FishScore
+import com.hydrofish.app.api.FishLevel
 import com.hydrofish.app.api.PostSuccess
-import kotlinx.coroutines.flow.update
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -43,10 +42,12 @@ class UserSessionRepository(private val context: Context) {
     }
 
     init {
+//        val editor = preferences.edit()
+//        editor.clear() // This will clear all the preferences
+//        editor.apply()
         _scoreLiveData.value = preferences.getInt("score", 0)
         preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
         checkResetWaterIntake()
-        syncScore()
     }
 
     private fun checkResetWaterIntake() {
@@ -100,14 +101,10 @@ class UserSessionRepository(private val context: Context) {
 
     fun syncScore(): Int {
         val token = getToken()
+        val score = scoreLiveData.value ?: 1
         if (token != null ) {
-            val score = scoreLiveData.value?.let { FishScore(it) }
-            score?.let<FishScore, Call<PostSuccess>> {
-                ApiClient.apiService.levelUp(
-                    "Token $token",
-                    it
-                )
-            }?.enqueue(object : Callback<PostSuccess> {
+            val fishLevel = FishLevel(score)
+            ApiClient.apiService.levelUp("Token $token", fishLevel).enqueue(object : Callback<PostSuccess> {
                 override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
                     if (response.isSuccessful) {
                         val responseSuccess = response.body()
@@ -124,6 +121,10 @@ class UserSessionRepository(private val context: Context) {
                     Log.e("MainActivity", "Error occurred while fetching data", t)
                 }
             })
+        }
+        else {
+            // Handle case where token is null
+            Log.e("MainActivity", "Token is null. Unable to sync score.")
         }
         return -1
     }

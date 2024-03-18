@@ -23,10 +23,10 @@ interface ApiService {
     ): Call<PostSuccess> // Adjust the response data type as needed
 
     @Headers("Content-Type:application/json")
-    @POST("/hydrofish/level_up/") // Adjust the endpoint as needed
+    @POST("/hydrofish/levelup/") // Adjust the endpoint as needed
     fun levelUp(
         @Header("Authorization") authToken: String,
-        @Body intakeData: FishScore // Adjust the data type as needed
+        @Body intakeData: FishLevel // Adjust the data type as needed
     ): Call<PostSuccess> // Adjust the response data type as needed
     
 }

@@ -16,7 +16,7 @@ import com.hydrofish.app.utils.UserSessionRepository
 import androidx.compose.runtime.livedata.observeAsState
 import com.hydrofish.app.api.ApiClient
 import com.hydrofish.app.api.AuthSuccess
-import com.hydrofish.app.api.FishScore
+import com.hydrofish.app.api.FishLevel
 import com.hydrofish.app.api.LoginRequest
 import com.hydrofish.app.api.PostSuccess
 import com.hydrofish.app.api.WaterData
@@ -52,13 +52,11 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
     }
 
     private fun initScore() {
-        val currentScore = scoreLiveData.value ?: 0
-        if (currentScore != 0) {
-            _uiState.update { currentState ->
-                currentState.copy(
-                    fishScore = currentScore
-                )
-            }
+        val currentScore = scoreLiveData.value ?: 1
+        _uiState.update { currentState ->
+           currentState.copy(
+                fishScore = currentScore
+            )
         }
         val responseLevel: Int = userSessionRepository.syncScore()
         if (responseLevel != -1) {
@@ -110,32 +108,13 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
                 fishScore = newScore
             )
         }
-        val token = userSessionRepository.getToken()
-        if (token != null ) {
-            val score = FishScore(newScore)
-            val call = ApiClient.apiService.levelUp("Token " + token, score)
-            call.enqueue(object : Callback<PostSuccess> {
-                override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
-                    if (response.isSuccessful) {
-                        val responseSuccess = response.body()
-                        val responseLevel = responseSuccess?.level
-                        if (responseLevel != null && responseLevel != -1) {
-                            _uiState.update { currentState ->
-                                currentState.copy(
-                                    fishScore = responseLevel
-                                )
-                            }
-                            userSessionRepository.updateScore(responseLevel)
-                        }
-
-                    } else {
-                        Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
-                    }
-                }
-                override fun onFailure(call: Call<PostSuccess>, t: Throwable) {
-                    Log.e("MainActivity", "Error occurred while fetching data", t)
-                }
-            })
+        val responseLevel: Int = userSessionRepository.syncScore()
+        if (responseLevel != -1) {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    fishScore = responseLevel
+                )
+            }
         }
     }
 
