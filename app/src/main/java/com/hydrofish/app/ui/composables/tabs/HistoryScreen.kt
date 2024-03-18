@@ -43,7 +43,7 @@ import com.hydrofish.app.viewmodelfactories.HistoryViewModelFactory
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
-import com.patrykandpatrick.vico.compose.chart.column.columnChart
+import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import retrofit2.Call
 import retrofit2.Callback
@@ -166,10 +166,13 @@ fun HistoryScreen(userSessionRepository: UserSessionRepository, navController: N
             val hydrationAmounts = chartData.map { it.hydrationAmount }
             val chartEntryModel = entryModelOf(*hydrationAmounts.toTypedArray())
             Chart(
-                chart = columnChart(),
+                //chart = columnChart(),
+                chart = lineChart(),
                 model = chartEntryModel,
+                oldModel = chartEntryModel,
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),
+                isZoomEnabled = true,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
