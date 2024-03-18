@@ -1,5 +1,6 @@
 package com.hydrofish.app.api
 
+import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.Headers
@@ -12,5 +13,5 @@ interface ApiService {
 
     @Headers("Content-Type:application/json")
     @POST("/users/api/register/")
-    suspend fun registerUser(@Body registerRequest: RegisterRequest): Response<AuthSuccess>
+    fun registerUser(@Body registerRequest: RegisterRequest): Call<AuthSuccess>
 }

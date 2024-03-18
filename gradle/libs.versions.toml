@@ -22,8 +22,9 @@ retrofit = "2.9.0"
 security-crypto = "1.0.0"
 navigationTesting = "2.6.0"
 hilt-navigation-compose = "1.0.0"
-mockk = "1.12.4"
+mockk = "1.12.3"
 kotlinx-coroutines = "1.6.0"
+hilt-android-testing = "2.45"
 
 
 [libraries]
@@ -63,7 +64,10 @@ security-crypto = { module = "androidx.security:security-crypto", version.ref = 
 androidx-navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "navigationTesting" }
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt-navigation-compose" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hilt-android-testing" }
+
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "plugin-android-app" }

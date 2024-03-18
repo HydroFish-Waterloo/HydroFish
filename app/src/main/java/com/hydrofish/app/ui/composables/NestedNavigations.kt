@@ -5,6 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.hydrofish.app.api.ApiClient
 import com.hydrofish.app.ui.composables.unauthenticated.login.LoginScreen
 import com.hydrofish.app.ui.composables.unauthenticated.registration.RegistrationScreen
 import com.hydrofish.app.utils.IUserSessionRepository
@@ -59,7 +60,7 @@ fun NavGraphBuilder.unauthenticatedGraph(navController: NavController, userSessi
                     navController.popBackStack(route = NavigationRoutes.Unauthenticated.Login.route, inclusive = true)
                 },
                 userSessionRepository = userSessionRepository,
-                registrationViewModel = viewModel(factory = RegisterViewModelFactory(userSessionRepository)),
+                registrationViewModel = viewModel(factory = RegisterViewModelFactory(userSessionRepository, ApiClient.apiService)),
             )
         }
     }

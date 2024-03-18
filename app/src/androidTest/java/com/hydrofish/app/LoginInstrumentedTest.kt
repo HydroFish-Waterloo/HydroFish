@@ -117,3 +117,55 @@ class LoginInstrumentedTest {
         }
     }
 }
+
+//class FakeApiService : ApiService {
+//    override suspend fun loginUser(loginRequest: LoginRequest): Response<AuthSuccess> {
+//        return Response.error(400, "wwww".toResponseBody("text/plain".toMediaTypeOrNull()))
+//    }
+//
+//    override suspend fun registerUser(registerRequest: RegisterRequest): Response<AuthSuccess> {
+//        return Response.error(400, "wwww".toResponseBody("text/plain".toMediaTypeOrNull()))
+//    }
+//}
+//
+//@HiltAndroidTest
+//class LoginScreenTest {
+//
+//    @get:Rule(order = 0)
+//    val hiltRule = HiltAndroidRule(this)
+//
+//    @get:Rule(order = 1)
+//    val composeTestRule = createComposeRule()
+//
+//    @Before
+//    fun setup() {
+//        hiltRule.inject()
+//    }
+//
+//    @Test
+//    fun loginFailure_displaysErrorMessage() {
+//        composeTestRule.setContent {
+//            LoginScreen(
+//                onNavigateToRegistration = {},
+//                onNavigateToForgotPassword = {},
+//                onNavigateToAuthenticatedRoute = {},
+//                onNavigateBack = {},
+//                loginViewModel = hiltViewModel()
+//            )
+//        }
+//
+//        composeTestRule.onNodeWithTag("username").performTextInput("wrong")
+//        composeTestRule.onNodeWithTag("password").performTextInput("wrong")
+//        composeTestRule.onNodeWithText("Login").performClick()
+//
+//        composeTestRule.waitUntil(timeoutMillis = 10000) {
+//            composeTestRule.onAllNodesWithText("User name might be wrong").fetchSemanticsNodes()
+//                .isNotEmpty()
+//        }
+//
+//        composeTestRule.waitUntil(timeoutMillis = 10000) {
+//            composeTestRule.onAllNodesWithText("Password might be wrong").fetchSemanticsNodes()
+//                .isNotEmpty()
+//        }
+//    }
+//}

@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.Packaging
+
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
@@ -45,6 +47,16 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes.add("***/MANIFEST.MF")
+            excludes.add("***/META-INF/LICENSE.md")
+            excludes.add("***/META-INF/LICENSE-notice.md")
+        }
+    }
+    testOptions {
+        fun Packaging.() {
+            jniLibs {
+                useLegacyPackaging = true
+            }
         }
     }
 }
@@ -72,6 +84,7 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
+    androidTestImplementation(libs.hilt.android.testing)
 
 
     // Testing Libraries
@@ -100,6 +113,7 @@ dependencies {
     androidTestImplementation(libs.mockito.android)
     implementation(libs.composeLiveData)
     testImplementation(libs.mockk)
+    androidTestImplementation(libs.mockk.android)
 
 
     // Barista for Android UI testing
