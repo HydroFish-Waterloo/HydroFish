@@ -78,8 +78,7 @@ class ReminderScreenInstrumentedTest {
 
         composeTestRule.setContent {
             ReminderScreen(
-                SettingsScreenInstrumentedTest.MockPermissionChecker()
-                    .apply { canScheduleExactAlarmsResult = false })
+                MockPermissionChecker().apply { canScheduleExactAlarmsResult = false })
         }
 
         composeTestRule
@@ -96,8 +95,7 @@ class ReminderScreenInstrumentedTest {
 
         composeTestRule.setContent {
             ReminderScreen(
-                SettingsScreenInstrumentedTest.MockPermissionChecker()
-                    .apply { canScheduleExactAlarmsResult = true })
+               MockPermissionChecker().apply { canScheduleExactAlarmsResult = true })
         }
 
         composeTestRule.waitUntil(timeoutMillis = 1000) {
@@ -139,8 +137,7 @@ class ReminderScreenInstrumentedTest {
 
         composeTestRule.setContent {
             ReminderScreen(
-                SettingsScreenInstrumentedTest.MockPermissionChecker()
-                    .apply { canScheduleExactAlarmsResult = true })
+                MockPermissionChecker().apply { canScheduleExactAlarmsResult = true })
         }
 
         composeTestRule.waitUntil(timeoutMillis = 1000) {
@@ -182,8 +179,7 @@ class ReminderScreenInstrumentedTest {
 
         composeTestRule.setContent {
             ReminderScreen(
-                SettingsScreenInstrumentedTest.MockPermissionChecker()
-                    .apply { canScheduleExactAlarmsResult = true })
+               MockPermissionChecker().apply { canScheduleExactAlarmsResult = true })
         }
 
         composeTestRule.waitUntil(timeoutMillis = 1000) {
