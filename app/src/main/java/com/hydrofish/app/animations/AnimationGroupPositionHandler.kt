@@ -37,6 +37,10 @@ class AnimationGroupPositionHandler(animationsPerGroup: List<HashSet<AnimatableT
         return animationGroups
     }
 
+    fun getAnimationGroups(): List<AnimationGroup> {
+        return animationGroups
+    }
+
     fun prepForPopulation() {
         populated = false
     }

@@ -7,7 +7,7 @@ data class HydroFishUIState(
     val dailyWaterConsumedML: Int = 0,
     val curDailyMaxWaterConsumedML: Int = 1000,
 
-    var fishScore: Int = 3,
+    var fishScore: Int = 1,
     val animationGroupPositionHandler: AnimationGroupPositionHandler
         = AnimationGroupPositionHandler(
             listOf(
