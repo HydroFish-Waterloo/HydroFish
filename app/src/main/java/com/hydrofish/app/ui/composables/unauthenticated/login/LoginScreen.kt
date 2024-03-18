@@ -58,6 +58,7 @@ fun LoginScreen(
     val onTokenReceived: (String,String) -> Unit = { token,userName ->
         userSessionRepository.saveToken(token)
         userSessionRepository.saveUserName(userName)
+        userSessionRepository.syncScore()
     }
 
     val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(onTokenReceived))

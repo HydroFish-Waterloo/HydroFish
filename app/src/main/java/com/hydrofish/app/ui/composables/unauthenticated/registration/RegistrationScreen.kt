@@ -40,6 +40,7 @@ fun RegistrationScreen(
     val onTokenReceived: (String,String) -> Unit = { token,userName ->
         userSessionRepository.saveToken(token)
         userSessionRepository.saveUserName(userName)
+        userSessionRepository.syncScore()
     }
 
     val registrationViewModel: RegistrationViewModel = viewModel(factory = RegisterViewModelFactory(onTokenReceived))
