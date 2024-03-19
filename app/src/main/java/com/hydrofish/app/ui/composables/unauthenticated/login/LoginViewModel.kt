@@ -21,7 +21,7 @@ import retrofit2.Response
 /**
  * ViewModel for Login Screen
  */
-class LoginViewModel(private val onTokenReceived: (String) -> Unit) : ViewModel() {
+class LoginViewModel(private val onTokenReceived: (String,String) -> Unit) : ViewModel() {
 
     var loginState = mutableStateOf(LoginState())
         private set
@@ -69,16 +69,15 @@ class LoginViewModel(private val onTokenReceived: (String) -> Unit) : ViewModel(
                     call.enqueue(object : Callback<AuthSuccess> {
                         override fun onResponse(call: Call<AuthSuccess>, response: Response<AuthSuccess>) {
                             if (response.isSuccessful) {
-                                val token = response.body()
+                                val data = response.body()
                                 // Handle the retrieved post data
-                                Log.d("MainActivity", "Login here is token: " + token?.token)
-                                if (token != null) {
-                                    onTokenReceived(token.token)
+                                Log.d("Login", "Login here is token: " + data?.token)
+                                if (data != null) {
+                                    onTokenReceived(data.token,data.username)
                                     loginState.value = loginState.value.copy(isLoginSuccessful = true)
                                 } else{
 
                                 }
-//                                SecureStorage.saveToken(context, "your_token_here")
 
                             } else {
                                 // Handle error
@@ -88,17 +87,16 @@ class LoginViewModel(private val onTokenReceived: (String) -> Unit) : ViewModel(
                                         passwordErrorState = passwordWrongErrorState
                                     )
                                 )
-                                Log.e("MainActivity", "Failed to login: ${response.code()}")
+                                Log.e("Login", "Failed to login: ${response.code()}")
                             }
                         }
 
                         override fun onFailure(call: Call<AuthSuccess>, t: Throwable) {
                             // Handle failure
-                            Log.e("MainActivity", "Error occurred while logging in", t)
+                            Log.e("Login", "Error occurred while logging in", t)
                         }
                     })
 
-//                    loginState.value = loginState.value.copy(isLoginSuccessful = true)
                 }
             }
         }
