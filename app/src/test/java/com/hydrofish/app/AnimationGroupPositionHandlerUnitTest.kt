@@ -27,10 +27,7 @@ class AnimationGroupTest {
         val fishList = animationGroup.getFishListWithAnim().fishes
         assertTrue("Fish with ID 1 should be stored in the group", fishList.any { it.fishId == 1 })
         assertEquals(initialSize+1,fishList.size)
-        // not necessary to test fishId -1
-        /*animationGroup.storeFish(-1)
-        assertTrue("Fish with ID -1 should not be stored in the group", fishList.all { it.fishId != -1 })
-*/
+
     }
 
     @Test
