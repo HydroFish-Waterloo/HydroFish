@@ -152,23 +152,9 @@ class UserSessionRepository(private val context: Context) {
 
     fun getUserName(): String? = encryptedPrefs.getString(userName, null)
 
-    fun onCleared() {
-        preferences.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
+    fun clearData() {
+        encryptedPrefs.edit().remove(keyToken).apply()
+        encryptedPrefs.edit().remove(userName).apply()
+        _isLoggedIn.value = false
     }
-
-    fun updateScore(newScore: Int) {
-        preferences.edit().putInt("score", newScore).apply()
-    }
-
-//    fun isLoggedIn(): Boolean {
-//        return SecureStorage.getToken(context) != null
-//    }
-//
-//    fun saveToken(token: String) {
-//        SecureStorage.saveToken(context,token)
-//    }
-//
-//    fun clearToken() {
-//        SecureStorage.clearToken(context)
-//    }
 }

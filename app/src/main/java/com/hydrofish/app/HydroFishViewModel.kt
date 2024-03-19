@@ -119,11 +119,12 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
                 )
             }
         }
-        _uiState.update { currentState ->
-            currentState.copy(
-                dailyWaterConsumedML = 0,
-            )
-        }
+        //Testing Purpose
+//        _uiState.update { currentState ->
+//            currentState.copy(
+//                dailyWaterConsumedML = 0,
+//            )
+//        }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
