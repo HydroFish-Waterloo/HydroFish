@@ -76,7 +76,7 @@ fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
         modifier = modifier.background(largeRadialGradient),
         contentAlignment = Alignment.Center,
     ) {
-        /*hydroFishViewModel.getAllFish()*/
+
         AddFishAnimation(hydroFishViewModel)
 
         AddProgessBar(waterPercent, modifier.align(Alignment.CenterEnd))
@@ -113,23 +113,7 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
                 )
             }
 
-            /*launch {
-                animatableMap[AnimatableType.SCALE_X]?.animateTo(
-                    targetValue = 400f,
-                    animationSpec = tween(
-                        durationMillis = 3000,
-                        easing = EaseInOutElastic
-                    )
-                )
-                animatableMap[AnimatableType.SCALE_X]?.animateTo(
-                    targetValue = -400f,
-                    animationSpec = tween(
-                        durationMillis = 3000,
-                        easing = EaseInOutElastic
-                    )
-                )
-            }
-*/
+
             launch {
                 delay(2800)
                 animatableMap[AnimatableType.FLIP]?.animateTo(
@@ -169,18 +153,6 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
                 )
             }
 
-            /*launch {
-                delay(2800)
-                animatableMap[AnimatableType.SCALE_FLIP]?.animateTo(
-                    targetValue = 180f,
-                    animationSpec = tween(durationMillis = 200)
-                )
-                delay(2800)
-                animatableMap[AnimatableType.SCALE_FLIP]?.animateTo(
-                    targetValue = 0f,
-                    animationSpec = tween(durationMillis = 200)
-                )
-            }*/
 
             launch {
                 animatableMap[AnimatableType.Y]?.animateTo(
@@ -259,12 +231,7 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
             }
 
 
-            /*launch{
-                animatableMap[AnimatableType.CAMERASCALE]?.animateTo(
-                    targetValue = 0.5f, // Example of dynamic change
-                    animationSpec = tween(durationMillis = 6000)
-                )
-            }*/
+
 
         }
     }
