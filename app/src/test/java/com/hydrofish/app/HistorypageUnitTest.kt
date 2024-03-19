@@ -1,7 +1,9 @@
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonParseException
 import com.google.gson.JsonParser
+import com.hydrofish.app.api.HydrationEntry
 import com.hydrofish.app.ui.composables.tabs.HydrationEntryDeserializer
+import com.hydrofish.app.ui.composables.tabs.aggregateHydrationDataByDay
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -31,7 +33,6 @@ class HydrationEntryDeserializerTest {
         // Then
         assertEquals(1, result.size)
         assertEquals(500, result[0].hydrationAmount)
-        // Add more assertions based on your expected behavior
     }
 
     @Test(expected = JsonParseException::class)
@@ -43,8 +44,6 @@ class HydrationEntryDeserializerTest {
 
         // When
         deserializer.deserialize(JsonParser.parseString(invalidJson), typeOfT, context)
-
-        // Then (exception should be thrown)
     }
 
     @Test
@@ -59,6 +58,29 @@ class HydrationEntryDeserializerTest {
         val expectedDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).parse(dateString)
         assertEquals(expectedDate, result)
     }
+}
 
-    // Add more test cases as needed for edge cases, boundary values, etc.
+class HydrationDataAggregatorTest {
+
+    @Test
+    fun `test aggregateHydrationDataByDay`() {
+        // Prepare test data
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
+        val date1 = dateFormat.parse("2022-01-01")!!
+        val date2 = dateFormat.parse("2022-01-02")!!
+        val date3 = dateFormat.parse("2022-01-01")!!
+        val entries = listOf(
+            HydrationEntry(date1, 200),
+            HydrationEntry(date2, 300),
+            HydrationEntry(date3, 150)
+        )
+
+        // Call the function to be tested
+        val result = aggregateHydrationDataByDay(entries)
+
+        // Verify the result
+        assert(result.size == 2) // We expect two entries for two different days
+        assert(result[0].date == date1 && result[0].hydrationAmount == 350) // Date1 is aggregated with 200 + 150 = 350
+        assert(result[1].date == date2 && result[1].hydrationAmount == 300) // Date2 is unique and remains 300
+    }
 }
