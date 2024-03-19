@@ -37,7 +37,7 @@ class UserSessionRepository(private val context: Context) {
 
     private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
         if (key == "score") {
-            _scoreLiveData.postValue(sharedPreferences.getInt(key, 0))
+            _scoreLiveData.postValue(sharedPreferences.getInt(key, 1))
         }
     }
 
@@ -45,24 +45,11 @@ class UserSessionRepository(private val context: Context) {
 //        val editor = preferences.edit()
 //        editor.clear() // This will clear all the preferences
 //        editor.apply()
-        _scoreLiveData.value = preferences.getInt("score", 0)
+        _scoreLiveData.value = preferences.getInt("score", 1)
         preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
-        checkResetWaterIntake()
     }
 
-    private fun checkResetWaterIntake() {
-        val currentDate = LocalDate.now()
-        val lastSavedDateAndWater = getWaterIntake()
-        if (lastSavedDateAndWater != null) {
-            val lastSavedDate = LocalDate.parse(lastSavedDateAndWater.second)
-            val daysDifference = Period.between(lastSavedDate, currentDate).days
-            // Check if it's been more than one day since last saved
-            if (daysDifference > 1 ) {
-                // Reset the currentState and save 0
-                saveWaterIntake(0, currentDate.toString())
-            }
-        }
-    }
+
 
     fun saveWaterIntake(water: Int, date: String) {
         val editor = preferences.edit()

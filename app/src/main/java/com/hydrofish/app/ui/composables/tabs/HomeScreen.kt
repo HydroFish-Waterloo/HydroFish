@@ -1,5 +1,7 @@
 package com.hydrofish.app.ui.composables.tabs
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.EaseInOut
@@ -85,6 +87,7 @@ fun HomeScreen(modifier: Modifier = Modifier, userSessionRepository: UserSession
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
     // stores the animatables in a map
@@ -154,6 +157,9 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
         while (true) {
             animate()
         }
+    }
+    LaunchedEffect(Unit) {
+        hydroFishViewModel.checkResetWaterIntake()
     }
 
     for (animationGroup in hydroFishViewModel.getAllFish()) {
@@ -236,6 +242,7 @@ fun AddButtons(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = viewModel()) {
     val hydroFishUIState by hydroFishViewModel.uiState.collectAsState();
@@ -260,9 +267,10 @@ fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = 
 
 
     Button(onClick = {
-        hydroFishViewModel.increaseWaterLevel(waterAmt);
+        hydroFishViewModel.checkResetWaterIntake()
+        hydroFishViewModel.increaseWaterLevel(waterAmt)
         val updatedWaterConsumption = hydroFishUIState.dailyWaterConsumedML + waterAmt
-        if (updatedWaterConsumption >= hydroFishUIState.curDailyMaxWaterConsumedML) {
+        if (updatedWaterConsumption >= hydroFishUIState.curDailyMaxWaterConsumedML && !hydroFishUIState.levelUpLock) {
             hydroFishViewModel.levelUp()
         }
     }) {

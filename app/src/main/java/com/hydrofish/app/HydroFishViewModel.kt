@@ -1,7 +1,9 @@
 package com.hydrofish.app
 
 import android.annotation.SuppressLint
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.hydrofish.app.animations.AnimationGroup
@@ -37,6 +39,23 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
     init {
         initWaterBar()
         initScore()
+        initLock()
+    }
+    private fun initLock(){
+        if (uiState.value.dailyWaterConsumedML >= uiState.value.curDailyMaxWaterConsumedML){
+            _uiState.update { currentState ->
+                currentState.copy(
+                    levelUpLock = true
+                )
+            }
+        }
+        else {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    levelUpLock = false
+                )
+            }
+        }
     }
     private fun initWaterBar() {
         // Get last saved date and water intake
@@ -70,7 +89,7 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
 
     @SuppressLint("NewApi")
     fun increaseWaterLevel(amt: Int) {
-
+        Log.d("Score", uiState.value.fishScore.toString())
         if (amt < 0) throw Exception("Cannot Increase Water By Negative Value");
         _uiState.update { currentState ->
             currentState.copy(
@@ -78,6 +97,7 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
             )
         }
         val currentDate = LocalDate.now()
+        Log.d("currentDate", currentDate.toString())
         userSessionRepository.saveWaterIntake(_uiState.value.dailyWaterConsumedML, currentDate.toString())
         val token = userSessionRepository.getToken()
         if (token != null ) {
@@ -102,6 +122,11 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
     fun levelUp() {
         val currentScore = scoreLiveData.value ?: 0
         val newScore = currentScore + 1
+        _uiState.update { currentState ->
+            currentState.copy(
+                levelUpLock = true
+            )
+        }
         userSessionRepository.updateScore(newScore)
         _uiState.update { currentState ->
             currentState.copy(
@@ -114,6 +139,30 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
                 currentState.copy(
                     fishScore = responseLevel
                 )
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun checkResetWaterIntake() {
+        val currentDate = LocalDate.now()
+        val lastSavedDateAndWater = userSessionRepository.getWaterIntake()
+        Log.d("currentDate", currentDate.toString())
+        if (lastSavedDateAndWater != null) {
+            val lastSavedDate = LocalDate.parse(lastSavedDateAndWater.second)
+            val daysDifference = Period.between(lastSavedDate, currentDate).days
+            // Check if it's been more than one day since last saved
+            Log.d("lastSavedDate", lastSavedDate.toString())
+            if (daysDifference >= 1 ) {
+                Log.d("daysDifference", daysDifference.toString())
+                // Reset the currentState and save 0
+                userSessionRepository.saveWaterIntake(0, currentDate.toString())
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        levelUpLock = false,
+                        dailyWaterConsumedML = 0
+                    )
+                }
             }
         }
     }
