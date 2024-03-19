@@ -20,5 +20,11 @@ enum class AnimatableType {
     X,
     Y,
     ROTATE,
-    FLIP
+    FLIP,
+    DIAGONAL_X,
+    DIAGONAL_Y,
+    DIAG_FLIP,
+    DIAG_FLIP_R,
+    DIAGONAL_X_R,
+    DIAGONAL_Y_R
 }

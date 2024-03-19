@@ -7,8 +7,6 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.hydrofish.app.animations.AnimationGroup
-import com.hydrofish.app.animations.Coordinates
-import com.hydrofish.app.animations.ImageListFromScore
 import com.hydrofish.app.ui.HydroFishUIState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -127,6 +125,7 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
                 levelUpLock = true
             )
         }
+        uiState.value.animationGroupPositionHandler.prepForPopulation()
         userSessionRepository.updateScore(newScore)
         _uiState.update { currentState ->
             currentState.copy(

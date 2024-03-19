@@ -6,6 +6,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.EaseInOutElastic
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -76,10 +77,12 @@ fun HomeScreen(modifier: Modifier = Modifier, userSessionRepository: UserSession
     val hydroFishUIState by hydroFishViewModel.uiState.collectAsState()
     val waterPercent = (hydroFishUIState.dailyWaterConsumedML * 1f) / (hydroFishUIState.curDailyMaxWaterConsumedML * 1f)
 
-    Box(modifier = modifier.background(largeRadialGradient),
+    Box(
+        modifier = modifier.background(largeRadialGradient),
         contentAlignment = Alignment.Center,
-        ) {
-        AddFishAnimation()
+    ) {
+
+        AddFishAnimation(hydroFishViewModel)
 
         AddProgessBar(waterPercent, modifier.align(Alignment.CenterEnd))
 
@@ -116,6 +119,7 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
                 )
             }
 
+
             launch {
                 delay(2800)
                 animatableMap[AnimatableType.FLIP]?.animateTo(
@@ -128,6 +132,33 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
                     animationSpec = tween(durationMillis = 200)
                 )
             }
+
+            launch {
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP]?.animateTo(
+                    targetValue = 180f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP]?.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+            }
+
+            launch {
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP_R]?.animateTo(
+                    targetValue = 180f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP_R]?.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+            }
+
 
             launch {
                 animatableMap[AnimatableType.Y]?.animateTo(
@@ -150,6 +181,64 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
                     animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
                 )
             }
+
+
+            // Launch block for diagonal movement using DIAGONAL_X and DIAGONAL_Y
+            launch {
+                // Diagonal movement towards a target point
+                animatableMap[AnimatableType.DIAGONAL_X]?.animateTo(
+                    targetValue = 400f, // Target for diagonal X movement
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+                animatableMap[AnimatableType.DIAGONAL_X]?.animateTo(
+                    targetValue = -400f, // Reset or move to a new X position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+
+            }
+            launch {
+                animatableMap[AnimatableType.DIAGONAL_Y]?.animateTo(
+                targetValue = 400f, // Target for diagonal Y movement
+                animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+            )
+
+                // Optionally, animate back to the starting position or another point
+
+                animatableMap[AnimatableType.DIAGONAL_Y]?.animateTo(
+                    targetValue = -400f, // Reset or move to a new Y position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+            }
+
+            launch {
+                // Diagonal movement towards a target point
+                animatableMap[AnimatableType.DIAGONAL_X_R]?.animateTo(
+                    targetValue = 400f, // Target for diagonal X movement
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+                animatableMap[AnimatableType.DIAGONAL_X_R]?.animateTo(
+                    targetValue = -400f, // Reset or move to a new X position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+
+            }
+            launch {
+                animatableMap[AnimatableType.DIAGONAL_Y_R]?.animateTo(
+                    targetValue = -400f, // Target for diagonal Y movement
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+
+                // Optionally, animate back to the starting position or another point
+
+                animatableMap[AnimatableType.DIAGONAL_Y_R]?.animateTo(
+                    targetValue = 400f, // Reset or move to a new Y position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+            }
+
+
+
+
         }
     }
 
@@ -188,10 +277,11 @@ fun AddFish(
         modifier = Modifier
             .size(100.dp)
             .graphicsLayer {
-                translationX = getAnimatableValIfExists(AnimatableType.X) + fishInfo.coordinates.x
-                translationY = getAnimatableValIfExists(AnimatableType.Y) + fishInfo.coordinates.y
+                translationX = getAnimatableValIfExists(AnimatableType.X) + getAnimatableValIfExists(AnimatableType.DIAGONAL_X) + getAnimatableValIfExists(AnimatableType.DIAGONAL_X_R) + fishInfo.coordinates.x
+                translationY = getAnimatableValIfExists(AnimatableType.Y) + getAnimatableValIfExists(AnimatableType.DIAGONAL_Y) + getAnimatableValIfExists(AnimatableType.DIAGONAL_Y_R) + fishInfo.coordinates.y
                 rotationZ = getAnimatableValIfExists(AnimatableType.ROTATE)
-                rotationY = getAnimatableValIfExists(AnimatableType.FLIP)
+                rotationY = getAnimatableValIfExists(AnimatableType.FLIP) + getAnimatableValIfExists(AnimatableType.DIAG_FLIP) + getAnimatableValIfExists(AnimatableType.DIAG_FLIP_R)
+
             }
     )
 }
@@ -274,8 +364,9 @@ fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = 
             hydroFishViewModel.levelUp()
         }
     }) {
-        Column (
-            horizontalAlignment = Alignment.CenterHorizontally,){
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ){
             Image(
                 painterResource(id = R.drawable.ic_launcher_foreground),
                 contentDescription ="add drink button",
