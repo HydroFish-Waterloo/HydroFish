@@ -1,6 +1,13 @@
 package com.hydrofish.app.ui.composables.tabs
 
-import android.util.Log
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.EaseInOutElastic
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,8 +24,10 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -27,15 +36,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.HydroFishViewModel
 import com.hydrofish.app.R
-import com.hydrofish.app.ui.composables.FishAnimation
-import com.hydrofish.app.ui.composables.FishType
-import kotlin.random.Random
+import com.hydrofish.app.animations.AnimatableType
+import com.hydrofish.app.animations.FishInfo
+import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.viewmodelfactories.HydroFishViewModelFactory
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Composable function that represents the home screen of the application.
@@ -55,24 +69,222 @@ val largeRadialGradient = object : ShaderBrush() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
+fun HomeScreen(modifier: Modifier = Modifier, userSessionRepository: UserSessionRepository) {
     //This approach ensures that whenever there is a change in the uiState value,
     //recomposition occurs for the composables using the hydroFishUiState value.
+    val hydroFishViewModel: HydroFishViewModel = viewModel(factory = HydroFishViewModelFactory(userSessionRepository))
     val hydroFishUIState by hydroFishViewModel.uiState.collectAsState()
     val waterPercent = (hydroFishUIState.dailyWaterConsumedML * 1f) / (hydroFishUIState.curDailyMaxWaterConsumedML * 1f)
 
-    Box(modifier = modifier
-        .background(largeRadialGradient),
+    Box(
+        modifier = modifier.background(largeRadialGradient),
         contentAlignment = Alignment.Center,
+    ) {
 
-        ) {
-        DisplayFish(modifier = Modifier, fishes = hydroFishUIState.fishTypeList, distances = hydroFishUIState.fishDistances)
+        AddFishAnimation(hydroFishViewModel)
 
         AddProgessBar(waterPercent, modifier.align(Alignment.CenterEnd))
 
         AddButtons(Modifier.align(Alignment.BottomStart))
     }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
+    // stores the animatables in a map
+    val animatableMap = mutableMapOf<AnimatableType, Animatable<Float, AnimationVector1D>>()
+    AnimatableType.values().forEach { animatableVal ->
+        animatableMap[animatableVal] = remember { Animatable(0f) }
+    }
+
+    // should contain respective animations for each animatable
+    suspend fun animate() {
+        coroutineScope {
+            launch {
+                animatableMap[AnimatableType.X]?.animateTo(
+                    targetValue = 400f,
+                    animationSpec = tween(
+                        durationMillis = 3000,
+                        easing = EaseInOutElastic
+                    )
+                )
+                animatableMap[AnimatableType.X]?.animateTo(
+                    targetValue = -400f,
+                    animationSpec = tween(
+                        durationMillis = 3000,
+                        easing = EaseInOutElastic
+                    )
+                )
+            }
+
+
+            launch {
+                delay(2800)
+                animatableMap[AnimatableType.FLIP]?.animateTo(
+                    targetValue = 180f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+                delay(2800)
+                animatableMap[AnimatableType.FLIP]?.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+            }
+
+            launch {
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP]?.animateTo(
+                    targetValue = 180f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP]?.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+            }
+
+            launch {
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP_R]?.animateTo(
+                    targetValue = 180f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+                delay(2800)
+                animatableMap[AnimatableType.DIAG_FLIP_R]?.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 200)
+                )
+            }
+
+
+            launch {
+                animatableMap[AnimatableType.Y]?.animateTo(
+                    targetValue = 400f,
+                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
+                )
+                animatableMap[AnimatableType.Y]?.animateTo(
+                    targetValue = -400f,
+                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
+                )
+            }
+
+            launch {
+                animatableMap[AnimatableType.ROTATE]?.animateTo(
+                    targetValue = 360f,
+                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
+                )
+                animatableMap[AnimatableType.ROTATE]?.animateTo(
+                    targetValue = 2000f,
+                    animationSpec = tween(durationMillis = 3000, easing = EaseInOut)
+                )
+            }
+
+
+            // Launch block for diagonal movement using DIAGONAL_X and DIAGONAL_Y
+            launch {
+                // Diagonal movement towards a target point
+                animatableMap[AnimatableType.DIAGONAL_X]?.animateTo(
+                    targetValue = 400f, // Target for diagonal X movement
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+                animatableMap[AnimatableType.DIAGONAL_X]?.animateTo(
+                    targetValue = -400f, // Reset or move to a new X position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+
+            }
+            launch {
+                animatableMap[AnimatableType.DIAGONAL_Y]?.animateTo(
+                targetValue = 400f, // Target for diagonal Y movement
+                animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+            )
+
+                // Optionally, animate back to the starting position or another point
+
+                animatableMap[AnimatableType.DIAGONAL_Y]?.animateTo(
+                    targetValue = -400f, // Reset or move to a new Y position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+            }
+
+            launch {
+                // Diagonal movement towards a target point
+                animatableMap[AnimatableType.DIAGONAL_X_R]?.animateTo(
+                    targetValue = 400f, // Target for diagonal X movement
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+                animatableMap[AnimatableType.DIAGONAL_X_R]?.animateTo(
+                    targetValue = -400f, // Reset or move to a new X position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+
+            }
+            launch {
+                animatableMap[AnimatableType.DIAGONAL_Y_R]?.animateTo(
+                    targetValue = -400f, // Target for diagonal Y movement
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+
+                // Optionally, animate back to the starting position or another point
+
+                animatableMap[AnimatableType.DIAGONAL_Y_R]?.animateTo(
+                    targetValue = 400f, // Reset or move to a new Y position
+                    animationSpec = tween(durationMillis = 3000, easing = LinearOutSlowInEasing)
+                )
+            }
+
+
+
+
+        }
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        while (true) {
+            animate()
+        }
+    }
+    LaunchedEffect(Unit) {
+        hydroFishViewModel.checkResetWaterIntake()
+    }
+
+    for (animationGroup in hydroFishViewModel.getAllFish()) {
+        val fishAnimAndList = animationGroup.getFishListWithAnim()
+        for (fishInfo in fishAnimAndList.fishes) {
+            AddFish(animatableMap, fishAnimAndList.animatableTypes, fishInfo)
+        }
+    }
+}
+
+// will be repeatedly recomposed based on the animatables, due to the use of .value
+@Composable
+fun AddFish(
+    animatableStorageMap: MutableMap<AnimatableType, Animatable<Float, AnimationVector1D>>,
+    animatableActivatedSet: HashSet<AnimatableType>,
+    fishInfo: FishInfo
+) {
+    fun getAnimatableValIfExists(animatable: AnimatableType): Float {
+        return if (animatableActivatedSet.contains(animatable))
+                (animatableStorageMap[animatable]?.value as Float) else 0f
+    }
+
+    Image(
+        painter = painterResource(id = fishInfo.fishId),
+        contentDescription = "fish",
+        modifier = Modifier
+            .size(100.dp)
+            .graphicsLayer {
+                translationX = getAnimatableValIfExists(AnimatableType.X) + getAnimatableValIfExists(AnimatableType.DIAGONAL_X) + getAnimatableValIfExists(AnimatableType.DIAGONAL_X_R) + fishInfo.coordinates.x
+                translationY = getAnimatableValIfExists(AnimatableType.Y) + getAnimatableValIfExists(AnimatableType.DIAGONAL_Y) + getAnimatableValIfExists(AnimatableType.DIAGONAL_Y_R) + fishInfo.coordinates.y
+                rotationZ = getAnimatableValIfExists(AnimatableType.ROTATE)
+                rotationY = getAnimatableValIfExists(AnimatableType.FLIP) + getAnimatableValIfExists(AnimatableType.DIAG_FLIP) + getAnimatableValIfExists(AnimatableType.DIAG_FLIP_R)
+
+            }
+    )
 }
 
 @Composable
@@ -93,21 +305,7 @@ fun AddProgessBar(waterConsumed: Float, modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-fun DisplayFish(modifier: Modifier, fishes: List<FishType>, distances: List<Float>) {
-    if (fishes.size == distances.size) {
-        fishes.forEachIndexed { index, fishType ->
-            val direction: Boolean = Random.nextBoolean()
-            FishAnimation(
-                modifier = Modifier,
-                fishType = fishType,
-                verticalDistance = distances[index],
-                directionInit = direction
-            )
-        }
-    }
-}
-
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview
 fun AddButtons(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
@@ -136,6 +334,7 @@ fun AddButtons(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = viewModel()) {
     val hydroFishUIState by hydroFishViewModel.uiState.collectAsState();
@@ -160,10 +359,18 @@ fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = 
 
 
     Button(onClick = {
-        hydroFishViewModel.increaseWaterLevel(waterAmt);
+        hydroFishViewModel.checkResetWaterIntake()
+        hydroFishViewModel.increaseWaterLevel(waterAmt)
+        val willSurpassLimit = hydroFishUIState.dailyWaterConsumedML + waterAmt >= hydroFishUIState.curDailyMaxWaterConsumedML;
+        val hasSurpassedLimit = hydroFishUIState.dailyWaterConsumedML >= hydroFishUIState.curDailyMaxWaterConsumedML;
+
+        if (willSurpassLimit && !hasSurpassedLimit) {
+            hydroFishViewModel.levelUp()
+        }
     }) {
-        Column (
-            horizontalAlignment = Alignment.CenterHorizontally,){
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ){
             Image(
                 painterResource(id = R.drawable.ic_launcher_foreground),
                 contentDescription ="add drink button",

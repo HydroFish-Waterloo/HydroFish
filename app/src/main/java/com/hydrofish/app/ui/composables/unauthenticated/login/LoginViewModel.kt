@@ -71,14 +71,13 @@ class LoginViewModel(private val onTokenReceived: (String,String) -> Unit) : Vie
                             if (response.isSuccessful) {
                                 val data = response.body()
                                 // Handle the retrieved post data
-                                Log.d("MainActivity", "Login here is token: " + data?.token)
+                                Log.d("Login", "Login here is token: " + data?.token)
                                 if (data != null) {
                                     onTokenReceived(data.token,data.username)
                                     loginState.value = loginState.value.copy(isLoginSuccessful = true)
                                 } else{
 
                                 }
-//                                SecureStorage.saveToken(context, "your_token_here")
 
                             } else {
                                 // Handle error
@@ -88,17 +87,16 @@ class LoginViewModel(private val onTokenReceived: (String,String) -> Unit) : Vie
                                         passwordErrorState = passwordWrongErrorState
                                     )
                                 )
-                                Log.e("MainActivity", "Failed to login: ${response.code()}")
+                                Log.e("Login", "Failed to login: ${response.code()}")
                             }
                         }
 
                         override fun onFailure(call: Call<AuthSuccess>, t: Throwable) {
                             // Handle failure
-                            Log.e("MainActivity", "Error occurred while logging in", t)
+                            Log.e("Login", "Error occurred while logging in", t)
                         }
                     })
 
-//                    loginState.value = loginState.value.copy(isLoginSuccessful = true)
                 }
             }
         }

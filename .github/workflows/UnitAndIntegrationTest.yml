@@ -1,0 +1,80 @@
+name: Run Unit and Integration Tests
+
+on:
+  pull_request:
+    branches: [ main, Develop ]
+  push:
+    branches: [ main, Develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        api-level: [33]
+
+    steps:
+      - uses: actions/checkout@v4.1.1
+
+      - name: Set Up JDK
+        uses: actions/setup-java@v4.1.0
+        with:
+          java-version: "17"
+          distribution: "adopt"
+
+      - name: Change gradle permissions
+        run: chmod +x ./gradlew
+
+      # utilize hardware acceleration
+      - name: Enable KVM group perms
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+        # cache to reduce testing runtime (especially our integration tests)
+      - name: Gradle cache
+        uses: actions/cache@v4.0.1
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
+
+      - name: AVD cache
+        uses: actions/cache@v4.0.1
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ matrix.api-level }}
+      - name: create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot for caching."
+
+      - name: Run Integration Tests
+        uses: ReactiveCircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: google_apis
+          arch: x86_64
+          force-avd-creation: false
+          script: ./gradlew connectedAndroidTest --stacktrace
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -skin 1920x1080
+          disable-animations: true
+          disable-spellchecker: true
+
+      - name: Run Unit Tests
+        run: ./gradlew test
+
+      - name: Build Project
+        run: ./gradlew assemble
