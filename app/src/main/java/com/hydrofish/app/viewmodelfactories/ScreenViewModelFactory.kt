@@ -9,7 +9,7 @@ import com.hydrofish.app.ui.composables.unauthenticated.login.LoginViewModel
 import com.hydrofish.app.ui.composables.unauthenticated.registration.RegistrationViewModel
 import com.hydrofish.app.utils.UserSessionRepository
 
-class LoginViewModelFactory(private val onTokenReceived: (String) -> Unit) : ViewModelProvider.Factory {
+class LoginViewModelFactory(private val onTokenReceived: (String,String) -> Unit) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
@@ -19,7 +19,7 @@ class LoginViewModelFactory(private val onTokenReceived: (String) -> Unit) : Vie
     }
 }
 
-class RegisterViewModelFactory(private val onTokenReceived: (String) -> Unit) : ViewModelProvider.Factory {
+class RegisterViewModelFactory(private val onTokenReceived: (String,String) -> Unit) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(RegistrationViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
