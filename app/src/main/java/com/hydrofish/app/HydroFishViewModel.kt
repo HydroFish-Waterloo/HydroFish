@@ -37,24 +37,8 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
     init {
         initWaterBar()
         initScore()
-        initLock()
     }
-    private fun initLock(){
-        if (uiState.value.dailyWaterConsumedML >= uiState.value.curDailyMaxWaterConsumedML){
-            _uiState.update { currentState ->
-                currentState.copy(
-                    levelUpLock = true
-                )
-            }
-        }
-        else {
-            _uiState.update { currentState ->
-                currentState.copy(
-                    levelUpLock = false
-                )
-            }
-        }
-    }
+
     private fun initWaterBar() {
         // Get last saved date and water intake
         val lastSavedDateAndWater = userSessionRepository.getWaterIntake()
@@ -120,11 +104,6 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
     fun levelUp() {
         val currentScore = scoreLiveData.value ?: 0
         val newScore = currentScore + 1
-        _uiState.update { currentState ->
-            currentState.copy(
-                levelUpLock = true
-            )
-        }
         uiState.value.animationGroupPositionHandler.prepForPopulation()
         userSessionRepository.updateScore(newScore)
         _uiState.update { currentState ->
@@ -139,6 +118,11 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
                     fishScore = responseLevel
                 )
             }
+        }
+        _uiState.update { currentState ->
+            currentState.copy(
+                dailyWaterConsumedML = 0,
+            )
         }
     }
 
@@ -158,7 +142,6 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
                 userSessionRepository.saveWaterIntake(0, currentDate.toString())
                 _uiState.update { currentState ->
                     currentState.copy(
-                        levelUpLock = false,
                         dailyWaterConsumedML = 0
                     )
                 }

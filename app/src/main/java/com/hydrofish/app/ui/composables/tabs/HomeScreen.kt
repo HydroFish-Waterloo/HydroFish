@@ -69,6 +69,7 @@ val largeRadialGradient = object : ShaderBrush() {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier, userSessionRepository: UserSessionRepository) {
     //This approach ensures that whenever there is a change in the uiState value,
@@ -304,6 +305,7 @@ fun AddProgessBar(waterConsumed: Float, modifier: Modifier = Modifier) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview
 fun AddButtons(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewModel = viewModel()) {
@@ -359,8 +361,10 @@ fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = 
     Button(onClick = {
         hydroFishViewModel.checkResetWaterIntake()
         hydroFishViewModel.increaseWaterLevel(waterAmt)
-        val updatedWaterConsumption = hydroFishUIState.dailyWaterConsumedML + waterAmt
-        if (updatedWaterConsumption >= hydroFishUIState.curDailyMaxWaterConsumedML && !hydroFishUIState.levelUpLock) {
+        val willSurpassLimit = hydroFishUIState.dailyWaterConsumedML + waterAmt >= hydroFishUIState.curDailyMaxWaterConsumedML;
+        val hasSurpassedLimit = hydroFishUIState.dailyWaterConsumedML >= hydroFishUIState.curDailyMaxWaterConsumedML;
+
+        if (willSurpassLimit && !hasSurpassedLimit) {
             hydroFishViewModel.levelUp()
         }
     }) {
