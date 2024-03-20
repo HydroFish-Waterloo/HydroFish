@@ -40,8 +40,8 @@ import com.hydrofish.app.ui.common.customComposableViews.TitleText
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.LoginUiEvent
 import com.hydrofish.app.ui.theme.AppTheme
 import com.hydrofish.app.ui.theme.ComposeLoginTheme
+import com.hydrofish.app.utils.IUserSessionRepository
 import com.hydrofish.app.utils.UserSessionRepository
-import com.hydrofish.app.viewmodelfactories.LoginViewModelFactory
 
 @Composable
 fun LoginScreen(
@@ -50,18 +50,11 @@ fun LoginScreen(
     onNavigateToForgotPassword: () -> Unit,
     onNavigateToAuthenticatedRoute: () -> Unit,
     onNavigateBack: () -> Unit,
-    userSessionRepository: UserSessionRepository
+    userSessionRepository: IUserSessionRepository,
+    loginViewModel: LoginViewModel
 ) {
 
     val context = LocalContext.current
-
-    val onTokenReceived: (String,String) -> Unit = { token,userName ->
-        userSessionRepository.saveToken(token)
-        userSessionRepository.saveUserName(userName)
-        userSessionRepository.syncScore()
-    }
-
-    val loginViewModel: LoginViewModel = viewModel(factory = LoginViewModelFactory(onTokenReceived))
 
     val loginState by remember {
         loginViewModel.loginState
@@ -205,7 +198,8 @@ fun PreviewLoginScreen() {
             onNavigateToRegistration = {},
             onNavigateToAuthenticatedRoute = {},
             onNavigateBack={},
-            userSessionRepository = UserSessionRepository(LocalContext.current)
+            userSessionRepository = UserSessionRepository(LocalContext.current),
+            loginViewModel = viewModel(),
         )
     }
 }

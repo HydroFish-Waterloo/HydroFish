@@ -11,7 +11,7 @@ import com.hydrofish.app.api.ApiClient
 import com.hydrofish.app.api.PostSuccess
 import com.hydrofish.app.api.WaterData
 import com.hydrofish.app.ui.HydroFishUIState
-import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.utils.IUserSessionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +22,7 @@ import retrofit2.Response
 import java.time.LocalDate
 import java.time.Period
 
-class HydroFishViewModel(private val userSessionRepository: UserSessionRepository): ViewModel() {
+class HydroFishViewModel(private val userSessionRepository: IUserSessionRepository): ViewModel() {
     // backing property to avoid updates from other classes
     private val _uiState = MutableStateFlow(HydroFishUIState())
     val uiState: StateFlow<HydroFishUIState> = _uiState.asStateFlow()

@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.google.gson.Gson
-import com.hydrofish.app.api.ApiClient
+import com.hydrofish.app.api.ApiService
 import com.hydrofish.app.api.AuthSuccess
 import com.hydrofish.app.api.RegisterError
 import com.hydrofish.app.api.RegisterRequest
@@ -17,11 +17,15 @@ import com.hydrofish.app.ui.composables.unauthenticated.registration.state.mobil
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.passwordEmptyErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.passwordMismatchErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.registration.state.userNameEmptyErrorState
+import com.hydrofish.app.utils.IUserSessionRepository
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit) : ViewModel() {
+class RegistrationViewModel(
+    private val userSessionRepository: IUserSessionRepository,
+    private val apiService: ApiService
+) : ViewModel() {
 
     var registrationState = mutableStateOf(RegistrationState())
         private set
@@ -117,7 +121,7 @@ class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit
 
 
                     val registerRequest = RegisterRequest(username = registrationState.value.userName, password1 = registrationState.value.password, password2 = registrationState.value.confirmPassword)
-                    val call = ApiClient.apiService.registerUser(registerRequest)
+                    val call = apiService.registerUser(registerRequest)
                     call.enqueue(object : Callback<AuthSuccess> {
                         override fun onResponse(call: Call<AuthSuccess>, response: Response<AuthSuccess>) {
                             if (response.isSuccessful) {
@@ -126,7 +130,9 @@ class RegistrationViewModel(private val onTokenReceived: (String,String) -> Unit
                                 Log.d("Registration", "Register here is token: $data")
 
                                 if (data != null) {
-                                    onTokenReceived(data.token,data.username)
+                                    userSessionRepository.saveToken(data.token)
+                                    userSessionRepository.saveUserName(data.username)
+                                    userSessionRepository.syncScore()
                                     registrationState.value =
                                         registrationState.value.copy(isRegistrationSuccessful = true)
                                 } else{

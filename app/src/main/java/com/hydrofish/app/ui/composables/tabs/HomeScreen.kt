@@ -46,7 +46,7 @@ import com.hydrofish.app.HydroFishViewModel
 import com.hydrofish.app.R
 import com.hydrofish.app.animations.AnimatableType
 import com.hydrofish.app.animations.FishInfo
-import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.utils.IUserSessionRepository
 import com.hydrofish.app.viewmodelfactories.HydroFishViewModelFactory
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -72,7 +72,7 @@ val largeRadialGradient = object : ShaderBrush() {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, userSessionRepository: UserSessionRepository) {
+fun HomeScreen(modifier: Modifier = Modifier, userSessionRepository: IUserSessionRepository) {
     //This approach ensures that whenever there is a change in the uiState value,
     //recomposition occurs for the composables using the hydroFishUiState value.
     val hydroFishViewModel: HydroFishViewModel = viewModel(factory = HydroFishViewModelFactory(userSessionRepository))
