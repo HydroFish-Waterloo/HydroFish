@@ -7,21 +7,15 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.hydrofish.app.animations.AnimationGroup
+import com.hydrofish.app.api.ApiClient
+import com.hydrofish.app.api.PostSuccess
+import com.hydrofish.app.api.WaterData
 import com.hydrofish.app.ui.HydroFishUIState
+import com.hydrofish.app.utils.UserSessionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import com.hydrofish.app.utils.UserSessionRepository
-import androidx.compose.runtime.livedata.observeAsState
-import com.hydrofish.app.api.ApiClient
-import com.hydrofish.app.api.AuthSuccess
-import com.hydrofish.app.api.FishLevel
-import com.hydrofish.app.api.LoginRequest
-import com.hydrofish.app.api.PostSuccess
-import com.hydrofish.app.api.WaterData
-import com.hydrofish.app.ui.composables.unauthenticated.login.state.UserNameWrongErrorState
-import com.hydrofish.app.ui.composables.unauthenticated.login.state.passwordWrongErrorState
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -33,6 +27,7 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
     private val _uiState = MutableStateFlow(HydroFishUIState())
     val uiState: StateFlow<HydroFishUIState> = _uiState.asStateFlow()
     val scoreLiveData: LiveData<Int> = userSessionRepository.scoreLiveData
+
 
     init {
         initWaterBar()
@@ -53,9 +48,9 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
     }
 
     private fun initScore() {
-        val currentScore = scoreLiveData.value ?: 1
+        val currentScore = userSessionRepository.getScore()
         _uiState.update { currentState ->
-           currentState.copy(
+            currentState.copy(
                 fishScore = currentScore
             )
         }
@@ -67,6 +62,7 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
                 )
             }
         }
+        uiState.value.animationGroupPositionHandler.prepForPopulation()
     }
 
     @SuppressLint("NewApi")
@@ -101,8 +97,18 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
         }
     }
 
+    fun levelUpdate() {
+        val currentScore = userSessionRepository.getScore()
+        uiState.value.animationGroupPositionHandler.prepForPopulation()
+        _uiState.update { currentState ->
+            currentState.copy(
+                fishScore = currentScore
+            )
+        }
+    }
+
     fun levelUp() {
-        val currentScore = scoreLiveData.value ?: 0
+        val currentScore = userSessionRepository.getScore()
         val newScore = currentScore + 1
         uiState.value.animationGroupPositionHandler.prepForPopulation()
         userSessionRepository.updateScore(newScore)
@@ -154,4 +160,3 @@ class HydroFishViewModel(private val userSessionRepository: UserSessionRepositor
         return uiState.value.animationGroupPositionHandler.getAllFish(uiState.value.fishScore)
     }
 }
-
