@@ -154,7 +154,8 @@ class RegistrationViewModel(
                                             )
                                         )
                                     )
-                                } else if (registerError.password1 != null) {
+                                }
+                                if (registerError.password1 != null) {
                                     // Handle password2 error
                                     Log.e("Registration", "Password2 error: ${registerError.password1.first()}")
                                     registrationState.value = registrationState.value.copy(
@@ -169,7 +170,8 @@ class RegistrationViewModel(
                                             )
                                         )
                                     )
-                                } else if (registerError.password2 != null) {
+                                }
+                                if (registerError.password2 != null) {
                                     // Handle password2 error
                                     Log.e("Registration", "Password2 error: ${registerError.password2.first()}")
                                     registrationState.value = registrationState.value.copy(
