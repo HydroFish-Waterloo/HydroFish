@@ -18,6 +18,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.navigation.NavHostController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +30,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
@@ -39,11 +39,13 @@ import com.hydrofish.app.api.DataResponse
 import com.hydrofish.app.api.HydrationEntry
 import com.hydrofish.app.ui.theme.HydroFishTheme
 import com.hydrofish.app.utils.IUserSessionRepository
+import com.hydrofish.app.utils.UserSessionRepository
 import com.hydrofish.app.viewmodelfactories.HistoryViewModelFactory
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
 import com.patrykandpatrick.vico.compose.chart.Chart
 import com.patrykandpatrick.vico.compose.chart.column.columnChart
+import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import retrofit2.Call
 import retrofit2.Callback
@@ -166,7 +168,7 @@ fun HistoryScreen(userSessionRepository: IUserSessionRepository, navController: 
             val hydrationAmounts = chartData.map { it.hydrationAmount }
             val chartEntryModel = entryModelOf(*hydrationAmounts.toTypedArray())
             Chart(
-                chart = columnChart(),
+                chart = lineChart(),
                 model = chartEntryModel,
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(),
@@ -241,7 +243,7 @@ class HydrationEntryDeserializer : JsonDeserializer<List<HydrationEntry>> {
         return entries
     }
 
-    private fun parseDateString(dateString: String): Date {
+    fun parseDateString(dateString: String): Date {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
         return dateFormat.parse(dateString)
     }
