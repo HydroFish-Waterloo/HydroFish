@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,6 +78,11 @@ fun HomeScreen(modifier: Modifier = Modifier, userSessionRepository: UserSession
     val hydroFishViewModel: HydroFishViewModel = viewModel(factory = HydroFishViewModelFactory(userSessionRepository))
     val hydroFishUIState by hydroFishViewModel.uiState.collectAsState()
     val waterPercent = (hydroFishUIState.dailyWaterConsumedML * 1f) / (hydroFishUIState.curDailyMaxWaterConsumedML * 1f)
+    val score by hydroFishViewModel.scoreLiveData.observeAsState(1)
+
+    LaunchedEffect(score) {
+        hydroFishViewModel.levelUpdate()
+    }
 
     Box(
         modifier = modifier.background(largeRadialGradient),
@@ -278,10 +284,19 @@ fun AddFish(
         modifier = Modifier
             .size(100.dp)
             .graphicsLayer {
-                translationX = getAnimatableValIfExists(AnimatableType.X) + getAnimatableValIfExists(AnimatableType.DIAGONAL_X) + getAnimatableValIfExists(AnimatableType.DIAGONAL_X_R) + fishInfo.coordinates.x
-                translationY = getAnimatableValIfExists(AnimatableType.Y) + getAnimatableValIfExists(AnimatableType.DIAGONAL_Y) + getAnimatableValIfExists(AnimatableType.DIAGONAL_Y_R) + fishInfo.coordinates.y
+                translationX =
+                    getAnimatableValIfExists(AnimatableType.X) + getAnimatableValIfExists(
+                        AnimatableType.DIAGONAL_X
+                    ) + getAnimatableValIfExists(AnimatableType.DIAGONAL_X_R) + fishInfo.coordinates.x
+                translationY =
+                    getAnimatableValIfExists(AnimatableType.Y) + getAnimatableValIfExists(
+                        AnimatableType.DIAGONAL_Y
+                    ) + getAnimatableValIfExists(AnimatableType.DIAGONAL_Y_R) + fishInfo.coordinates.y
                 rotationZ = getAnimatableValIfExists(AnimatableType.ROTATE)
-                rotationY = getAnimatableValIfExists(AnimatableType.FLIP) + getAnimatableValIfExists(AnimatableType.DIAG_FLIP) + getAnimatableValIfExists(AnimatableType.DIAG_FLIP_R)
+                rotationY =
+                    getAnimatableValIfExists(AnimatableType.FLIP) + getAnimatableValIfExists(
+                        AnimatableType.DIAG_FLIP
+                    ) + getAnimatableValIfExists(AnimatableType.DIAG_FLIP_R)
 
             }
     )

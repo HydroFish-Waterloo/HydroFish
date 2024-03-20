@@ -14,8 +14,6 @@ import com.hydrofish.app.api.PostSuccess
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.time.LocalDate
-import java.time.Period
 import java.util.*
 
 @SuppressLint("NewApi")
@@ -37,7 +35,9 @@ class UserSessionRepository(private val context: Context) {
 
     private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
         if (key == "score") {
-            _scoreLiveData.postValue(sharedPreferences.getInt(key, 1))
+            val newScore = sharedPreferences.getInt(key, 1)
+            _scoreLiveData.value = newScore
+            Log.e("UserSessionRepository", "Score changed to: " + scoreLiveData.value.toString())
         }
     }
 
@@ -86,7 +86,11 @@ class UserSessionRepository(private val context: Context) {
         preferences.edit().putInt("score", newScore).apply()
     }
 
-    fun syncScore(): Int {
+    fun getScore():Int {
+        return preferences.getInt("score", 1)
+    }
+
+    fun syncScore():Int {
         val token = getToken()
         val score = scoreLiveData.value ?: 1
         if (token != null ) {
@@ -116,9 +120,6 @@ class UserSessionRepository(private val context: Context) {
         return -1
     }
 
-
-
-
     private val encryptedPrefs: SharedPreferences by lazy {
         val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
         EncryptedSharedPreferences.create(
@@ -141,11 +142,6 @@ class UserSessionRepository(private val context: Context) {
 
     fun getToken(): String? = encryptedPrefs.getString(keyToken, null)
 
-    fun clearToken() {
-        encryptedPrefs.edit().remove(keyToken).apply()
-        _isLoggedIn.value = false
-    }
-
     fun saveUserName(name: String) {
         encryptedPrefs.edit().putString(userName, name).apply()
     }
@@ -156,5 +152,6 @@ class UserSessionRepository(private val context: Context) {
         encryptedPrefs.edit().remove(keyToken).apply()
         encryptedPrefs.edit().remove(userName).apply()
         _isLoggedIn.value = false
+        preferences.edit().clear().apply()
     }
 }
