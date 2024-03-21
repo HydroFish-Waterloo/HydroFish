@@ -10,6 +10,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hydrofish.app.nav.NavItem
+import com.hydrofish.app.ui.composables.tabs.AchievementsScreen
+import com.hydrofish.app.ui.composables.tabs.HistoryScreen
 import com.hydrofish.app.ui.composables.tabs.SettingsScreen
 import com.hydrofish.app.ui.composables.unauthenticatedGraph
 import com.hydrofish.app.utils.IUserSessionRepository
@@ -31,6 +33,8 @@ class NavigationUITest {
     fun setup() {
         mockUserSessionRepository = Mockito.mock(IUserSessionRepository::class.java)
         Mockito.`when`(mockUserSessionRepository.isLoggedIn).thenReturn(MutableLiveData(false))
+        Mockito.`when`(mockUserSessionRepository.scoreLiveData).thenReturn(MutableLiveData(1))
+
     }
 
     @Test
@@ -85,6 +89,114 @@ class NavigationUITest {
 
         composeTestRule.waitUntil(1000) {
             composeTestRule.onAllNodesWithText("Settings").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+    }
+
+    @Test
+    fun historyScreenNavigatesToLogin() {
+        composeTestRule.setContent {
+            val navController = rememberNavController()
+
+            NavHost(navController = navController, startDestination = NavItem.Settings.path) {
+                composable(NavItem.Settings.path) {
+                    HistoryScreen(
+                        mockUserSessionRepository,
+                        navController,
+                    )
+                }
+                unauthenticatedGraph(navController, mockUserSessionRepository)
+            }
+        }
+
+        composeTestRule.onNodeWithText("Go to login page").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(1000) {
+            composeTestRule.onAllNodesWithText("Hydro Fish").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.onNodeWithText("Register").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(1000) {
+            composeTestRule.onAllNodesWithText("Registration").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.onNodeWithText("Back to Login").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(1000) {
+            composeTestRule.onAllNodesWithText("Hydro Fish").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.onNodeWithText("Back").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(1000) {
+            composeTestRule.onAllNodesWithText("Please log in to access this page").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+    }
+
+    @Test
+    fun achievementScreenNavigatesToLogin() {
+        composeTestRule.setContent {
+            val navController = rememberNavController()
+
+            NavHost(navController = navController, startDestination = NavItem.Settings.path) {
+                composable(NavItem.Settings.path) {
+                    AchievementsScreen(
+                        mockUserSessionRepository,
+                        navController,
+                    )
+                }
+                unauthenticatedGraph(navController, mockUserSessionRepository)
+            }
+        }
+
+        composeTestRule.onNodeWithText("Go to login page").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(1000) {
+            composeTestRule.onAllNodesWithText("Hydro Fish").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.onNodeWithText("Register").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(1000) {
+            composeTestRule.onAllNodesWithText("Registration").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.onNodeWithText("Back to Login").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(1000) {
+            composeTestRule.onAllNodesWithText("Hydro Fish").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.onNodeWithText("Back").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(1000) {
+            composeTestRule.onAllNodesWithText("Please log in to access this page").fetchSemanticsNodes()
                 .isNotEmpty()
         }
 
