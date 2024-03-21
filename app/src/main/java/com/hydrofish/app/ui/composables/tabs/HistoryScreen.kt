@@ -18,7 +18,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.navigation.NavHostController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +29,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
@@ -38,7 +38,7 @@ import com.hydrofish.app.api.ApiClient.historyApiService
 import com.hydrofish.app.api.DataResponse
 import com.hydrofish.app.api.HydrationEntry
 import com.hydrofish.app.ui.theme.HydroFishTheme
-import com.hydrofish.app.utils.UserSessionRepository
+import com.hydrofish.app.utils.IUserSessionRepository
 import com.hydrofish.app.viewmodelfactories.HistoryViewModelFactory
 import com.patrykandpatrick.vico.compose.axis.horizontal.rememberBottomAxis
 import com.patrykandpatrick.vico.compose.axis.vertical.rememberStartAxis
@@ -54,7 +54,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun HistoryScreen(userSessionRepository: UserSessionRepository, navController: NavHostController) {
+fun HistoryScreen(userSessionRepository: IUserSessionRepository, navController: NavHostController) {
     var hydrationData by remember { mutableStateOf(emptyList<HydrationEntry>()) }
     val historyViewModel: HistoryViewModel = viewModel(factory = HistoryViewModelFactory(userSessionRepository))
     val isUserLoggedIn by historyViewModel.isLoggedIn.observeAsState(false)

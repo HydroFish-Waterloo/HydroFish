@@ -8,5 +8,6 @@ import com.hydrofish.app.R
  */
 data class ErrorState(
     val hasError: Boolean = false,
+    val errorMessageString: String? = null,
     @StringRes val errorMessageStringResource: Int = R.string.empty_string
 )

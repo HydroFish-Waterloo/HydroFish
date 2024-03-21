@@ -3,7 +3,7 @@ package com.hydrofish.app.ui.composables.unauthenticated.login
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.hydrofish.app.api.ApiClient
+import com.hydrofish.app.api.ApiService
 import com.hydrofish.app.api.AuthSuccess
 import com.hydrofish.app.api.LoginRequest
 import com.hydrofish.app.ui.common.state.ErrorState
@@ -14,6 +14,7 @@ import com.hydrofish.app.ui.composables.unauthenticated.login.state.UserNameEmpt
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.UserNameWrongErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.passwordEmptyErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.passwordWrongErrorState
+import com.hydrofish.app.utils.IUserSessionRepository
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -21,7 +22,10 @@ import retrofit2.Response
 /**
  * ViewModel for Login Screen
  */
-class LoginViewModel(private val onTokenReceived: (String) -> Unit) : ViewModel() {
+class LoginViewModel(
+    private val userSessionRepository: IUserSessionRepository,
+    private val apiService: ApiService
+) : ViewModel() {
 
     var loginState = mutableStateOf(LoginState())
         private set
@@ -65,20 +69,21 @@ class LoginViewModel(private val onTokenReceived: (String) -> Unit) : ViewModel(
                     // TODO Trigger login in authentication flow
 
                     val loginRequest = LoginRequest(username = loginState.value.userName, password = loginState.value.password)
-                    val call = ApiClient.apiService.loginUser(loginRequest)
+                    val call = apiService.loginUser(loginRequest)
                     call.enqueue(object : Callback<AuthSuccess> {
                         override fun onResponse(call: Call<AuthSuccess>, response: Response<AuthSuccess>) {
                             if (response.isSuccessful) {
-                                val token = response.body()
+                                val data = response.body()
                                 // Handle the retrieved post data
-                                Log.d("MainActivity", "Login here is token: " + token?.token)
-                                if (token != null) {
-                                    onTokenReceived(token.token)
+                                Log.d("Login", "Login here is token: " + data?.token)
+                                if (data != null) {
+                                    userSessionRepository.saveToken(data.token)
+                                    userSessionRepository.saveUserName(data.username)
+                                    userSessionRepository.syncScore()
                                     loginState.value = loginState.value.copy(isLoginSuccessful = true)
                                 } else{
 
                                 }
-//                                SecureStorage.saveToken(context, "your_token_here")
 
                             } else {
                                 // Handle error
@@ -88,17 +93,16 @@ class LoginViewModel(private val onTokenReceived: (String) -> Unit) : ViewModel(
                                         passwordErrorState = passwordWrongErrorState
                                     )
                                 )
-                                Log.e("MainActivity", "Failed to login: ${response.code()}")
+                                Log.e("Login", "Failed to login: ${response.code()}")
                             }
                         }
 
                         override fun onFailure(call: Call<AuthSuccess>, t: Throwable) {
                             // Handle failure
-                            Log.e("MainActivity", "Error occurred while logging in", t)
+                            Log.e("Login", "Error occurred while logging in", t)
                         }
                     })
 
-//                    loginState.value = loginState.value.copy(isLoginSuccessful = true)
                 }
             }
         }
