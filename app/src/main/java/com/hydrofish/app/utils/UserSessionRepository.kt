@@ -108,21 +108,28 @@ class UserSessionRepository(private val context: Context, private val apiService
 
     override fun recordWaterData(waterData: WaterData, callback: (Boolean) -> Unit) {
         val token = getToken()
-        val call = apiService.recordIntake("Token $token", waterData)
-        call.enqueue(object : Callback<PostSuccess> {
-            override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
-                if (response.isSuccessful) {
-                    callback(true)
-                } else {
-                    Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
+        if (token == null){
+            Log.d("MainActivity", "user is not logged in")
+            callback(false)
+        }
+        else {
+            val call = apiService.recordIntake("Token $token", waterData)
+            call.enqueue(object : Callback<PostSuccess> {
+                override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
+                    if (response.isSuccessful) {
+                        callback(true)
+                    } else {
+                        Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
+                        callback(false)
+                    }
+                }
+                override fun onFailure(call: Call<PostSuccess>, t: Throwable) {
+                    Log.e("MainActivity", "Error occurred while fetching data", t)
                     callback(false)
                 }
-            }
-            override fun onFailure(call: Call<PostSuccess>, t: Throwable) {
-                Log.e("MainActivity", "Error occurred while fetching data", t)
-                callback(false)
-            }
-        })
+            })
+        }
+
     }
 
     override fun onCleared() {
@@ -148,7 +155,7 @@ class UserSessionRepository(private val context: Context, private val apiService
 
     override fun syncScore(callback: IUserSessionRepository.SyncScoreCallback) {
         val token = getToken()
-        val score = scoreLiveData.value ?: 1
+        val score = getScore()
         if (token != null ) {
             val fishLevel = FishLevel(score)
             apiService.levelUp("Token $token", fishLevel).enqueue(object : Callback<PostSuccess> {
