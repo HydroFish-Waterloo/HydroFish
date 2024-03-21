@@ -1,5 +1,7 @@
 package com.hydrofish.app.ui.composables
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -8,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.hydrofish.app.api.ApiClient
 import com.hydrofish.app.nav.NavItem
 import com.hydrofish.app.permission.RealPermissionChecker
 import com.hydrofish.app.permission.RealPermissionResultHandler
@@ -23,12 +26,13 @@ import com.hydrofish.app.utils.UserSessionRepository
  *
  * @param navController The navigation controller used for handling navigation between screens.
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun NavigationScreens(modifier: Modifier, navController: NavHostController) {
     val context = LocalContext.current
 
     val userSessionRepository = remember {
-        UserSessionRepository(context)
+        UserSessionRepository(context, ApiClient.apiService)
     }
 
     DisposableEffect(key1 = Unit) {

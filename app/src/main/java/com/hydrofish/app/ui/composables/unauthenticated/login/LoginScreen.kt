@@ -189,17 +189,17 @@ fun LoginScreen(
 
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewLoginScreen() {
-    ComposeLoginTheme {
-        LoginScreen(
-            onNavigateToForgotPassword = {},
-            onNavigateToRegistration = {},
-            onNavigateToAuthenticatedRoute = {},
-            onNavigateBack={},
-            userSessionRepository = UserSessionRepository(LocalContext.current),
-            loginViewModel = viewModel(),
-        )
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewLoginScreen() {
+//    ComposeLoginTheme {
+//        LoginScreen(
+//            onNavigateToForgotPassword = {},
+//            onNavigateToRegistration = {},
+//            onNavigateToAuthenticatedRoute = {},
+//            onNavigateBack={},
+//            userSessionRepository = UserSessionRepository(LocalContext.current),
+//            loginViewModel = viewModel(),
+//        )
+//    }
+//}
