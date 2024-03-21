@@ -8,9 +8,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
-import com.hydrofish.app.api.ApiClient
+import com.hydrofish.app.api.ApiService
 import com.hydrofish.app.api.FishLevel
 import com.hydrofish.app.api.PostSuccess
+import com.hydrofish.app.api.WaterData
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -26,11 +27,17 @@ interface IUserSessionRepository {
 
     fun getWaterIntake(): Pair<Int, String>?
 
+    fun recordWaterData(waterData: WaterData, callback: (Boolean) -> Unit)
+
     fun updateScore(newScore: Int)
 
     fun getScore(): Int
 
-    fun syncScore(): Int
+    interface SyncScoreCallback {
+        fun onSuccess(score: Int)
+        fun onFailure(errorCode: Int)
+    }
+    fun syncScore(callback: SyncScoreCallback)
 
     fun saveToken(token: String)
 
@@ -46,7 +53,7 @@ interface IUserSessionRepository {
 }
 
 @SuppressLint("NewApi")
-class UserSessionRepository(private val context: Context): IUserSessionRepository {
+class UserSessionRepository(private val context: Context, private val apiService: ApiService): IUserSessionRepository {
 
     private val fileName = "encrypted_prefs"
     private val keyToken = "key_token"
@@ -71,10 +78,11 @@ class UserSessionRepository(private val context: Context): IUserSessionRepositor
     }
 
     init {
-        val editor = preferences.edit()
-        editor.clear() // This will clear all the preferences
-        editor.apply()
-        _scoreLiveData.value = preferences.getInt("score", 1)
+//        val editor = preferences.edit()
+//        editor.clear() // This will clear all the preferences
+//        editor.apply()
+//        _scoreLiveData.value = preferences.getInt("score", 1)
+        _scoreLiveData.postValue(preferences.getInt("score", 1))
         preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
     }
 
@@ -98,6 +106,32 @@ class UserSessionRepository(private val context: Context): IUserSessionRepositor
         }
     }
 
+    override fun recordWaterData(waterData: WaterData, callback: (Boolean) -> Unit) {
+        val token = getToken()
+        if (token == null){
+            Log.d("MainActivity", "user is not logged in")
+            callback(false)
+        }
+        else {
+            val call = apiService.recordIntake("Token $token", waterData)
+            call.enqueue(object : Callback<PostSuccess> {
+                override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
+                    if (response.isSuccessful) {
+                        callback(true)
+                    } else {
+                        Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
+                        callback(false)
+                    }
+                }
+                override fun onFailure(call: Call<PostSuccess>, t: Throwable) {
+                    Log.e("MainActivity", "Error occurred while fetching data", t)
+                    callback(false)
+                }
+            })
+        }
+
+    }
+
     override fun onCleared() {
         preferences.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
     }
@@ -119,34 +153,40 @@ class UserSessionRepository(private val context: Context): IUserSessionRepositor
         return preferences.getInt("score", 1)
     }
 
-    override fun syncScore():Int {
+    override fun syncScore(callback: IUserSessionRepository.SyncScoreCallback) {
         val token = getToken()
-        val score = scoreLiveData.value ?: 1
+        val score = getScore()
         if (token != null ) {
             val fishLevel = FishLevel(score)
-            ApiClient.apiService.levelUp("Token $token", fishLevel).enqueue(object : Callback<PostSuccess> {
+            apiService.levelUp("Token $token", fishLevel).enqueue(object : Callback<PostSuccess> {
                 override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
                     if (response.isSuccessful) {
                         val responseSuccess = response.body()
                         val responseLevel = responseSuccess?.level
                         if (responseLevel != null && responseLevel != -1) {
                             updateScore(responseLevel)
+                            callback.onSuccess(responseLevel)
+                        }
+                        else {
+                            callback.onFailure(-1)
                         }
                     } else {
                         Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
+                        callback.onFailure(-1)
                     }
                 }
 
                 override fun onFailure(call: Call<PostSuccess>, t: Throwable) {
                     Log.e("MainActivity", "Error occurred while fetching data", t)
+                    callback.onFailure(-1)
                 }
             })
         }
         else {
             // Handle case where token is null
             Log.e("MainActivity", "Token is null. Unable to sync score.")
+            callback.onFailure(-1)
         }
-        return -1
     }
 
     private val encryptedPrefs: SharedPreferences by lazy {
@@ -161,7 +201,8 @@ class UserSessionRepository(private val context: Context): IUserSessionRepositor
     }
 
     init {
-        _isLoggedIn.value = getToken() != null
+//        _isLoggedIn.value = getToken() != null
+        _isLoggedIn.postValue(getToken() != null)
     }
 
     override fun saveToken(token: String) {
