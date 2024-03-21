@@ -78,9 +78,9 @@ class UserSessionRepository(private val context: Context, private val apiService
     }
 
     init {
-        val editor = preferences.edit()
-        editor.clear() // This will clear all the preferences
-        editor.apply()
+//        val editor = preferences.edit()
+//        editor.clear() // This will clear all the preferences
+//        editor.apply()
         _scoreLiveData.value = preferences.getInt("score", 1)
         preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
     }
