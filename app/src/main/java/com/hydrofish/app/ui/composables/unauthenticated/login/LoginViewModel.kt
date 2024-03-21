@@ -14,6 +14,7 @@ import com.hydrofish.app.ui.composables.unauthenticated.login.state.UserNameWron
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.passwordEmptyErrorState
 import com.hydrofish.app.ui.composables.unauthenticated.login.state.passwordWrongErrorState
 import com.hydrofish.app.utils.IUserSessionRepository
+import kotlinx.coroutines.flow.update
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -77,7 +78,15 @@ class LoginViewModel(
                                 if (data != null) {
                                     userSessionRepository.saveToken(data.token)
                                     userSessionRepository.saveUserName(data.username)
-                                    userSessionRepository.syncScore()
+                                    userSessionRepository.syncScore(object : IUserSessionRepository.SyncScoreCallback {
+                                        override fun onSuccess(score: Int) {
+                                            // Handle success
+                                        }
+
+                                        override fun onFailure(errorCode: Int) {
+                                            // Handle failure
+                                        }
+                                    })
                                     loginState.value = loginState.value.copy(isLoginSuccessful = true)
                                 } else{
 

@@ -131,15 +131,15 @@ fun RegistrationScreen(
 
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewRegistrationScreen() {
-    ComposeLoginTheme {
-        RegistrationScreen(
-            onNavigateBack = {},
-            onNavigateToAuthenticatedRoute = {},
-            userSessionRepository = UserSessionRepository(LocalContext.current),
-            registrationViewModel = viewModel(),
-        )
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun PreviewRegistrationScreen() {
+//    ComposeLoginTheme {
+//        RegistrationScreen(
+//            onNavigateBack = {},
+//            onNavigateToAuthenticatedRoute = {},
+//            userSessionRepository = UserSessionRepository(LocalContext.current),
+//            registrationViewModel = viewModel(),
+//        )
+//    }
+//}

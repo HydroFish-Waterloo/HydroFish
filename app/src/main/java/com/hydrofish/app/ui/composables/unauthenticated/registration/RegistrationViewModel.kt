@@ -127,7 +127,15 @@ class RegistrationViewModel(
                                 if (data != null) {
                                     userSessionRepository.saveToken(data.token)
                                     userSessionRepository.saveUserName(data.username)
-                                    userSessionRepository.syncScore()
+                                    userSessionRepository.syncScore(object : IUserSessionRepository.SyncScoreCallback {
+                                        override fun onSuccess(score: Int) {
+                                            // Handle success
+                                        }
+
+                                        override fun onFailure(errorCode: Int) {
+                                            // Handle failure
+                                        }
+                                    })
                                     registrationState.value =
                                         registrationState.value.copy(isRegistrationSuccessful = true)
                                 } else{
