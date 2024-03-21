@@ -1,3 +1,5 @@
+package com.hydrofish.app
+
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.lifecycle.MutableLiveData
