@@ -27,13 +27,17 @@ interface IUserSessionRepository {
 
     fun getWaterIntake(): Pair<Int, String>?
 
-    fun recordWaterData(waterData: WaterData)
+    fun recordWaterData(waterData: WaterData, callback: (Boolean) -> Unit)
 
     fun updateScore(newScore: Int)
 
     fun getScore(): Int
 
-    fun syncScore(): Int
+    interface SyncScoreCallback {
+        fun onSuccess(score: Int)
+        fun onFailure(errorCode: Int)
+    }
+    fun syncScore(callback: SyncScoreCallback)
 
     fun saveToken(token: String)
 
@@ -101,19 +105,21 @@ class UserSessionRepository(private val context: Context, private val apiService
         }
     }
 
-    override fun recordWaterData(waterData: WaterData) {
+    override fun recordWaterData(waterData: WaterData, callback: (Boolean) -> Unit) {
         val token = getToken()
         val call = apiService.recordIntake("Token $token", waterData)
         call.enqueue(object : Callback<PostSuccess> {
             override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
                 if (response.isSuccessful) {
-                    response.body()?.message?.let { Log.d("whateverIwant", it) }
+                    callback(true)
                 } else {
                     Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
+                    callback(false)
                 }
             }
             override fun onFailure(call: Call<PostSuccess>, t: Throwable) {
                 Log.e("MainActivity", "Error occurred while fetching data", t)
+                callback(false)
             }
         })
     }
@@ -139,7 +145,7 @@ class UserSessionRepository(private val context: Context, private val apiService
         return preferences.getInt("score", 1)
     }
 
-    override fun syncScore():Int {
+    override fun syncScore(callback: IUserSessionRepository.SyncScoreCallback) {
         val token = getToken()
         val score = scoreLiveData.value ?: 1
         if (token != null ) {
@@ -151,22 +157,28 @@ class UserSessionRepository(private val context: Context, private val apiService
                         val responseLevel = responseSuccess?.level
                         if (responseLevel != null && responseLevel != -1) {
                             updateScore(responseLevel)
+                            callback.onSuccess(responseLevel)
+                        }
+                        else {
+                            callback.onFailure(-1)
                         }
                     } else {
                         Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
+                        callback.onFailure(-1)
                     }
                 }
 
                 override fun onFailure(call: Call<PostSuccess>, t: Throwable) {
                     Log.e("MainActivity", "Error occurred while fetching data", t)
+                    callback.onFailure(-1)
                 }
             })
         }
         else {
             // Handle case where token is null
             Log.e("MainActivity", "Token is null. Unable to sync score.")
+            callback.onFailure(-1)
         }
-        return -1
     }
 
     private val encryptedPrefs: SharedPreferences by lazy {

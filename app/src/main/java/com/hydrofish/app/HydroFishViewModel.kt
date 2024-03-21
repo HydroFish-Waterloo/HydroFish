@@ -10,6 +10,7 @@ import com.hydrofish.app.animations.AnimationGroup
 import com.hydrofish.app.api.WaterData
 import com.hydrofish.app.ui.HydroFishUIState
 import com.hydrofish.app.utils.IUserSessionRepository
+import com.hydrofish.app.utils.UserSessionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,14 +44,33 @@ class HydroFishViewModel(private val userSessionRepository: IUserSessionReposito
     }
 
     private fun initScore() {
-        val currentScore = userSessionRepository.getScore()
+        var currentScore = userSessionRepository.getScore()
         _uiState.update { currentState ->
             currentState.copy(
                 fishScore = currentScore
             )
         }
-        userSessionRepository.syncScore()
-        uiState.value.animationGroupPositionHandler.prepForPopulation()
+        userSessionRepository.syncScore(object : IUserSessionRepository.SyncScoreCallback {
+            override fun onSuccess(score: Int) {
+                if (score != -1) {
+                    currentScore  = userSessionRepository.getScore()
+                    if (score != currentScore) {
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                fishScore = score
+                            )
+                        }
+                    }
+                } else {
+                    // Handle failure scenario if needed
+                }
+            }
+
+            override fun onFailure(errorCode: Int) {
+                // Handle failure
+            }
+        })
+
     }
 
     @SuppressLint("NewApi")
@@ -68,7 +88,13 @@ class HydroFishViewModel(private val userSessionRepository: IUserSessionReposito
         val token = userSessionRepository.getToken()
         if (token != null ) {
             val waterData = WaterData(currentDate.toString(), amt)
-            userSessionRepository.recordWaterData(waterData)
+            userSessionRepository.recordWaterData(waterData) { isSuccess ->
+                if (isSuccess) {
+                    // Handle success scenario
+                } else {
+                    // Handle failure scenario
+                }
+            }
         }
     }
 
@@ -83,23 +109,35 @@ class HydroFishViewModel(private val userSessionRepository: IUserSessionReposito
     }
 
     fun levelUp() {
-        val currentScore = userSessionRepository.getScore()
+        var currentScore = userSessionRepository.getScore()
         val newScore = currentScore + 1
         userSessionRepository.updateScore(newScore)
-        val responseLevel: Int = userSessionRepository.syncScore()
-        if (responseLevel != -1) {
-            _uiState.update { currentState ->
-                currentState.copy(
-                    fishScore = responseLevel
-                )
+        userSessionRepository.syncScore(object : IUserSessionRepository.SyncScoreCallback {
+            override fun onSuccess(score: Int) {
+                if (score != -1) {
+                    currentScore  = userSessionRepository.getScore()
+                    if (score != currentScore) {
+                        _uiState.update { currentState ->
+                            currentState.copy(
+                                fishScore = score
+                            )
+                        }
+                    }
+                } else {
+                    // Handle failure scenario if needed
+                }
             }
-        }
+
+            override fun onFailure(errorCode: Int) {
+                // Handle failure
+            }
+        })
         //Testing Purpose
-//        _uiState.update { currentState ->
-//            currentState.copy(
-//                dailyWaterConsumedML = 0,
-//            )
-//        }
+        _uiState.update { currentState ->
+            currentState.copy(
+                dailyWaterConsumedML = 0,
+            )
+        }
 
     }
 
