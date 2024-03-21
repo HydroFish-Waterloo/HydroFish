@@ -75,7 +75,9 @@ fun LoginInputs(
 
         // Login Submit Button
         NormalButton(
-            modifier = Modifier.padding(top = AppTheme.dimens.paddingLarge),
+            modifier = Modifier
+                .padding(top = AppTheme.dimens.paddingLarge)
+                .testTag("login"),
             text = stringResource(id = R.string.login_button_text),
             onClick = onSubmit
         )

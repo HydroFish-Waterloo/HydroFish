@@ -55,7 +55,6 @@ class SettingsScreenInstrumentedTest {
 
         }
 
-
         mockUserSessionRepository = Mockito.mock(IUserSessionRepository::class.java)
 
         Mockito.`when`(mockUserSessionRepository.isLoggedIn).thenReturn(MutableLiveData(false))
@@ -317,6 +316,54 @@ class SettingsScreenInstrumentedTest {
         composeTestRule.onNodeWithText("Notification").performClick()
 
         composeTestRule.onNodeWithText("Notification").assertIsOff()
+    }
+
+    @Test()
+    fun userNotLoggedIn() {
+        setSharedPreferencesValue(NOTIFICATION_KEY, true)
+
+        Mockito.`when`(mockUserSessionRepository.isLoggedIn).thenReturn(MutableLiveData(false))
+
+        composeTestRule.setContent {
+            SettingsScreen(
+                MockPermissionChecker().apply { canScheduleExactAlarmsResult = true },
+                MockPermissionResultHandler(true),
+                navController,
+                mockUserSessionRepository
+            )
+        }
+
+        composeTestRule.waitUntil(3000) {
+            composeTestRule.onAllNodesWithText("Login").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    @Test()
+    fun userLoggedIn() {
+        setSharedPreferencesValue(NOTIFICATION_KEY, true)
+
+        Mockito.`when`(mockUserSessionRepository.getUserName()).thenReturn("Mocked User")
+        Mockito.`when`(mockUserSessionRepository.isLoggedIn).thenReturn(MutableLiveData(true))
+
+        composeTestRule.setContent {
+            SettingsScreen(
+                MockPermissionChecker().apply { canScheduleExactAlarmsResult = true },
+                MockPermissionResultHandler(true),
+                navController,
+                mockUserSessionRepository
+            )
+        }
+
+        composeTestRule.waitUntil(1000) {
+            composeTestRule.onAllNodesWithText("Mocked User").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.waitUntil(1000) {
+            composeTestRule.onAllNodesWithText("Logout").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
     }
 
     @After

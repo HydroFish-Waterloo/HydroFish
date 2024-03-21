@@ -10,6 +10,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.ResponseBody.Companion.toResponseBody
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -54,7 +55,7 @@ class LoginViewModelUnitTest {
     }
 
     @Test
-    fun loginFail() {
+    fun loginFailByBackEnd() {
         val responseError = Response.error<AuthSuccess>(400, "".toResponseBody("text/plain".toMediaTypeOrNull()))
 
         every { mockApiService.loginUser(any()) } returns mockAuthSuccessCall
@@ -68,5 +69,33 @@ class LoginViewModelUnitTest {
 
         assertFalse(viewModel.loginState.value.isLoginSuccessful)
         assertTrue(viewModel.loginState.value.errorState.userNameErrorState.hasError && viewModel.loginState.value.errorState.passwordErrorState.hasError)
+    }
+
+    @Test
+    fun loginFailByEmptyUserName() {
+
+        viewModel.onUiEvent(LoginUiEvent.UserNameChanged(""))
+        viewModel.onUiEvent(LoginUiEvent.PasswordChanged("password123"))
+        viewModel.onUiEvent(LoginUiEvent.Submit)
+        assertFalse(viewModel.loginState.value.isLoginSuccessful)
+
+        val userNameErrorState = viewModel.loginState.value.errorState.userNameErrorState
+
+        assertTrue(userNameErrorState.hasError)
+        assertEquals(R.string.login_error_msg_empty_user_name, userNameErrorState.errorMessageStringResource)
+    }
+
+    @Test
+    fun loginFailByEmptyPassword() {
+
+        viewModel.onUiEvent(LoginUiEvent.UserNameChanged("testUser"))
+        viewModel.onUiEvent(LoginUiEvent.PasswordChanged(""))
+        viewModel.onUiEvent(LoginUiEvent.Submit)
+        assertFalse(viewModel.loginState.value.isLoginSuccessful)
+
+        val passwordErrorState = viewModel.loginState.value.errorState.passwordErrorState
+
+        assertTrue(passwordErrorState.hasError)
+        assertEquals(R.string.login_error_msg_empty_password, passwordErrorState.errorMessageStringResource)
     }
 }

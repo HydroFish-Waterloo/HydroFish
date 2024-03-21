@@ -91,7 +91,7 @@ fun LoginScreen(
                     modifier = Modifier.align(Alignment.TopStart),
                     iconContentDescription = stringResource(id = R.string.navigate_back),
                     iconVector = Icons.Outlined.ArrowBack,
-                    text = stringResource(id = R.string.back_to_login),
+                    text = stringResource(id = R.string.back),
                     onClick = onNavigateBack
                 )
             }
@@ -113,7 +113,7 @@ fun LoginScreen(
                         modifier = Modifier
                             .padding(top = AppTheme.dimens.paddingLarge)
                             .fillMaxWidth(),
-                        text = stringResource(id = R.string.jetpack_compose),
+                        text = stringResource(id = R.string.Header),
                         textAlign = TextAlign.Center
                     )
 

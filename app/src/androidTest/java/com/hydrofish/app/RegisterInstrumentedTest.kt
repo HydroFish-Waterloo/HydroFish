@@ -29,105 +29,225 @@ import retrofit2.Response
 
 @RunWith(AndroidJUnit4::class)
 class RegisterInstrumentedTest {
-
-    @get:Rule
-    val composeTestRule = createComposeRule()
-    @Test
-    fun registerFail() = runTest {
-
-
-//        val mockUserSessionRepository = mockk<IUserSessionRepository>(relaxed = true)
-//
-//        val mockApiService = mockk<ApiService>()
-//
-//        coEvery {
-//            mockApiService.registerUser(any())
-//        } returns Response.error(
-//            400,
-//            errorJson.toResponseBody("application/json".toMediaType())
-//        )
-
-//        val errorResponse: Response<AuthSuccess> = Response.error(400, responseBody)
-//
-//
-
-        val errorJson = """
-            {
-                "password2": ["The password is too similar to the username."]
-            }
-        """.trimIndent()
+    private fun setupMockFailResponse(errorJson: String, registerRequest: RegisterRequest): Pair<IUserSessionRepository, ApiService> {
         val errorResponseBody = errorJson.toResponseBody("application/json".toMediaTypeOrNull())
         val mockErrorResponse = Response.error<AuthSuccess>(400, errorResponseBody)
-
-        val wrongRegisterRequest = RegisterRequest(username = "wrong", password1 = "password", password2 = "password")
-        val correctRegisterRequest = RegisterRequest(username = "correct", password1 = "password", password2 = "password")
-
         val mockUserSessionRepository = Mockito.mock(IUserSessionRepository::class.java)
         val mockApiService = mock(ApiService::class.java)
-
         val mockCall: Call<AuthSuccess> = mock(Call::class.java) as Call<AuthSuccess>
 
-        Mockito.`when`(mockApiService.registerUser(wrongRegisterRequest)).thenReturn(mockCall)
+        Mockito.`when`(mockApiService.registerUser(registerRequest)).thenReturn(mockCall)
         Mockito.doAnswer { invocation ->
             val callback: Callback<AuthSuccess> = invocation.getArgument(0)
             callback.onResponse(mockCall, mockErrorResponse)
             null
         }.`when`(mockCall).enqueue(ArgumentMatchers.any())
 
-//        val mockCall = mock(Call::class.java) as Call<AuthSuccess>
+        return Pair(mockUserSessionRepository, mockApiService)
+    }
 
-
-
-//        `when`(mockCall.enqueue(any())).thenAnswer { invocation ->
-//            val callback: Callback<AuthSuccess> = invocation.getArgument(0, Callback::class.java) as Callback<AuthSuccess>
-//            callback.onResponse(mockCall, mockErrorResponse)
-//        }
-
-
-
-//        Mockito.doAnswer { invocation ->
-//            val callback: Callback<AuthSuccess> = invocation.getArgument(0)
-//            val response = Response.success(AuthSuccess("test", "werwfw"))
-//            callback.onResponse(mockCall, response)
-//            null
-//        }.`when`(mockCall).enqueue(any())
-
-//        Mockito.doAnswer { invocation ->
-//            val callback: Callback<AuthSuccess> = invocation.getArgument(0)
-//            val response = Response.error<AuthSuccess>(400, "错误响应".toResponseBody())
-//            callback.onFailure(mockCall, RuntimeException("模拟的异常"))
-//            null
-//        }.`when`(mockCall).enqueue(any())
-
-        val viewModel = RegistrationViewModel(userSessionRepository = mockUserSessionRepository, apiService = mockApiService)
-
+    private fun setupUi(userSessionRepository: IUserSessionRepository, apiService: ApiService) {
+        val viewModel = RegistrationViewModel(userSessionRepository, apiService)
         composeTestRule.setContent {
             RegistrationScreen(
                 onNavigateBack = {},
                 onNavigateToAuthenticatedRoute = {},
-                userSessionRepository = mockUserSessionRepository,
+                userSessionRepository = userSessionRepository,
                 registrationViewModel = viewModel
             )
         }
+    }
+    private fun fillRegistrationForm(username: String, mobile: String, password: String, confirmPassword: String) {
+        composeTestRule.onNodeWithTag("username").performTextInput(username)
+        composeTestRule.onNodeWithTag("mobile").performTextInput(mobile)
+        composeTestRule.onNodeWithTag("password").performTextInput(password)
+        composeTestRule.onNodeWithTag("confirm password").performTextInput(confirmPassword)
+    }
 
-        composeTestRule.onNodeWithTag("username").performTextInput("wrong")
-        composeTestRule.onNodeWithTag("mobile").performTextInput("123")
-        composeTestRule.onNodeWithTag("password").performTextInput("password")
-        composeTestRule.onNodeWithTag("confirm password").performTextInput("password")
-
+    private fun performRegistration() {
         composeTestRule.onNodeWithText("Register").performClick()
+    }
 
-        composeTestRule.waitUntil(timeoutMillis = 10000) {
-            composeTestRule.onAllNodesWithText("The password is too similar to the username.").fetchSemanticsNodes()
+
+    @get:Rule
+    val composeTestRule = createComposeRule()
+
+    @Test
+    fun registerFailByUserName() = runTest {
+        val errorJson = """
+            {
+                "username": ["A user with that username already exists."]
+            }
+        """.trimIndent()
+
+        val wrongRegisterRequest = RegisterRequest(username = "wrong", password1 = "password", password2 = "password")
+
+        val (userSessionRepository, apiService) = setupMockFailResponse(errorJson, wrongRegisterRequest)
+        setupUi(userSessionRepository, apiService)
+        fillRegistrationForm("wrong", "1235479633", "password", "password")
+        performRegistration()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("A user with that username already exists.").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    @Test
+    fun registerFailByUserNamePassword1() = runTest {
+        val errorJson = """
+            {
+                "username": ["A user with that username already exists."],
+                "password1": ["The password is too similar to the username."]
+            }
+        """.trimIndent()
+
+        val wrongRegisterRequest = RegisterRequest(username = "wrong", password1 = "password", password2 = "password")
+
+        val (userSessionRepository, apiService) = setupMockFailResponse(errorJson, wrongRegisterRequest)
+        setupUi(userSessionRepository, apiService)
+        fillRegistrationForm("wrong", "1235479633", "password", "password")
+        performRegistration()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("A user with that username already exists.").fetchSemanticsNodes()
                 .isNotEmpty()
         }
 
-//        composeTestRule.waitUntil(timeoutMillis = 10000) {
-//            composeTestRule.onAllNodesWithText("Please enter your password").fetchSemanticsNodes()
-//                .isNotEmpty()
-//        }
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("The password is too similar to the username.").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
     }
 
+    @Test
+    fun registerFailByUserNamePassword2() = runTest {
+        val errorJson = """
+            {
+                "username": ["A user with that username already exists."],
+                "password2": ["The password is too similar to the username."]
+            }
+        """.trimIndent()
+
+        val wrongRegisterRequest = RegisterRequest(username = "wrong", password1 = "password", password2 = "password")
+
+        val (userSessionRepository, apiService) = setupMockFailResponse(errorJson, wrongRegisterRequest)
+        setupUi(userSessionRepository, apiService)
+        fillRegistrationForm("wrong", "1235479633", "password", "password")
+        performRegistration()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("A user with that username already exists.").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("The password is too similar to the username.").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    @Test
+    fun registerFailByUserNamePassword12() = runTest {
+        val errorJson = """
+            {
+                "username": ["A user with that username already exists."],
+                "password1": ["This password is too common."],
+                "password2": ["The password is too similar to the username."]
+            }
+        """.trimIndent()
+
+        val wrongRegisterRequest = RegisterRequest(username = "wrong", password1 = "password", password2 = "password")
+
+        val (userSessionRepository, apiService) = setupMockFailResponse(errorJson, wrongRegisterRequest)
+        setupUi(userSessionRepository, apiService)
+        fillRegistrationForm("wrong", "1235479633", "password", "password")
+        performRegistration()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("A user with that username already exists.").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("This password is too common.").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("The password is too similar to the username.").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    @Test
+    fun registerFailByPassword1() = runTest {
+        val errorJson = """
+            {
+                "password1": ["This password is too common."]
+            }
+        """.trimIndent()
+
+        val wrongRegisterRequest = RegisterRequest(username = "wrong", password1 = "password", password2 = "password")
+
+        val (userSessionRepository, apiService) = setupMockFailResponse(errorJson, wrongRegisterRequest)
+        setupUi(userSessionRepository, apiService)
+        fillRegistrationForm("wrong", "1235479633", "password", "password")
+        performRegistration()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("This password is too common.").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    @Test
+    fun registerFailByPassword2() = runTest {
+        val errorJson = """
+            {
+                "password2": ["The password is too similar to the username."]
+            }
+        """.trimIndent()
+
+        val wrongRegisterRequest = RegisterRequest(username = "wrong", password1 = "password", password2 = "password")
+
+        val (userSessionRepository, apiService) = setupMockFailResponse(errorJson, wrongRegisterRequest)
+        setupUi(userSessionRepository, apiService)
+        fillRegistrationForm("wrong", "1235479633", "password", "password")
+        performRegistration()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("The password is too similar to the username.").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    @Test
+    fun registerFailByPassword12() = runTest {
+        val errorJson = """
+            {
+                "password1": ["This password is too common."],
+                "password2": ["The password is too similar to the username."]
+            }
+        """.trimIndent()
+
+        val wrongRegisterRequest = RegisterRequest(username = "wrong", password1 = "password", password2 = "password")
+
+        val (userSessionRepository, apiService) = setupMockFailResponse(errorJson, wrongRegisterRequest)
+        setupUi(userSessionRepository, apiService)
+        fillRegistrationForm("wrong", "1235479633", "password", "password")
+        performRegistration()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("This password is too common.").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("The password is too similar to the username.").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
 
     @Test
     fun registerSuccess() = runTest {
@@ -173,7 +293,7 @@ class RegisterInstrumentedTest {
         }
 
         composeTestRule.onNodeWithTag("username").performTextInput("correct")
-        composeTestRule.onNodeWithTag("mobile").performTextInput("123")
+        composeTestRule.onNodeWithTag("mobile").performTextInput("1235479633")
         composeTestRule.onNodeWithTag("password").performTextInput("password")
         composeTestRule.onNodeWithTag("confirm password").performTextInput("password")
 
@@ -182,5 +302,165 @@ class RegisterInstrumentedTest {
         composeTestRule.waitForIdle()
 
         assertTrue(isOnNavigateCalled)
+    }
+
+    @Test
+    fun registerFailByEmptyUserName() = runTest {
+
+        val mockUserSessionRepository = Mockito.mock(IUserSessionRepository::class.java)
+        val mockApiService = mock(ApiService::class.java)
+
+        val viewModel = RegistrationViewModel(userSessionRepository = mockUserSessionRepository, apiService = mockApiService)
+
+        composeTestRule.setContent {
+            RegistrationScreen(
+                onNavigateBack = {},
+                onNavigateToAuthenticatedRoute = {},
+                userSessionRepository = mockUserSessionRepository,
+                registrationViewModel = viewModel
+            )
+        }
+
+        composeTestRule.onNodeWithTag("username").performTextInput("  ")
+        composeTestRule.onNodeWithTag("mobile").performTextInput("1235479633")
+        composeTestRule.onNodeWithTag("password").performTextInput("password")
+        composeTestRule.onNodeWithTag("confirm password").performTextInput("password")
+
+        composeTestRule.onNodeWithText("Register").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("Please enter your user name").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    @Test
+    fun registerFailByEmptyMobile() = runTest {
+
+        val mockUserSessionRepository = Mockito.mock(IUserSessionRepository::class.java)
+        val mockApiService = mock(ApiService::class.java)
+
+        val viewModel = RegistrationViewModel(userSessionRepository = mockUserSessionRepository, apiService = mockApiService)
+
+        composeTestRule.setContent {
+            RegistrationScreen(
+                onNavigateBack = {},
+                onNavigateToAuthenticatedRoute = {},
+                userSessionRepository = mockUserSessionRepository,
+                registrationViewModel = viewModel
+            )
+        }
+
+        composeTestRule.onNodeWithTag("username").performTextInput("wrong")
+        composeTestRule.onNodeWithTag("mobile").performTextInput("")
+        composeTestRule.onNodeWithTag("password").performTextInput("password")
+        composeTestRule.onNodeWithTag("confirm password").performTextInput("password")
+
+        composeTestRule.onNodeWithText("Register").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("Please enter your mobile number").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    @Test
+    fun registerFailByEmptyPassword1() = runTest {
+
+        val mockUserSessionRepository = Mockito.mock(IUserSessionRepository::class.java)
+        val mockApiService = mock(ApiService::class.java)
+
+        val viewModel = RegistrationViewModel(userSessionRepository = mockUserSessionRepository, apiService = mockApiService)
+
+        composeTestRule.setContent {
+            RegistrationScreen(
+                onNavigateBack = {},
+                onNavigateToAuthenticatedRoute = {},
+                userSessionRepository = mockUserSessionRepository,
+                registrationViewModel = viewModel
+            )
+        }
+
+        composeTestRule.onNodeWithTag("username").performTextInput("wrong")
+        composeTestRule.onNodeWithTag("mobile").performTextInput("1235479633")
+        composeTestRule.onNodeWithTag("password").performTextInput("")
+        composeTestRule.onNodeWithTag("confirm password").performTextInput("password")
+
+        composeTestRule.onNodeWithText("Register").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("Please enter your password").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    @Test
+    fun registerFailByEmptyPassword2() = runTest {
+
+        val mockUserSessionRepository = Mockito.mock(IUserSessionRepository::class.java)
+        val mockApiService = mock(ApiService::class.java)
+
+        val viewModel = RegistrationViewModel(userSessionRepository = mockUserSessionRepository, apiService = mockApiService)
+
+        composeTestRule.setContent {
+            RegistrationScreen(
+                onNavigateBack = {},
+                onNavigateToAuthenticatedRoute = {},
+                userSessionRepository = mockUserSessionRepository,
+                registrationViewModel = viewModel
+            )
+        }
+
+        composeTestRule.onNodeWithTag("username").performTextInput("wrong")
+        composeTestRule.onNodeWithTag("mobile").performTextInput("1235479633")
+        composeTestRule.onNodeWithTag("password").performTextInput("password")
+        composeTestRule.onNodeWithTag("confirm password").performTextInput("")
+
+        composeTestRule.onNodeWithText("Register").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("Please confirm your password").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+    }
+
+    @Test
+    fun registerFailByMismatch() = runTest {
+
+        val mockUserSessionRepository = Mockito.mock(IUserSessionRepository::class.java)
+        val mockApiService = mock(ApiService::class.java)
+
+        val viewModel = RegistrationViewModel(userSessionRepository = mockUserSessionRepository, apiService = mockApiService)
+
+        composeTestRule.setContent {
+            RegistrationScreen(
+                onNavigateBack = {},
+                onNavigateToAuthenticatedRoute = {},
+                userSessionRepository = mockUserSessionRepository,
+                registrationViewModel = viewModel
+            )
+        }
+
+        composeTestRule.onNodeWithTag("username").performTextInput("wrong")
+        composeTestRule.onNodeWithTag("mobile").performTextInput("1235479633")
+        composeTestRule.onNodeWithTag("password").performTextInput("password")
+        composeTestRule.onNodeWithTag("confirm password").performTextInput("pass")
+
+        composeTestRule.onNodeWithText("Register").performClick()
+
+        composeTestRule.waitForIdle()
+
+        composeTestRule.waitUntil(timeoutMillis = 1000) {
+            composeTestRule.onAllNodesWithText("Please enter the same password here as above").fetchSemanticsNodes()
+                .isNotEmpty()
+        }
     }
 }

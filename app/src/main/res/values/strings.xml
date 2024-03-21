@@ -12,7 +12,7 @@
 
 
     <!--Below for login and register page-->
-    <string name="jetpack_compose">Jetpack Compose</string>
+    <string name="Header">Hydro Fish</string>
 
     <string name="empty_string" />
 
@@ -36,6 +36,7 @@
     <!--Login Page - Register Section-->
     <string name="do_not_have_account">Don\'t have an account?</string>
     <string name="register">Register</string>
+    <string name="back">Back</string>
 
     <!--Registration-->
     <string name="registration_heading_text">Registration</string>
