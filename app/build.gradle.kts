@@ -52,7 +52,6 @@ android {
 dependencies {
     // Jetpack Compose Platform
     implementation(platform(libs.compose.bom))
-    implementation(libs.androidx.navigation.testing)
     androidTestImplementation(platform(libs.compose.bom))
 
     // Jetpack Compose Libraries with BOM version
@@ -94,8 +93,6 @@ dependencies {
     testImplementation(libs.mockitoCore)
     androidTestImplementation(libs.mockitoAndroid)
     implementation(libs.composeLiveData)
-    testImplementation(libs.mockk)
-    androidTestImplementation(libs.mockk.android)
 
     // Barista for Android UI testing
     androidTestImplementation(libs.barista) // Added Barista dependency
