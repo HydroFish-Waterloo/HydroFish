@@ -51,6 +51,7 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.lang.reflect.Type
+import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -222,22 +223,58 @@ fun GreetingPreview() {
     }
 }
 
+//class HydrationEntryDeserializer : JsonDeserializer<List<HydrationEntry>> {
+//    override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): List<HydrationEntry> {
+//        val entries = mutableListOf<HydrationEntry>()
+//
+//        if (json != null && json.isJsonArray) {
+//            val dataArray = json.asJsonArray
+//
+//            dataArray.forEach { entryElement ->
+//                val entryObject = entryElement.asJsonObject
+//                val dateString = entryObject.get("day").asString
+//                val amount = entryObject.get("total_ml").asInt
+//                val date = parseDateString(dateString)
+//                entries.add(HydrationEntry(date, amount))
+//            }
+//        } else {
+//            throw JsonParseException("Invalid JSON format")
+//        }
+//
+//        return entries
+//    }
+//
+//    fun parseDateString(dateString: String): Date {
+//        val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
+//        return dateFormat.parse(dateString)
+//    }
+//}
+
 class HydrationEntryDeserializer : JsonDeserializer<List<HydrationEntry>> {
     override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): List<HydrationEntry> {
         val entries = mutableListOf<HydrationEntry>()
 
         if (json != null && json.isJsonArray) {
             val dataArray = json.asJsonArray
-
+            if (dataArray.size() == 0) {
+                throw JsonParseException("Empty JSON array")
+            }
             dataArray.forEach { entryElement ->
-                val entryObject = entryElement.asJsonObject
-                val dateString = entryObject.get("day").asString
-                val amount = entryObject.get("total_ml").asInt
-                val date = parseDateString(dateString)
-                entries.add(HydrationEntry(date, amount))
+                try {
+                    val entryObject = entryElement.asJsonObject
+                    val dateString = entryObject.get("day").asString
+                    val amount = entryObject.get("total_ml")?.asInt
+                        ?: throw JsonParseException("Missing or invalid hydration amount")
+                    val date = parseDateString(dateString)
+                    entries.add(HydrationEntry(date, amount))
+                } catch (e: ParseException) {
+                    throw JsonParseException("Invalid date format: ${e.message}")
+                } catch (e: IllegalStateException) {
+                    throw JsonParseException("Missing fields in JSON: ${e.message}")
+                }
             }
         } else {
-            throw JsonParseException("Invalid JSON format")
+            throw JsonParseException("Invalid or empty JSON")
         }
 
         return entries
@@ -245,10 +282,13 @@ class HydrationEntryDeserializer : JsonDeserializer<List<HydrationEntry>> {
 
     fun parseDateString(dateString: String): Date {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH)
-        return dateFormat.parse(dateString)
+        return try {
+            dateFormat.parse(dateString)
+        } catch (e: ParseException) {
+            throw JsonParseException("Invalid date format: $dateString")
+        }
     }
 }
-
 //fun readHydrationDataFromJson(context: Context): List<HydrationEntry> {
 //    val gson = GsonBuilder()
 //        .registerTypeAdapter(object : TypeToken<List<HydrationEntry>>() {}.type, HydrationEntryDeserializer())
