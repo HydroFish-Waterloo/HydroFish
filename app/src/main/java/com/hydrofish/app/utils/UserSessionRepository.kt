@@ -8,9 +8,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKeys
-import com.hydrofish.app.api.ApiClient
+import com.hydrofish.app.api.ApiService
 import com.hydrofish.app.api.FishLevel
 import com.hydrofish.app.api.PostSuccess
+import com.hydrofish.app.api.WaterData
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -25,6 +26,8 @@ interface IUserSessionRepository {
     fun saveWaterIntake(water: Int, date: String)
 
     fun getWaterIntake(): Pair<Int, String>?
+
+    fun recordWaterData(waterData: WaterData)
 
     fun updateScore(newScore: Int)
 
@@ -46,7 +49,7 @@ interface IUserSessionRepository {
 }
 
 @SuppressLint("NewApi")
-class UserSessionRepository(private val context: Context): IUserSessionRepository {
+class UserSessionRepository(private val context: Context, private val apiService: ApiService): IUserSessionRepository {
 
     private val fileName = "encrypted_prefs"
     private val keyToken = "key_token"
@@ -98,6 +101,23 @@ class UserSessionRepository(private val context: Context): IUserSessionRepositor
         }
     }
 
+    override fun recordWaterData(waterData: WaterData) {
+        val token = getToken()
+        val call = apiService.recordIntake("Token $token", waterData)
+        call.enqueue(object : Callback<PostSuccess> {
+            override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
+                if (response.isSuccessful) {
+                    response.body()?.message?.let { Log.d("whateverIwant", it) }
+                } else {
+                    Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
+                }
+            }
+            override fun onFailure(call: Call<PostSuccess>, t: Throwable) {
+                Log.e("MainActivity", "Error occurred while fetching data", t)
+            }
+        })
+    }
+
     override fun onCleared() {
         preferences.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
     }
@@ -124,7 +144,7 @@ class UserSessionRepository(private val context: Context): IUserSessionRepositor
         val score = scoreLiveData.value ?: 1
         if (token != null ) {
             val fishLevel = FishLevel(score)
-            ApiClient.apiService.levelUp("Token $token", fishLevel).enqueue(object : Callback<PostSuccess> {
+            apiService.levelUp("Token $token", fishLevel).enqueue(object : Callback<PostSuccess> {
                 override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
                     if (response.isSuccessful) {
                         val responseSuccess = response.body()

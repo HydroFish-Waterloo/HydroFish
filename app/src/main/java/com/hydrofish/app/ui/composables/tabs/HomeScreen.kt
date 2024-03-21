@@ -83,6 +83,10 @@ fun HomeScreen(modifier: Modifier = Modifier, userSessionRepository: IUserSessio
     LaunchedEffect(score) {
         hydroFishViewModel.levelUpdate()
     }
+    LaunchedEffect(Unit) {
+        hydroFishViewModel.checkResetWaterIntake()
+    }
+
 
     Box(
         modifier = modifier.background(largeRadialGradient),
@@ -253,9 +257,6 @@ fun AddFishAnimation(hydroFishViewModel: HydroFishViewModel = viewModel()) {
         while (true) {
             animate()
         }
-    }
-    LaunchedEffect(Unit) {
-        hydroFishViewModel.checkResetWaterIntake()
     }
 
     for (animationGroup in hydroFishViewModel.getAllFish()) {

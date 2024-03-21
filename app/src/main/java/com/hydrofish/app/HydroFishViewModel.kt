@@ -7,8 +7,6 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.hydrofish.app.animations.AnimationGroup
-import com.hydrofish.app.api.ApiClient
-import com.hydrofish.app.api.PostSuccess
 import com.hydrofish.app.api.WaterData
 import com.hydrofish.app.ui.HydroFishUIState
 import com.hydrofish.app.utils.IUserSessionRepository
@@ -16,9 +14,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.time.LocalDate
 import java.time.Period
 
@@ -54,14 +49,7 @@ class HydroFishViewModel(private val userSessionRepository: IUserSessionReposito
                 fishScore = currentScore
             )
         }
-        val responseLevel: Int = userSessionRepository.syncScore()
-        if (responseLevel != -1) {
-            _uiState.update { currentState ->
-                currentState.copy(
-                    fishScore = responseLevel
-                )
-            }
-        }
+        userSessionRepository.syncScore()
         uiState.value.animationGroupPositionHandler.prepForPopulation()
     }
 
@@ -79,44 +67,25 @@ class HydroFishViewModel(private val userSessionRepository: IUserSessionReposito
         userSessionRepository.saveWaterIntake(_uiState.value.dailyWaterConsumedML, currentDate.toString())
         val token = userSessionRepository.getToken()
         if (token != null ) {
-
             val waterData = WaterData(currentDate.toString(), amt)
-            val call = ApiClient.apiService.recordIntake("Token " + token, waterData)
-            call.enqueue(object : Callback<PostSuccess> {
-                override fun onResponse(call: Call<PostSuccess>, response: Response<PostSuccess>) {
-                    if (response.isSuccessful) {
-                        response.body()?.message?.let { Log.d("whateverIwant", it) }
-                    } else {
-                        Log.e("MainActivity", "Failed to fetch data: ${response.code()}")
-                    }
-                }
-                override fun onFailure(call: Call<PostSuccess>, t: Throwable) {
-                    Log.e("MainActivity", "Error occurred while fetching data", t)
-                }
-            })
+            userSessionRepository.recordWaterData(waterData)
         }
     }
 
     fun levelUpdate() {
         val currentScore = userSessionRepository.getScore()
-        uiState.value.animationGroupPositionHandler.prepForPopulation()
         _uiState.update { currentState ->
             currentState.copy(
                 fishScore = currentScore
             )
         }
+        uiState.value.animationGroupPositionHandler.prepForPopulation()
     }
 
     fun levelUp() {
         val currentScore = userSessionRepository.getScore()
         val newScore = currentScore + 1
-        uiState.value.animationGroupPositionHandler.prepForPopulation()
         userSessionRepository.updateScore(newScore)
-        _uiState.update { currentState ->
-            currentState.copy(
-                fishScore = newScore
-            )
-        }
         val responseLevel: Int = userSessionRepository.syncScore()
         if (responseLevel != -1) {
             _uiState.update { currentState ->
@@ -131,6 +100,7 @@ class HydroFishViewModel(private val userSessionRepository: IUserSessionReposito
 //                dailyWaterConsumedML = 0,
 //            )
 //        }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
