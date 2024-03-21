@@ -16,22 +16,51 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.util.*
 
+interface IUserSessionRepository {
+
+    val isLoggedIn: LiveData<Boolean>
+
+    val scoreLiveData: LiveData<Int>
+
+    fun saveWaterIntake(water: Int, date: String)
+
+    fun getWaterIntake(): Pair<Int, String>?
+
+    fun updateScore(newScore: Int)
+
+    fun getScore(): Int
+
+    fun syncScore(): Int
+
+    fun saveToken(token: String)
+
+    fun getToken(): String?
+
+    fun saveUserName(name: String)
+
+    fun getUserName(): String?
+
+    fun clearData()
+
+    fun onCleared()
+}
+
 @SuppressLint("NewApi")
-class UserSessionRepository(private val context: Context) {
+class UserSessionRepository(private val context: Context): IUserSessionRepository {
 
     private val fileName = "encrypted_prefs"
     private val keyToken = "key_token"
     private val userName = "username"
 
     private val _isLoggedIn = MutableLiveData<Boolean>()
-    val isLoggedIn: LiveData<Boolean> = _isLoggedIn
+    override val isLoggedIn: LiveData<Boolean> = _isLoggedIn
 
     private val preferences: SharedPreferences by lazy {
         context.getSharedPreferences("YourSharedPreferencesName", Context.MODE_PRIVATE)
     }
 
     private val _scoreLiveData = MutableLiveData<Int>()
-    val scoreLiveData: LiveData<Int> get() = _scoreLiveData
+    override val scoreLiveData: LiveData<Int> get() = _scoreLiveData
 
     private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
         if (key == "score") {
@@ -51,14 +80,14 @@ class UserSessionRepository(private val context: Context) {
 
 
 
-    fun saveWaterIntake(water: Int, date: String) {
+    override fun saveWaterIntake(water: Int, date: String) {
         val editor = preferences.edit()
         editor.putInt("KEY_WATER_INTAKE", water)
         editor.putString("KEY_DATE", date)
         editor.apply()
     }
 
-    fun getWaterIntake(): Pair<Int, String>? {
+    override fun getWaterIntake(): Pair<Int, String>? {
         val water = preferences.getInt("KEY_WATER_INTAKE", -1)
         val date = preferences.getString("KEY_DATE", null)
 
@@ -69,7 +98,7 @@ class UserSessionRepository(private val context: Context) {
         }
     }
 
-    fun onCleared() {
+    override fun onCleared() {
         preferences.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
     }
 
@@ -82,15 +111,15 @@ class UserSessionRepository(private val context: Context) {
 //        }
 //    }
 
-    fun updateScore(newScore: Int) {
+    override fun updateScore(newScore: Int) {
         preferences.edit().putInt("score", newScore).apply()
     }
 
-    fun getScore():Int {
+    override fun getScore():Int {
         return preferences.getInt("score", 1)
     }
 
-    fun syncScore():Int {
+    override fun syncScore():Int {
         val token = getToken()
         val score = scoreLiveData.value ?: 1
         if (token != null ) {
@@ -135,20 +164,20 @@ class UserSessionRepository(private val context: Context) {
         _isLoggedIn.value = getToken() != null
     }
 
-    fun saveToken(token: String) {
+    override fun saveToken(token: String) {
         encryptedPrefs.edit().putString(keyToken, token).apply()
         _isLoggedIn.value = true
     }
 
-    fun getToken(): String? = encryptedPrefs.getString(keyToken, null)
+    override fun getToken(): String? = encryptedPrefs.getString(keyToken, null)
 
-    fun saveUserName(name: String) {
+    override fun saveUserName(name: String) {
         encryptedPrefs.edit().putString(userName, name).apply()
     }
 
-    fun getUserName(): String? = encryptedPrefs.getString(userName, null)
+    override fun getUserName(): String? = encryptedPrefs.getString(userName, null)
 
-    fun clearData() {
+    override fun clearData() {
         encryptedPrefs.edit().remove(keyToken).apply()
         encryptedPrefs.edit().remove(userName).apply()
         _isLoggedIn.value = false
