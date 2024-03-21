@@ -2,14 +2,12 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavHostController
-import com.hydrofish.app.api.ApiClient.historyApiService
 import com.hydrofish.app.api.DataResponse
 import com.hydrofish.app.api.HydrationEntry
 import com.hydrofish.app.ui.composables.tabs.HistoryScreen
 import com.hydrofish.app.utils.IUserSessionRepository
 import org.junit.Rule
 import org.junit.Test
-import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
