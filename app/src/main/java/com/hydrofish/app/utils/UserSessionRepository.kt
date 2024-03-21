@@ -81,7 +81,8 @@ class UserSessionRepository(private val context: Context, private val apiService
 //        val editor = preferences.edit()
 //        editor.clear() // This will clear all the preferences
 //        editor.apply()
-        _scoreLiveData.value = preferences.getInt("score", 1)
+//        _scoreLiveData.value = preferences.getInt("score", 1)
+        _scoreLiveData.postValue(preferences.getInt("score", 1))
         preferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
     }
 
@@ -193,7 +194,8 @@ class UserSessionRepository(private val context: Context, private val apiService
     }
 
     init {
-        _isLoggedIn.value = getToken() != null
+//        _isLoggedIn.value = getToken() != null
+        _isLoggedIn.postValue(getToken() != null)
     }
 
     override fun saveToken(token: String) {
