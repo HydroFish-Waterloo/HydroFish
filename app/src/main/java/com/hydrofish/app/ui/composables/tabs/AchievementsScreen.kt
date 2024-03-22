@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -66,12 +65,12 @@ fun AchievementsScreen(
     val sharedPreferences = context.getSharedPreferences("YourSharedPreferencesName", Context.MODE_PRIVATE)
 
     val achievements = listOf(
-        Achievement(1, "Achievement 1", R.drawable.achievement, 1),
-        Achievement(2, "Achievement 2", R.drawable.achievement, 2),
-        Achievement(3, "Achievement 3", R.drawable.achievement, 3),
-        Achievement(4, "Achievement 4", R.drawable.achievement, 4),
-        Achievement(5, "Achievement 5", R.drawable.achievement, 5),
-        Achievement(6, "Achievement 6", R.drawable.achievement, 6)
+        Achievement(1, "First check-in", R.drawable.achievement, 2),
+        Achievement(2, "Check-In 3 days", R.drawable.achievement, 4),
+        Achievement(3, "Check-In 7 days", R.drawable.achievement, 8),
+        Achievement(4, "Check-In 10 days", R.drawable.achievement, 11),
+        Achievement(5, "Check-In 14 days", R.drawable.achievement, 15),
+        Achievement(6, "Check-In 30 days", R.drawable.achievement, 31)
     )
     Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
@@ -141,12 +140,12 @@ fun AchievementsScreen(
 }
 
 @Composable
-fun AchievementsContent(score: Int,achievements: List<Achievement>, isUserLoggedIn: Boolean = false) {
+fun AchievementsContent(score: Int, achievements: List<Achievement>, isUserLoggedIn: Boolean = false) {
     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         for (achievement in achievements.chunked(3)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+            Row(modifier = Modifier.fillMaxWidth()) {
                 achievement.forEach { ach ->
-                    AchievementItem(achievement = ach, isUnlocked = (score >= ach.unlockScore && isUserLoggedIn))
+                    AchievementItem(achievement = ach, isUnlocked = (score >= ach.unlockScore && isUserLoggedIn), modifier = Modifier.weight(1f).padding(4.dp))
                 }
             }
         }
@@ -154,8 +153,12 @@ fun AchievementsContent(score: Int,achievements: List<Achievement>, isUserLogged
 }
 
 @Composable
-fun AchievementItem(achievement: Achievement, isUnlocked: Boolean) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+fun AchievementItem(achievement: Achievement, isUnlocked: Boolean, modifier: Modifier = Modifier,) {
+    // This Column is a direct child in a Row, so weight should work here
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         Image(
             painter = painterResource(id = achievement.icon),
             contentDescription = achievement.name,
@@ -167,7 +170,9 @@ fun AchievementItem(achievement: Achievement, isUnlocked: Boolean) {
         Text(
             text = achievement.name,
             style = MaterialTheme.typography.bodyMedium,
-            color = if (isUnlocked) LocalContentColor.current else Color.Gray
+            color = if (isUnlocked) LocalContentColor.current else Color.Gray,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
