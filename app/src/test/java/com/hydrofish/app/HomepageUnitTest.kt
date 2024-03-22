@@ -2,7 +2,10 @@ package com.hydrofish.app
 
 import com.hydrofish.app.utils.IUserSessionRepository
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
+import io.mockk.verify
 import junit.framework.TestCase.assertEquals
 import org.junit.Assert
 import org.junit.Before
@@ -64,8 +67,56 @@ class HomepageUnitTest {
     }
 
     @Test
-    fun testLevelUp() {
-        // TODO
+    fun testLevelUpSuccess() {
+        // Mocking behavior for getScore
+        every { mockUserSessionRepository.getScore() } returns 5
+
+        // Mocking behavior for updateScore
+        every { mockUserSessionRepository.updateScore(any()) } just runs
+
+        // Mocking behavior for syncScore callback
+        every { mockUserSessionRepository.syncScore(any()) } answers {
+            // Simulate onSuccess callback
+            val callback = args[0] as IUserSessionRepository.SyncScoreCallback
+            callback.onSuccess(6)
+        }
+
+
+        // Call the function under test
+        viewModel.levelUp()
+
+        // Verify interactions
+        verify { mockUserSessionRepository.getScore() }
+        verify { mockUserSessionRepository.updateScore(6) }
+        verify { mockUserSessionRepository.syncScore(any()) }
+        assertEquals( viewModel.uiState.value.fishScore,6 )
+    }
+
+    @Test
+    fun testLevelUpFailure() {
+        // Mocking behavior for getScore
+        every { mockUserSessionRepository.getScore() } returns 5
+
+        // Mocking behavior for updateScore
+        every { mockUserSessionRepository.updateScore(any()) } just runs
+
+        // Mocking behavior for syncScore callback
+        every { mockUserSessionRepository.syncScore(any()) } answers {
+            // Simulate onFailure callback
+            val callback = args[0] as IUserSessionRepository.SyncScoreCallback
+            callback.onFailure(-1)
+        }
+
+        // Call the function under test
+        viewModel.levelUp()
+
+        // Verify interactions
+        verify { mockUserSessionRepository.getScore() }
+        verify { mockUserSessionRepository.updateScore(6) }
+        verify { mockUserSessionRepository.syncScore(any()) }
+
+        // Verify that fishScore is not updated (remains 5) due to failure
+        assertEquals(1, viewModel.uiState.value.fishScore)
     }
 
     @Test
