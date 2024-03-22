@@ -48,7 +48,7 @@ class HydroFishViewModel(private val userSessionRepository: IUserSessionReposito
         }
         userSessionRepository.syncScore(object : IUserSessionRepository.SyncScoreCallback {
             override fun onSuccess(score: Int) {
-                if (score != -1) {
+                if (score == -1) {
                     // TODO - Handle failure scenario if needed
                     return
                 }
