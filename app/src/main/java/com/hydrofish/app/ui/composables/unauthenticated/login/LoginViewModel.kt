@@ -1,6 +1,5 @@
 package com.hydrofish.app.ui.composables.unauthenticated.login
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.hydrofish.app.api.ApiService
@@ -76,7 +75,6 @@ class LoginViewModel(
                             if (response.isSuccessful) {
                                 val data = response.body()
                                 // Handle the retrieved post data
-                                Log.d("Login", "Login here is token: " + data?.token)
                                 if (data != null) {
                                     userSessionRepository.saveToken(data.token)
                                     userSessionRepository.saveUserName(data.username)
@@ -102,13 +100,11 @@ class LoginViewModel(
                                         passwordErrorState = passwordWrongErrorState
                                     )
                                 )
-                                Log.e("Login", "Failed to login: ${response.code()}")
                             }
                         }
 
                         override fun onFailure(call: Call<AuthSuccess>, t: Throwable) {
                             // Handle failure
-                            Log.e("Login", "Error occurred while logging in", t)
                         }
                     })
 

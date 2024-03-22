@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
@@ -34,7 +35,8 @@ fun LoginInputs(
         UserNameTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = AppTheme.dimens.paddingLarge),
+                .padding(top = AppTheme.dimens.paddingLarge)
+                .testTag("username"),
             value = loginState.userName,
             onValueChange = onUserNameOrMobileChange,
             label = stringResource(id = R.string.login_user_name_label),
@@ -47,7 +49,8 @@ fun LoginInputs(
         PasswordTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = AppTheme.dimens.paddingLarge),
+                .padding(top = AppTheme.dimens.paddingLarge)
+                .testTag("password"),
             value = loginState.password,
             onValueChange = onPasswordChange,
             label = stringResource(id = R.string.login_password_label),
@@ -72,7 +75,9 @@ fun LoginInputs(
 
         // Login Submit Button
         NormalButton(
-            modifier = Modifier.padding(top = AppTheme.dimens.paddingLarge),
+            modifier = Modifier
+                .padding(top = AppTheme.dimens.paddingLarge)
+                .testTag("login"),
             text = stringResource(id = R.string.login_button_text),
             onClick = onSubmit
         )

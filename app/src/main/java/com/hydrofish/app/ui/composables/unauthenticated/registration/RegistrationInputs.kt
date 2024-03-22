@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import com.hydrofish.app.R
@@ -31,7 +32,8 @@ fun RegistrationInputs(
         UserNameTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = AppTheme.dimens.paddingLarge),
+                .padding(top = AppTheme.dimens.paddingLarge)
+                .testTag("username"),
             value = registrationState.userName,
             onValueChange = onUserNameChange,
             label = stringResource(id = R.string.registration_user_name_label),
@@ -45,7 +47,8 @@ fun RegistrationInputs(
         MobileNumberTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = AppTheme.dimens.paddingLarge),
+                .padding(top = AppTheme.dimens.paddingLarge)
+                .testTag("mobile"),
             value = registrationState.mobileNumber,
             onValueChange = onMobileNumberChange,
             label = stringResource(id = R.string.registration_mobile_label),
@@ -60,7 +63,8 @@ fun RegistrationInputs(
         PasswordTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = AppTheme.dimens.paddingLarge),
+                .padding(top = AppTheme.dimens.paddingLarge)
+                .testTag("password"),
             value = registrationState.password,
             onValueChange = onPasswordChange,
             label = stringResource(id = R.string.registration_password_label),
@@ -74,7 +78,8 @@ fun RegistrationInputs(
         PasswordTextField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = AppTheme.dimens.paddingLarge),
+                .padding(top = AppTheme.dimens.paddingLarge)
+                .testTag("confirm password"),
             value = registrationState.confirmPassword,
             onValueChange = onConfirmPasswordChange,
             label = stringResource(id = R.string.registration_confirm_password_label),
