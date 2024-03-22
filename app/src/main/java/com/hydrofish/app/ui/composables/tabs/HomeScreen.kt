@@ -81,7 +81,7 @@ fun HomeScreen(modifier: Modifier = Modifier, userSessionRepository: IUserSessio
     val score by hydroFishViewModel.scoreLiveData.observeAsState(1)
 
     LaunchedEffect(score) {
-        hydroFishViewModel.levelUpdate()
+        hydroFishViewModel.updateFishModels()
     }
     LaunchedEffect(Unit) {
         hydroFishViewModel.checkResetWaterIntake()
