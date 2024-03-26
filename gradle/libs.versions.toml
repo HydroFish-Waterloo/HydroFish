@@ -17,6 +17,12 @@ mockitoAndroid = "4.5.1"
 composeLiveData = "1.0.0"
 barista = "4.2.0"
 gson = "2.8.8"
+material-icons-extended = "1.4.0"
+coil-compose = "2.4.0"
+retrofit = "2.9.0"
+security-crypto = "1.0.0"
+navigationTesting = "2.6.0"
+mockk = "1.12.3"
 
 [libraries]
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
@@ -47,6 +53,14 @@ mockitoAndroid = { module = "org.mockito:mockito-android", version.ref = "mockit
 composeLiveData = { module = "androidx.compose.runtime:runtime-livedata", version.ref = "composeLiveData" }
 barista = { module = "com.adevinta.android:barista", version.ref = "barista" } # Added Barista library
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "material-icons-extended" }
+coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coil-compose" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofit-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
+security-crypto = { module = "androidx.security:security-crypto", version.ref = "security-crypto" }
+androidx-navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "navigationTesting" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
+mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "plugin-android-app" }

@@ -1,60 +1,102 @@
+import com.google.gson.JsonDeserializationContext
+import com.google.gson.JsonParseException
+import com.google.gson.JsonParser
+import com.hydrofish.app.ui.composables.tabs.HydrationEntryDeserializer
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Test
+import java.lang.reflect.Type
 import java.text.SimpleDateFormat
 import java.util.*
 
-fun parseDateString(dateString: String): Date {
-    // Remove the timezone offset (+0000) from the date string
-    val dateStringWithoutOffset = dateString.substring(0, dateString.lastIndexOf(" "))
+class HydrationEntryDeserializerTest {
 
-    val dateFormat = SimpleDateFormat("EEE MMM dd HH:mm:ss yyyy", Locale.ENGLISH)
-    return dateFormat.parse(dateStringWithoutOffset)
-}
-class MainActivityTest {
+    private lateinit var deserializer: HydrationEntryDeserializer
 
-    @Test
-    fun parseDateStringTest1() {
-        // Mock input date string
-        val dateString = "Fri Feb 18 15:00:00 2022 -0500"
-
-        // Expected output date
-        val expectedDate = Calendar.getInstance().apply {
-            set(Calendar.YEAR, 2022)
-            set(Calendar.MONTH, Calendar.FEBRUARY)
-            set(Calendar.DAY_OF_MONTH, 18)
-            set(Calendar.HOUR_OF_DAY, 15)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.time
-
-        // Call the function
-        val actualDate = parseDateString(dateString)
-
-        // Assert
-        assertEquals(expectedDate, actualDate)
+    @Before
+    fun setUp() {
+        deserializer = HydrationEntryDeserializer()
     }
 
     @Test
-    fun parseDateStringTest2() {
-        // Mock input date string
-        val dateString = "Fri Feb 22 7:00:01 2024 -0500"
+    fun `deserialize valid JSON array`() {
+        val json = "[{\"day\":\"2024-03-17T10:30:00Z\",\"total_ml\":500}]"
+        val typeOfT: Type? = null
+        val context: JsonDeserializationContext? = null
 
-        // Expected output date
-        val expectedDate = Calendar.getInstance().apply {
-            set(Calendar.YEAR, 2024)
-            set(Calendar.MONTH, Calendar.FEBRUARY)
-            set(Calendar.DAY_OF_MONTH, 22)
-            set(Calendar.HOUR_OF_DAY, 7)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 1)
-            set(Calendar.MILLISECOND, 0)
-        }.time
+        val result = deserializer.deserialize(JsonParser.parseString(json), typeOfT, context)
 
-        // Call the function
-        val actualDate = parseDateString(dateString)
-
-        // Assert
-        assertEquals(expectedDate, actualDate)
+        assertEquals(1, result.size)
+        assertEquals(500, result[0].hydrationAmount)
     }
+
+    @Test(expected = JsonParseException::class)
+    fun `deserialize invalid JSON format`() {
+        val invalidJson = "{\"day\":\"2024-03-17T10:30:00Z\",\"total_ml\":\"invalid\"}"
+        val typeOfT: Type? = null
+        val context: JsonDeserializationContext? = null
+
+        deserializer.deserialize(JsonParser.parseString(invalidJson), typeOfT, context)
+    }
+
+    @Test(expected = JsonParseException::class)
+    fun `deserialize invalid date format`() {
+        val invalidJson = "{\"day\":\"invalid\",\"total_ml\":500}"
+        val typeOfT: Type? = null
+        val context: JsonDeserializationContext? = null
+
+        deserializer.deserialize(JsonParser.parseString(invalidJson), typeOfT, context)
+    }
+
+    @Test(expected = JsonParseException::class)
+    fun `deserialize invalid hydration amount format`() {
+        val invalidJson = "{\"day\":\"2024-03-17T10:30:00Z\",\"total_ml\":\"invalid\"}"
+        val typeOfT: Type? = null
+        val context: JsonDeserializationContext? = null
+
+        deserializer.deserialize(JsonParser.parseString(invalidJson), typeOfT, context)
+    }
+
+    @Test(expected = JsonParseException::class)
+    fun `parse invalid date string`() {
+        val invalidDateString = "invalid"
+        deserializer.parseDateString(invalidDateString)
+    }
+
+    @Test(expected = JsonParseException::class)
+    fun `deserialize empty JSON array`() {
+        val emptyJson = "[]"
+        val typeOfT: Type? = null
+        val context: JsonDeserializationContext? = null
+
+        deserializer.deserialize(JsonParser.parseString(emptyJson), typeOfT, context)
+    }
+
+    @Test(expected = JsonParseException::class)
+    fun `deserialize null JSON`() {
+        val nullJson = "null"
+        val typeOfT: Type? = null
+        val context: JsonDeserializationContext? = null
+
+        deserializer.deserialize(JsonParser.parseString(nullJson), typeOfT, context)
+    }
+
+    @Test(expected = JsonParseException::class)
+    fun `deserialize missing fields in JSON`() {
+        val json = "[{\"day\":\"2024-03-17T10:30:00Z\"}]"
+        val typeOfT: Type? = null
+        val context: JsonDeserializationContext? = null
+
+        deserializer.deserialize(JsonParser.parseString(json), typeOfT, context)
+    }
+
+    @Test
+    fun `parse valid date string`() {
+
+        val dateString = "2024-03-17T10:30:00Z"
+        val result = deserializer.parseDateString(dateString)
+        val expectedDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.ENGLISH).parse(dateString)
+        assertEquals(expectedDate, result)
+    }
+
 }

@@ -29,6 +29,13 @@ android {
             )
         }
     }
+    testOptions {
+        packaging {
+            jniLibs {
+                useLegacyPackaging = true
+            }
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -52,6 +59,7 @@ android {
 dependencies {
     // Jetpack Compose Platform
     implementation(platform(libs.compose.bom))
+    implementation(libs.androidx.navigation.testing)
     androidTestImplementation(platform(libs.compose.bom))
 
     // Jetpack Compose Libraries with BOM version
@@ -93,10 +101,19 @@ dependencies {
     testImplementation(libs.mockitoCore)
     androidTestImplementation(libs.mockitoAndroid)
     implementation(libs.composeLiveData)
+    testImplementation(libs.mockk)
+    androidTestImplementation(libs.mockk.android)
 
     // Barista for Android UI testing
     androidTestImplementation(libs.barista) // Added Barista dependency
 
     implementation(libs.gson)
 
+    implementation(libs.material.icons.extended)
+    implementation(libs.coil.compose)
+
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+
+    implementation(libs.security.crypto)
 }
