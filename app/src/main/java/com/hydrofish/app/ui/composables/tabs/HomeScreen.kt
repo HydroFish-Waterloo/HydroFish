@@ -364,7 +364,7 @@ fun AddButtons(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
 @Composable
 fun ReusableDrinkButton(
     waterAmt: Int,
-    imageId: Int,
+    imageId: Int = R.drawable.ic_launcher_foreground,
     hydroFishViewModel: HydroFishViewModel = viewModel()
 ) {
     val hydroFishUIState by hydroFishViewModel.uiState.collectAsState();

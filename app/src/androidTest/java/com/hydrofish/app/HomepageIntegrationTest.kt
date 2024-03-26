@@ -30,9 +30,9 @@ class HomepageIntegrationTest {
     fun reusableDrinkButtonValueTest() {
         rule.setContent {
             Row() {
-                ReusableDrinkButton(0, viewModel);
-                ReusableDrinkButton(1000, viewModel);
-                ReusableDrinkButton(1300, viewModel);
+                ReusableDrinkButton(0, hydroFishViewModel=viewModel);
+                ReusableDrinkButton(1000, hydroFishViewModel=viewModel);
+                ReusableDrinkButton(1300, hydroFishViewModel=viewModel);
             }
         }
 
@@ -49,7 +49,7 @@ class HomepageIntegrationTest {
     fun negativeWaterButtonTest() {
         assertThrows(Exception::class.java) {
             rule.setContent {
-                ReusableDrinkButton(-10, viewModel);
+                ReusableDrinkButton(-10, hydroFishViewModel=viewModel);
             }
         }
     }
@@ -59,7 +59,7 @@ class HomepageIntegrationTest {
         val exceedLimitAmount = viewModel.uiState.value.curDailyMaxWaterConsumedML * 2 + 10;
         assertThrows(Exception::class.java) {
             rule.setContent {
-                ReusableDrinkButton(exceedLimitAmount, viewModel);
+                ReusableDrinkButton(exceedLimitAmount, hydroFishViewModel=viewModel);
             }
         }
     }
@@ -67,7 +67,7 @@ class HomepageIntegrationTest {
     @Test
     fun refreshFishTest() {
         rule.setContent {
-            ReusableDrinkButton(330, viewModel);
+            ReusableDrinkButton(330, hydroFishViewModel=viewModel);
         }
 
         val initialFishCount = viewModel.uiState.value.animationGroupPositionHandler.getAnimationGroups();
