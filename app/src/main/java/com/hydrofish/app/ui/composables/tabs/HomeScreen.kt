@@ -1,5 +1,7 @@
 package com.hydrofish.app.ui.composables.tabs
 
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.Animatable
@@ -34,13 +36,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.graphics.Shader
 import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hydrofish.app.HydroFishViewModel
 import com.hydrofish.app.R
@@ -51,6 +57,7 @@ import com.hydrofish.app.viewmodelfactories.HydroFishViewModelFactory
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
 
 /**
  * Composable function that represents the home screen of the application.
@@ -332,16 +339,19 @@ fun AddButtons(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
         Row(horizontalArrangement = Arrangement.Center) {
             ReusableDrinkButton(
                 waterAmt=150,
+                R.drawable.americano,
                 hydroFishViewModel
             )
             Spacer(modifier = Modifier.size(10.dp))
             ReusableDrinkButton(
                 waterAmt=250,
+                R.drawable.soda_can,
                 hydroFishViewModel
             )
             Spacer(modifier = Modifier.size(10.dp))
             ReusableDrinkButton(
                 waterAmt=330,
+                R.drawable.orange_juice,
                 hydroFishViewModel
             )
         }
@@ -352,7 +362,11 @@ fun AddButtons(modifier: Modifier = Modifier, hydroFishViewModel: HydroFishViewM
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = viewModel()) {
+fun ReusableDrinkButton(
+    waterAmt: Int,
+    imageId: Int,
+    hydroFishViewModel: HydroFishViewModel = viewModel()
+) {
     val hydroFishUIState by hydroFishViewModel.uiState.collectAsState();
 
     // upper limit
@@ -371,9 +385,7 @@ fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = 
     if (waterAmt >= 1000) {
         buttonText = (waterAmt / (1000 * 1.0)).toString() + "L";
     }
-
-
-
+    
     Button(onClick = {
         hydroFishViewModel.checkResetWaterIntake()
         hydroFishViewModel.increaseWaterLevel(waterAmt)
@@ -388,9 +400,11 @@ fun ReusableDrinkButton(waterAmt: Int, hydroFishViewModel: HydroFishViewModel = 
             horizontalAlignment = Alignment.CenterHorizontally,
         ){
             Image(
-                painterResource(id = R.drawable.ic_launcher_foreground),
+                painterResource(id = imageId),
                 contentDescription ="add drink button",
-                modifier = Modifier.size(40.dp))
+                modifier = Modifier.size(40.dp),
+                colorFilter = ColorFilter.tint(Color.White)
+            )
 
             Text(text = buttonText,Modifier.padding(start = 10.dp))
         }
